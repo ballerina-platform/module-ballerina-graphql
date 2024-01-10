@@ -28,6 +28,7 @@ isolated class Engine {
     private final readonly & boolean introspection;
     private final readonly & boolean validation;
     private final cache:Cache cache;
+    private final readonly & ServerCacheConfig? cacheConfig;
 
     isolated function init(string schemaString, int? maxQueryDepth, Service s,
                            readonly & (readonly & Interceptor)[] interceptors, boolean introspection,
@@ -42,6 +43,7 @@ isolated class Engine {
         self.introspection = introspection;
         self.validation = validation;
         self.cache = cacheConfig is ServerCacheConfig ? new ({capacity:cacheConfig.maxSize, evictionFactor:0.2, defaultMaxAge:cacheConfig.maxAge}) : new ({capacity: 120, evictionFactor: 0.2, defaultMaxAge: 60});
+        self.cacheConfig = cacheConfig.cloneReadOnly();
         self.addService(s);
     }
 
@@ -55,6 +57,10 @@ isolated class Engine {
 
     isolated function getValidation() returns readonly & boolean {
         return self.validation;
+    }
+
+    isolated function getCacheConfig() returns readonly & ServerCacheConfig? {
+        return self.cacheConfig;
     }
 
     isolated function addToCache(string key, any value, decimal maxAge) returns any|error {
@@ -272,7 +278,7 @@ isolated class Engine {
 
         (readonly & Interceptor)? interceptor = context.getNextInterceptor('field);
         __Type fieldType = 'field.getFieldType();
-        ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone());
+        ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone(), 'field.getCacheConfig().clone(), 'field.getParentArgHashes().clone());
         do {
             if interceptor is readonly & Interceptor {
                 any|error result = self.executeInterceptor(interceptor, 'field, context);

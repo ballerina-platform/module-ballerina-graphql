@@ -16,6 +16,7 @@
 
 import graphql.parser;
 
+import ballerina/crypto;
 import ballerina/http;
 
 // Error messages
@@ -513,4 +514,11 @@ isolated function getKeyArgument(parser:FieldNode fieldNode) returns string? {
 # + errorDetail - The error to be added to the response.
 public isolated function __addError(Context context, ErrorDetail errorDetail) {
     context.addError(errorDetail);
+}
+
+isolated function generateArgHash(parser:ArgumentNode[] arguments, string[] parentArgHashes = []) returns string {
+    any[] argValues = [...parentArgHashes];
+    argValues.push(...arguments.'map((arg) => arg.getValue()));
+    byte[] hash = crypto:hashMd5(argValues.toString().toBytes());
+    return hash.toBase64();
 }

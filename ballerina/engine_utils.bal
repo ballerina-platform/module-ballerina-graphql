@@ -89,7 +89,9 @@ isolated function getFieldObject(parser:FieldNode fieldNode, parser:RootOperatio
     string operationTypeName = getOperationTypeNameFromOperationType(operationType);
     __Type parentType = <__Type>getTypeFromTypeArray(schema.types, operationTypeName);
     __Type fieldType = getFieldTypeFromParentType(parentType, schema.types, fieldNode);
-    return new (fieldNode, fieldType, engine.getService(), path, operationType, fieldValue = fieldValue);
+    string parentArgHashes = generateArgHash(fieldNode.getArguments());
+    return new (fieldNode, fieldType, engine.getService(), path, operationType, fieldValue = fieldValue,
+                cacheConfig = engine.getCacheConfig(), parentArgHashes = [parentArgHashes]);
 }
 
 isolated function createSchema(string schemaString) returns readonly & __Schema|Error = @java:Method {

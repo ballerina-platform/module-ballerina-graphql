@@ -14,7 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/io;
 import ballerina/test;
 
 @test:Config {
@@ -26,7 +25,6 @@ isolated function testServerSideCache(string documentFile, string[] resourceFile
     string document = check getGraphqlDocumentFromFile(documentFile);
     foreach int i in 0..<resourceFileNames.length() {
         json actualPayload = check getJsonPayloadFromService(url, document, variables, operationNames[i]);
-        io:println("Actual payload: ", actualPayload);
         json expectedPayload = check getJsonContentFromFile(resourceFileNames[i]);
         assertJsonValuesWithOrder(actualPayload, expectedPayload);
     }
@@ -48,7 +46,6 @@ isolated function testEvictServerSideCache(string documentFile, string[] resourc
     string document = check getGraphqlDocumentFromFile(documentFile);
     foreach int i in 0..<resourceFileNames.length() {
         json actualPayload = check getJsonPayloadFromService(url, document, variables, operationNames[i]);
-        io:println("Actual payload: ", actualPayload);
         json expectedPayload = check getJsonContentFromFile(resourceFileNames[i]);
         assertJsonValuesWithOrder(actualPayload, expectedPayload);
     }

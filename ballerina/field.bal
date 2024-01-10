@@ -14,7 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/crypto;
 import graphql.parser;
 
 # Represents the information about a particular field of a GraphQL document.
@@ -28,10 +27,12 @@ public class Field {
     private string[] resourcePath;
     private readonly & Interceptor[] fieldInterceptors;
     private final ServerCacheConfig? cacheConfig;
+    private final string[] parentArgHashes;
 
     isolated function init(parser:FieldNode internalNode, __Type fieldType, service object {}? serviceObject = (),
                            (string|int)[] path = [], parser:RootOperationType operationType = parser:OPERATION_QUERY,
-                           string[] resourcePath = [], any|error fieldValue = (), ServerCacheConfig? cacheConfig = ()) {
+                           string[] resourcePath = [], any|error fieldValue = (), ServerCacheConfig? cacheConfig = (),
+                           string[] parentArgHashes = []) {
         self.internalNode = internalNode;
         self.serviceObject = serviceObject;
         self.fieldType = fieldType;
@@ -44,6 +45,7 @@ public class Field {
             getFieldInterceptors(serviceObject, operationType, internalNode.getName(), self.resourcePath) : [];
         self.cacheConfig = serviceObject is service object {} ? getFieldCacheConfig(serviceObject, operationType,
             internalNode.getName(), self.resourcePath) : cacheConfig;
+        self.parentArgHashes = parentArgHashes;
     }
 
     # Returns the name of the field.
@@ -133,7 +135,8 @@ public class Field {
                 foreach __Field 'field in typeFields {
                     if 'field.name == selection.getName() {
                         result.push(new Field(selection, 'field.'type, (),[...currentPath, ...unwrappedPath, 'field.name],
-                            self.operationType.clone(), self.resourcePath.clone()));
+                            self.operationType.clone(), self.resourcePath.clone(), cacheConfig = self.cacheConfig.clone(),
+                            parentArgHashes = self.parentArgHashes.clone()));
                         break;
                     }
                 }
@@ -186,15 +189,16 @@ public class Field {
         return 0d;
     }
 
+    isolated function getParentArgHashes() returns string[] {
+        return self.parentArgHashes;
+    }
+
     private isolated function generateCacheKey() returns string {
-        parser:ArgumentNode[] arguments = self.internalNode.getArguments();
-        any[] argValues = [];
         string resourcePath = "";
-        argValues.push(...arguments.'map((arg) => arg.getValue()));
         foreach string path in self.resourcePath {
             resourcePath += string `${path}.`;
         }
-        byte[] hash = crypto:hashMd5(argValues.toString().toBytes());
-        return string `${resourcePath}${hash.toBase64()}`;
+        string hash = generateArgHash(self.internalNode.getArguments(), self.parentArgHashes);
+        return string `${resourcePath}${hash}`;
     }
 }
