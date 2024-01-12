@@ -57,6 +57,7 @@ import io.ballerina.tools.diagnostics.DiagnosticFactory;
 import io.ballerina.tools.diagnostics.DiagnosticInfo;
 import io.ballerina.tools.diagnostics.Location;
 import io.ballerina.tools.text.TextDocument;
+import io.ballerina.tools.text.TextRange;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -123,7 +124,7 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
     private ModulePartNode modifyDocument(SourceModifierContext context, ModulePartNode rootNode,
                                           GraphqlModifierContext modifierContext) {
         this.subgraphModulePrefix = getSubgraphModulePrefix(rootNode);
-        Map<Node, Node> nodeMap = new HashMap<>();
+        Map<NonTerminalNode, NonTerminalNode> modifiedNodes = new HashMap<>();
         Map<Node, Schema> nodeSchemaMap = modifierContext.getNodeSchemaMap();
         for (Map.Entry<Node, Schema> entry : nodeSchemaMap.entrySet()) {
             Schema schema = entry.getValue();
@@ -137,7 +138,7 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
                 if (targetNode.kind() == SyntaxKind.SERVICE_DECLARATION) {
                     ServiceDeclarationNode updatedNode = modifyServiceDeclarationNode(
                             (ServiceDeclarationNode) targetNode, schemaString, prefix);
-                    nodeMap.put(targetNode, updatedNode);
+                    modifiedNodes.put((NonTerminalNode) targetNode, updatedNode);
                     this.entityTypeNamesMap.put(targetNode, this.entityUnionTypeName);
                     this.entityUnionSuffix++;
                 } else if (targetNode.kind() == SyntaxKind.MODULE_VAR_DECL) {
@@ -145,49 +146,60 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
                             = (ModuleVariableDeclarationNode) targetNode;
                     ModuleVariableDeclarationNode updatedNode = modifyServiceVariableDeclarationNode(
                             schemaString, graphqlServiceVariableDeclaration, prefix);
-                    nodeMap.put(targetNode, updatedNode);
+                    modifiedNodes.put((NonTerminalNode) targetNode, updatedNode);
                     this.entityTypeNamesMap.put(targetNode, this.entityUnionTypeName);
                     this.entityUnionSuffix++;
-                } else if (targetNode.kind() == SyntaxKind.OBJECT_CONSTRUCTOR) {
-                    ObjectConstructorExpressionNode graphqlServiceVariableDeclaration
-                            = (ObjectConstructorExpressionNode) targetNode;
+                } else if (targetNode.kind() == SyntaxKind.LOCAL_VAR_DECL) {
+                    VariableDeclarationNode graphqlServiceVariableDeclaration = (VariableDeclarationNode) targetNode;
+                    ObjectConstructorExpressionNode graphqlServiceObject
+                            = (ObjectConstructorExpressionNode) graphqlServiceVariableDeclaration.initializer().get();
                     ObjectConstructorExpressionNode updatedGraphqlServiceObject = modifyServiceObjectNode(
-                            graphqlServiceVariableDeclaration, schemaString, prefix);
-                    VariableDeclarationNode parentNode
-                            = (VariableDeclarationNode) graphqlServiceVariableDeclaration.parent();
-                    VariableDeclarationNode updatedParentNode = parentNode.modify()
-                                                                          .withInitializer(updatedGraphqlServiceObject)
-                                                                          .apply();
-                    Node replacingNode = updatedParentNode;
-                    NonTerminalNode iNode = parentNode;
-                    while (iNode.parent() != null) {
-                        replacingNode = iNode.parent().replace(iNode, replacingNode);
-                        iNode = iNode.parent();
-                    }
-                    rootNode = rootNode.replace(iNode, replacingNode);
+                            graphqlServiceObject, schemaString, prefix);
+                    VariableDeclarationNode updatedNode = graphqlServiceVariableDeclaration
+                                                                        .modify()
+                                                                        .withInitializer(updatedGraphqlServiceObject)
+                                                                        .apply();
+                    modifiedNodes.put((NonTerminalNode) targetNode, updatedNode);
+                    this.entityTypeNamesMap.put(targetNode, this.entityUnionTypeName);
+                    this.entityUnionSuffix++;
                 }
             } catch (IOException e) {
                 updateContext(context, entry.getKey().location(), CompilationDiagnostic.SCHEMA_GENERATION_FAILED,
                               e.getMessage());
             }
         }
-        NodeList<ModuleMemberDeclarationNode> members = NodeFactory.createNodeList();
-        for (ModuleMemberDeclarationNode member : rootNode.members()) {
-            if (member.kind() == SyntaxKind.SERVICE_DECLARATION || member.kind() == SyntaxKind.MODULE_VAR_DECL) {
-                if (nodeMap.containsKey(member)) {
-                    this.entityUnionTypeName = this.entityTypeNamesMap.get(member);
-                    Schema schema = nodeSchemaMap.get(member);
-                    isSubgraph = schema.isSubgraph();
-                    if (schema.getEntities().size() > 0) {
-                        this.entities = schema.getEntities().stream().map(Type::getName).collect(Collectors.toList());
-                        members = addEntityTypeDefinition(members);
-                    }
-                    members = members.add((ModuleMemberDeclarationNode) nodeMap.get(member));
-                    continue;
+
+        ArrayList<NonTerminalNode> sortedNodesToBeModified = new ArrayList<>(modifiedNodes.keySet());
+        sortedNodesToBeModified.sort((n1, n2) -> n1.textRange().startOffset() - n2.textRange().startOffset());
+        NodeList<ModuleMemberDeclarationNode> entities = NodeFactory.createNodeList();
+        for (NonTerminalNode targetNode : sortedNodesToBeModified) {
+            this.entityUnionTypeName = this.entityTypeNamesMap.get(targetNode);
+            Schema schema = nodeSchemaMap.get(targetNode);
+            isSubgraph = schema.isSubgraph();
+            if (schema.getEntities().size() > 0) {
+                this.entities = schema.getEntities().stream().map(Type::getName).collect(Collectors.toList());
+                if (isSubgraph) {
+                    entities = addEntityTypeDefinition(entities);
                 }
             }
-            members = members.add(member);
         }
+
+        int prevModifiedNodeLength = 0;
+        int prevOriginalNodeLength = 0;
+        for (NonTerminalNode originalNode : sortedNodesToBeModified) {
+            int originalNodeStartOffset = originalNode.textRangeWithMinutiae().startOffset()
+                                            + prevModifiedNodeLength - prevOriginalNodeLength;
+            int originalNodeLength = originalNode.textRangeWithMinutiae().length();
+            NonTerminalNode replacingNode = rootNode.findNode(
+                                                TextRange.from(originalNodeStartOffset, originalNodeLength),
+                                                true);
+            rootNode = rootNode.replace(replacingNode, modifiedNodes.get(originalNode));
+            prevModifiedNodeLength += modifiedNodes.get(originalNode).textRangeWithMinutiae().length();
+            prevOriginalNodeLength += originalNode.textRangeWithMinutiae().length();
+        }
+
+        NodeList<ModuleMemberDeclarationNode> members = rootNode.members()
+                                                                .addAll(new ArrayList<>(entities.stream().toList()));
         return rootNode.modify(rootNode.imports(), members, rootNode.eofToken());
     }
 

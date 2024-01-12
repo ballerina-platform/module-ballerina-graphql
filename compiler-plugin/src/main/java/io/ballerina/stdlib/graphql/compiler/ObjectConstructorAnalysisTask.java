@@ -17,8 +17,6 @@
 package io.ballerina.stdlib.graphql.compiler;
 
 import io.ballerina.compiler.api.SemanticModel;
-import io.ballerina.compiler.api.symbols.ModuleSymbol;
-import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.QualifiedNameReferenceNode;
@@ -34,13 +32,12 @@ import io.ballerina.stdlib.graphql.compiler.service.InterfaceEntityFinder;
 import io.ballerina.stdlib.graphql.compiler.service.validator.ServiceValidator;
 
 import java.util.Map;
-import java.util.Optional;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.hasCompilationErrors;
 
-public class LocalLevelServiceObjectAnalysisTask extends ServiceAnalysisTask {
+public class ObjectConstructorAnalysisTask extends ServiceAnalysisTask {
 
-    public LocalLevelServiceObjectAnalysisTask(Map<DocumentId, GraphqlModifierContext> nodeMap) {
+    public ObjectConstructorAnalysisTask(Map<DocumentId, GraphqlModifierContext> nodeMap) {
         super(nodeMap);
     }
 
@@ -67,7 +64,7 @@ public class LocalLevelServiceObjectAnalysisTask extends ServiceAnalysisTask {
         }
         Schema schema = generateSchema(context, interfaceEntityFinder, node, null);
         DocumentId documentId = context.documentId();
-        addToModifierContextMap(documentId, node, schema);
+        addToModifierContextMap(documentId, node.parent(), schema);
     }
 
     public boolean isGraphQLServiceObjectDeclaration(SemanticModel semanticModel,
@@ -81,22 +78,20 @@ public class LocalLevelServiceObjectAnalysisTask extends ServiceAnalysisTask {
 
     private boolean isGraphqlServiceQualifiedNameReference(SemanticModel semanticModel,
                                                            QualifiedNameReferenceNode nameReferenceNode) {
-        Optional<Symbol> symbol = semanticModel.symbol(nameReferenceNode);
-        if (symbol.isEmpty()) {
+        if (semanticModel.symbol(nameReferenceNode).isEmpty()) {
             return false;
         }
-        TypeReferenceTypeSymbol typeSymbol = (TypeReferenceTypeSymbol) symbol.get();
-        Optional<ModuleSymbol> moduleSymbol = typeSymbol.getModule();
-        if (moduleSymbol.isEmpty()) {
+        TypeReferenceTypeSymbol typeSymbol = (TypeReferenceTypeSymbol) semanticModel.symbol(nameReferenceNode).get();
+        if (typeSymbol.getModule().isEmpty()) {
             return false;
         }
-        if (!isPresentAndEquals(moduleSymbol.get().getName(), PACKAGE_NAME)) {
+        if (!PACKAGE_NAME.equals(typeSymbol.getModule().get().getName().get())) {
             return false;
         }
-        return isPresentAndEquals(typeSymbol.getName(), SERVICE_NAME);
+        if (typeSymbol.getName().isEmpty()) {
+            return false;
+        }
+        return SERVICE_NAME.equals(typeSymbol.getName().get());
     }
 
-    private boolean isPresentAndEquals(Optional<String> actualValue, String expectedValue) {
-        return actualValue.isPresent() && expectedValue.equals(actualValue.get());
-    }
 }
