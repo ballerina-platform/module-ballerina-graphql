@@ -17,12 +17,13 @@
 package io.ballerina.stdlib.graphql.compiler;
 
 import io.ballerina.compiler.api.SemanticModel;
-import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
+import io.ballerina.compiler.api.symbols.Symbol;
+import io.ballerina.compiler.syntax.tree.ModuleVariableDeclarationNode;
+import io.ballerina.compiler.syntax.tree.Node;
+import io.ballerina.compiler.syntax.tree.NonTerminalNode;
 import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
-import io.ballerina.compiler.syntax.tree.QualifiedNameReferenceNode;
+import io.ballerina.compiler.syntax.tree.ObjectFieldNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
-import io.ballerina.compiler.syntax.tree.TypeDescriptorNode;
-import io.ballerina.compiler.syntax.tree.TypedBindingPatternNode;
 import io.ballerina.compiler.syntax.tree.VariableDeclarationNode;
 import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
@@ -32,7 +33,9 @@ import io.ballerina.stdlib.graphql.compiler.service.InterfaceEntityFinder;
 import io.ballerina.stdlib.graphql.compiler.service.validator.ServiceValidator;
 
 import java.util.Map;
+import java.util.Optional;
 
+import static io.ballerina.stdlib.graphql.commons.utils.Utils.isGraphqlModuleSymbol;
 import static io.ballerina.stdlib.graphql.compiler.Utils.hasCompilationErrors;
 
 public class ObjectConstructorAnalysisTask extends ServiceAnalysisTask {
@@ -41,22 +44,16 @@ public class ObjectConstructorAnalysisTask extends ServiceAnalysisTask {
         super(nodeMap);
     }
 
-    private static final String PACKAGE_NAME = "graphql";
-    private static final String SERVICE_NAME = "Service";
-
     @Override
     public void perform(SyntaxNodeAnalysisContext context) {
         if (hasCompilationErrors(context)) {
             return;
         }
         ObjectConstructorExpressionNode node = (ObjectConstructorExpressionNode) context.node();
-        if (node.parent().kind() != SyntaxKind.LOCAL_VAR_DECL) {
+        if (!isGraphQLServiceObjectDeclaration(context.semanticModel(), (NonTerminalNode) context.node())) {
             return;
         }
-        VariableDeclarationNode parentNode = (VariableDeclarationNode) node.parent();
-        if (!isGraphQLServiceObjectDeclaration(context.semanticModel(), parentNode.typedBindingPattern())) {
-            return;
-        }
+
         InterfaceEntityFinder interfaceEntityFinder = getInterfaceEntityFinder(context.semanticModel());
         ServiceValidator serviceValidator = getServiceValidator(context, node, interfaceEntityFinder);
         if (serviceValidator.isErrorOccurred()) {
@@ -68,30 +65,21 @@ public class ObjectConstructorAnalysisTask extends ServiceAnalysisTask {
     }
 
     public boolean isGraphQLServiceObjectDeclaration(SemanticModel semanticModel,
-                                                     TypedBindingPatternNode typedBindingPatternNode) {
-        TypeDescriptorNode typeDescriptorNode = typedBindingPatternNode.typeDescriptor();
-        if (typeDescriptorNode.kind() != SyntaxKind.QUALIFIED_NAME_REFERENCE) {
+                                                     NonTerminalNode node) {
+        Node typeReferenceNode;
+        if (node.parent().kind() == SyntaxKind.LOCAL_VAR_DECL) {
+            typeReferenceNode = ((VariableDeclarationNode) node.parent()).typedBindingPattern()
+                                                                         .typeDescriptor();
+        } else if (node.parent().kind() == SyntaxKind.MODULE_VAR_DECL) {
+            typeReferenceNode = ((ModuleVariableDeclarationNode) node.parent()).typedBindingPattern()
+                                                                               .typeDescriptor();
+        } else if (node.parent().kind() == SyntaxKind.OBJECT_FIELD) {
+            typeReferenceNode = ((ObjectFieldNode) node.parent()).typeName();
+        } else {
             return false;
         }
-        return isGraphqlServiceQualifiedNameReference(semanticModel, (QualifiedNameReferenceNode) typeDescriptorNode);
-    }
-
-    private boolean isGraphqlServiceQualifiedNameReference(SemanticModel semanticModel,
-                                                           QualifiedNameReferenceNode nameReferenceNode) {
-        if (semanticModel.symbol(nameReferenceNode).isEmpty()) {
-            return false;
-        }
-        TypeReferenceTypeSymbol typeSymbol = (TypeReferenceTypeSymbol) semanticModel.symbol(nameReferenceNode).get();
-        if (typeSymbol.getModule().isEmpty()) {
-            return false;
-        }
-        if (!PACKAGE_NAME.equals(typeSymbol.getModule().get().getName().get())) {
-            return false;
-        }
-        if (typeSymbol.getName().isEmpty()) {
-            return false;
-        }
-        return SERVICE_NAME.equals(typeSymbol.getName().get());
+        Optional<Symbol> typeReferenceSymbol = semanticModel.symbol(typeReferenceNode);
+        return typeReferenceSymbol.isPresent() && isGraphqlModuleSymbol(typeReferenceSymbol.get());
     }
 
 }

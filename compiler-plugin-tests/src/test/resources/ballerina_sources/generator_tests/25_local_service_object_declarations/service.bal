@@ -23,10 +23,9 @@ public function main() returns error? {
             return "Hello from local service 1";
         }
     };
-
     graphql:Service localService2 = service object {
         resource function get greeting() returns string {
-            return "Hello from local service 2";
+            return "Hello from local service 1";
         }
     };
     graphql:Listener localListener1 = check new(9090);

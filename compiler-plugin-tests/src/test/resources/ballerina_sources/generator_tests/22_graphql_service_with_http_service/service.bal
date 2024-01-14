@@ -16,6 +16,7 @@
 
 import ballerina/http;
 import ballerina/graphql;
+import ballerina/lang.runtime;
 
 service /greeting on new http:Listener(9090) {
     resource function get greeting() returns string {
@@ -23,8 +24,63 @@ service /greeting on new http:Listener(9090) {
     }
 }
 
-service graphql:Service /query on new graphql:Listener(8080) {
-   resource function get name() returns string {
-       return "Jack";
-   }
+service / on new graphql:Listener(9091) {
+    resource function get greeting() returns string {
+        return "Hello from global listener binding service";
+    }
+}
+
+service /greeting on new http:Listener(9092) {
+    resource function get greeting() returns string {
+        return "Hello, World!";
+    }
+}
+
+graphql:Service globalService = service object {
+    resource function get greeting() returns string {
+        return "Hello from global service";
+    }
+};
+
+service /too on new graphql:Listener(9093) {
+    resource function get greeting() returns string {
+        return "Hello from global listener binding service too";
+    }
+}
+
+class TestService {
+    private graphql:Service fieldService = service object {
+        resource function get greeting() returns string {
+            return "Hello from object field service object";
+        }
+    };
+
+    public function init() {}
+
+    public function startService() returns error? {
+        graphql:Listener localListener = check new(9094);
+        check localListener.attach(self.fieldService);
+        check localListener.'start();
+        runtime:registerListener(localListener);
+    }
+}
+
+public function main() returns error? {
+    graphql:Service localService = service object {
+        resource function get greeting() returns string {
+            return "Hello from local service 2";
+        }
+    };
+
+    TestService serviceClass = new ();
+    check serviceClass.startService();
+
+    graphql:Listener localListener = check new(9095);
+    graphql:Listener globalListener = check new(9096);
+    check localListener.attach(localService);
+    check globalListener.attach(globalService);
+    check localListener.'start();
+    check globalListener.'start();
+    runtime:registerListener(localListener);
+    runtime:registerListener(globalListener);
 }

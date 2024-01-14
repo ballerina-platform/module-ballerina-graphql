@@ -215,26 +215,18 @@ public class SchemaGenerationTest {
     }
 
     @Test
-    public void testGraphqlMultipleServiceDeclarations() {
-        String packagePath = "26_multiple_service_declarations";
-        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 0);
-    }
-
-    @Test
-    public void testLocalGraphqlObjectDeclarationWithHttpService() {
-        String packagePath = "27_local_graphql_service_with_http_service";
+    public void testGraphqlObjectFieldServiceObjects() {
+        String packagePath = "26_object_field_service_object_declarations";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
     @Test
     public void testMultipleInlineServiceDeclarations() {
-        String packagePath = "29_inline_service_declarations";
+        String packagePath = "27_inline_service_declarations";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
-
 
     private DiagnosticResult getDiagnosticResult(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
