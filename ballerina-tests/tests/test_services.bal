@@ -2475,3 +2475,19 @@ service /defaultParam on wrappedListener {
 
     resource function get nestedField() returns NestedField => new;
 }
+
+class ServiceDeclarationOnObjectField {
+
+    private graphql:Service objectFieldService = service object {
+        resource function get greeting() returns string {
+            return "Hello world";
+        }
+    };
+
+    public function init() {}
+
+    public function getService() returns graphql:Service {
+        return self.objectFieldService;
+    }
+
+}
