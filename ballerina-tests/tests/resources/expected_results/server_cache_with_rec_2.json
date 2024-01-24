@@ -1,0 +1,8 @@
+{
+    "data": {
+        "addFriend": {
+            "name": "John",
+            "age": 30
+        }
+    }
+}

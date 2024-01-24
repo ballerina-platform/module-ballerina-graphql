@@ -27,12 +27,12 @@ isolated class Engine {
     private final readonly & (readonly & Interceptor)[] interceptors;
     private final readonly & boolean introspection;
     private final readonly & boolean validation;
-    private final cache:Cache cache;
+    private final cache:Cache? cache;
     private final readonly & ServerCacheConfig? cacheConfig;
 
     isolated function init(string schemaString, int? maxQueryDepth, Service s,
                            readonly & (readonly & Interceptor)[] interceptors, boolean introspection,
-                           boolean validation, ServerCacheConfig? cacheConfig = ())
+                           boolean validation, ServerCacheConfig? cacheConfig = (), boolean enabledFieldCache = false)
     returns Error? {
         if maxQueryDepth is int && maxQueryDepth < 1 {
             return error Error("Max query depth value must be a positive integer");
@@ -42,8 +42,9 @@ isolated class Engine {
         self.interceptors = interceptors;
         self.introspection = introspection;
         self.validation = validation;
-        self.cache = cacheConfig is ServerCacheConfig ? new ({capacity:cacheConfig.maxSize, evictionFactor:0.2, defaultMaxAge:cacheConfig.maxAge}) : new ({capacity: 120, evictionFactor: 0.2, defaultMaxAge: 60});
         self.cacheConfig = cacheConfig.cloneReadOnly();
+        self.cache = cacheConfig is ServerCacheConfig ? new ({capacity:cacheConfig.maxSize, evictionFactor:0.2, defaultMaxAge:cacheConfig.maxAge})
+            : enabledFieldCache ? new({capacity:120, evictionFactor:0.2, defaultMaxAge:60}):();
         self.addService(s);
     }
 
@@ -64,12 +65,19 @@ isolated class Engine {
     }
 
     isolated function addToCache(string key, any value, decimal maxAge) returns any|error {
-        return self.cache.put(key, value, maxAge);
+        if self.cache is cache:Cache {
+            return (<cache:Cache>self.cache).put(key, value, maxAge);
+        }
+        return;
     }
 
     isolated function getFromCache(string key) returns any|error {
-        io:println(self.cache.keys());
-        return self.cache.get(key);
+        cache:Cache? cache = self.cache;
+        if cache is cache:Cache {
+            io:println(cache.get(key));
+            return cache.get(key);
+        }
+        return error("no cache table found!");
     }
 
     isolated function validate(string documentString, string? operationName, map<json>? variables)
@@ -287,7 +295,8 @@ isolated class Engine {
             }
             any fieldValue;
             if 'field.isCacheEnabled() {
-                any|error cachedValue = self.getFromCache('field.getCacheKey());
+                string cacheKey = 'field.getCacheKey();
+                any|error cachedValue = self.getFromCache(cacheKey);
                 if cachedValue is any {
                     fieldValue = cachedValue;
                 } else {
@@ -295,7 +304,7 @@ isolated class Engine {
                     decimal maxAge = 'field.getCacheMaxAge();
                     if maxAge > 0d {
                         // remove check and log the error msg
-                        _ = check self.addToCache('field.getCacheKey(), fieldValue, maxAge);
+                        _ = check self.addToCache(cacheKey, fieldValue, maxAge);
                     }
                 }
             } else {
@@ -387,18 +396,27 @@ isolated class Engine {
         return 'field.getFieldValue();
     }
 
+    private isolated function initCacheTable(ServerCacheConfig cacheConfig) returns cache:Cache
+        => new ({capacity:cacheConfig.maxSize, evictionFactor:0.2, defaultMaxAge:cacheConfig.maxAge});
+
     isolated function evictCache(string path) returns error? {
-        string[] keys = self.cache.keys().filter(isolated function (string key) returns boolean {
-            return key.startsWith(path);
-        });
-        foreach string key in keys {
-            _ = check self.cache.invalidate(key);
+        if self.cache is cache:Cache {
+            string[] keys = (<cache:Cache>self.cache).keys().filter(isolated function (string key) returns boolean {
+                return key.startsWith(path);
+            });
+            foreach string key in keys {
+                io:println("removed - ", key);
+                _ = check (<cache:Cache>self.cache).invalidate(key);
+            }
         }
         return;
     }
 
     isolated function invalidateAll() returns error? {
-        return self.cache.invalidateAll();
+        if self.cache is cache:Cache {
+            return (<cache:Cache>self.cache).invalidateAll();
+        }
+        return;
     }
 
     isolated function addService(Service s) = @java:Method {

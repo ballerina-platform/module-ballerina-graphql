@@ -377,3 +377,9 @@ type InputObject2 record {|
 type InputObject3 record {|
     int age = 30;
 |};
+
+type Friend record {|
+    readonly string name;
+    int age;
+    boolean isMarried;
+|};

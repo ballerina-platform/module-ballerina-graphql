@@ -56,6 +56,18 @@ public class ResourceConfigAnnotationFinder {
                 break;
             }
         }
-        return functionDefinitionNodeVisitor.getAnnotationNode();
+        Optional<AnnotationNode> annotationNode = functionDefinitionNodeVisitor.getAnnotationNode();
+        if (annotationNode.isEmpty()) {
+            documentIds = currentModule.testDocumentIds();
+            for (DocumentId documentId : documentIds) {
+                Node rootNode = currentModule.document(documentId).syntaxTree().rootNode();
+                rootNode.accept(functionDefinitionNodeVisitor);
+                if (functionDefinitionNodeVisitor.getAnnotationNode().isPresent()) {
+                    break;
+                }
+            }
+            annotationNode = functionDefinitionNodeVisitor.getAnnotationNode();
+        }
+        return annotationNode;
     }
 }

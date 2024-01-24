@@ -18,7 +18,7 @@ import ballerina/test;
 import ballerina/lang.value;
 
 @test:Config {
-    groups: ["inputs", "a"],
+    groups: ["inputs"],
     dataProvider: dataProviderInputParameters
 }
 isolated function testInputParameters(string resourceFileName) returns error? {

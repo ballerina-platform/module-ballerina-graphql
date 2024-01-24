@@ -32,28 +32,13 @@ isolated function testServerSideCache(string documentFile, string[] resourceFile
 
 function dataProviderServerCache() returns map<[string, string[], json, string[]]> {
     map<[string, string[], json, string[]]> dataSet = {
-        "1": ["server_cache",["server_cache_1", "server_cache_2", "server_cache_3"], (),["A", "B", "C"]]
-    };
-    return dataSet;
-}
-
-@test:Config {
-    groups: ["server_cache", "evict_server_cache"],
-    dataProvider: dataProviderEvictServerCache
-}
-isolated function testEvictServerSideCache(string documentFile, string[] resourceFileNames, json variables = (), string[] operationNames = []) returns error? {
-    string url = "http://localhost:9091/evict_server_cache";
-    string document = check getGraphqlDocumentFromFile(documentFile);
-    foreach int i in 0..<resourceFileNames.length() {
-        json actualPayload = check getJsonPayloadFromService(url, document, variables, operationNames[i]);
-        json expectedPayload = check getJsonContentFromFile(resourceFileNames[i]);
-        assertJsonValuesWithOrder(actualPayload, expectedPayload);
-    }
-}
-
-function dataProviderEvictServerCache() returns map<[string, string[], json, string[]]> {
-    map<[string, string[], json, string[]]> dataSet = {
-        "1": ["server_cache",["server_cache_1", "server_cache_2", "server_cache_4"], (),["A", "B", "C"]]
+        "1": ["server_cache", ["server_cache_1", "server_cache_2", "server_cache_3"], (), ["A", "B", "A"]],
+        "2": ["server_cache_eviction", ["server_cache_2", "server_cache_4"], (), ["B", "A"]],
+        "3": ["server_cache_with_records", ["server_cache_with_rec_1", "server_cache_with_rec_2", "server_cache_with_rec_1"], (), ["A", "B", "A"]],
+        "4": ["server_cache_with_service_obj", ["server_cache_with_svc_obj_1", "server_cache_with_svc_obj_2", "server_cache_with_svc_obj_1"], (), ["A", "B", "A"]],
+        "5": ["server_cache_eviction_with_service_obj", ["server_cache_with_svc_obj_1", "server_cache_with_svc_obj_2", "server_cache_with_svc_obj_3"], (), ["A", "B", "A"]],
+        "6": ["server_cache_with_arrays", ["server_cache_with_arrays_1", "server_cache_with_arrays_2", "server_cache_with_arrays_3"], (), ["A", "B", "A"]],
+        "7": ["server_cache_eviction_with_arrays", ["server_cache_with_arrays_1", "server_cache_with_arrays_2", "server_cache_with_arrays_4"], (), ["A", "B", "A"]]
     };
     return dataSet;
 }
