@@ -76,6 +76,8 @@ public class ModuleLevelVariableDeclarationAnalysisTask extends ServiceAnalysisT
         Schema schema = generateSchema(context, interfaceEntityFinder, graphqlServiceObjectNode, description);
         DocumentId documentId = context.documentId();
         addToModifierContextMap(documentId, moduleVariableDeclarationNode, schema);
+        addToModifierContextMap(documentId, moduleVariableDeclarationNode,
+                serviceObjectValidator.isFieldCacheEnabled());
     }
 
     public static String getDescription(SemanticModel semanticModel,

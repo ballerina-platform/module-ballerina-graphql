@@ -483,3 +483,27 @@ distinct service class NestedField {
             ],
             @graphql:ID string[] j = ["id1"]) returns string? => ();
 }
+
+public isolated distinct service class FriendService {
+    private final string name;
+    private final int age;
+    private final boolean isMarried;
+
+    public isolated function init(string name, int age, boolean isMarried) {
+        self.name = name;
+        self.age = age;
+        self.isMarried = isMarried;
+    }
+
+    isolated resource function get name() returns string {
+        return self.name;
+    }
+
+    isolated resource function get age() returns int {
+        return self.age;
+    }
+
+    isolated resource function get isMarried() returns boolean {
+        return self.isMarried;
+    }
+}

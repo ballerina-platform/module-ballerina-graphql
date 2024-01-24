@@ -127,11 +127,20 @@ isolated function getInterceptorConfig(readonly & Interceptor interceptor) retur
     return classType.@InterceptorConfig;
 }
 
-isolated function getOperationCacheConfig(GraphqlServiceConfig? serviceConfig) returns ServerCacheConfig? {
-     if serviceConfig is GraphqlServiceConfig {
-        return serviceConfig.cacheConfig;
+isolated function getCacheConfig(GraphqlServiceConfig? serviceConfig) returns ServerCacheConfig? {
+    if serviceConfig is GraphqlServiceConfig {
+        if serviceConfig.cacheConfig is ServerCacheConfig && (<ServerCacheConfig>serviceConfig.cacheConfig).enabled {
+            return serviceConfig.cacheConfig;
+        }
     }
     return;
+}
+
+isolated function getEnabledFieldCache(GraphqlServiceConfig? serviceConfig) returns boolean {
+    if serviceConfig is GraphqlServiceConfig {
+        return serviceConfig.enabledFieldCache;
+    }
+    return false;
 }
 
 isolated function getFieldCacheConfig(service object {} serviceObj, parser:RootOperationType operationType,

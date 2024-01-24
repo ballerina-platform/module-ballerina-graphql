@@ -93,6 +93,17 @@ public abstract class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnal
         }
     }
 
+    public void addToModifierContextMap(DocumentId documentId, Node node, boolean enabledResourceCache) {
+        if (this.modifierContextMap.containsKey(documentId)) {
+            GraphqlModifierContext modifierContext = this.modifierContextMap.get(documentId);
+            modifierContext.add(node, enabledResourceCache);
+        } else {
+            GraphqlModifierContext modifierContext = new GraphqlModifierContext();
+            modifierContext.add(node, enabledResourceCache);
+            this.modifierContextMap.put(documentId, modifierContext);
+        }
+    }
+
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     private static boolean isSubgraphService(Node serviceNode, SyntaxNodeAnalysisContext context) {
         List<AnnotationSymbol> annotations = new ArrayList<>();

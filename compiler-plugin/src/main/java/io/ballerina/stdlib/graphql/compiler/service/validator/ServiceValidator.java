@@ -83,6 +83,7 @@ import java.util.stream.Collectors;
 import static io.ballerina.compiler.syntax.tree.SyntaxKind.SPECIFIC_FIELD;
 import static io.ballerina.compiler.syntax.tree.SyntaxKind.SPREAD_MEMBER;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getAccessor;
+import static io.ballerina.stdlib.graphql.compiler.Utils.getBooleanValue;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getDefaultableParameterNode;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
@@ -127,6 +128,7 @@ public class ServiceValidator {
     private final boolean isSubgraph;
     private TypeSymbol rootInputParameterTypeSymbol;
     private final List<String> currentFieldPath;
+    private boolean enabledFieldCache;
 
     private static final String FIELD_PATH_SEPARATOR = ".";
     private static final String PREFETCH_METHOD_PREFIX = "pre";
@@ -134,6 +136,7 @@ public class ServiceValidator {
     private static final String KEY = "key";
     private static final String INPUT_OBJECT_FIELD = "input object field";
     private static final String PARAMETER = "parameter";
+    private static final String CACHE_CONFIG = "cacheConfig";
 
     public ServiceValidator(SyntaxNodeAnalysisContext context, Node serviceNode,
                             InterfaceEntityFinder interfaceEntityFinder, boolean isSubgraph) {
@@ -144,6 +147,7 @@ public class ServiceValidator {
         this.hasQueryType = false;
         this.currentFieldPath = new ArrayList<>();
         this.isSubgraph = isSubgraph;
+        this.enabledFieldCache = false;
     }
 
     public void validate() {
@@ -240,6 +244,10 @@ public class ServiceValidator {
 
     public boolean isErrorOccurred() {
         return this.errorOccurred;
+    }
+
+    public boolean isFieldCacheEnabled() {
+        return this.enabledFieldCache;
     }
 
     private void validateService() {
@@ -354,6 +362,25 @@ public class ServiceValidator {
         return null;
     }
 
+    private boolean getCacheConfigEnabledField(AnnotationNode annotation) {
+        // noinspection OptionalGetWithoutIsPresent
+        MappingConstructorExpressionNode mappingConstructorExpressionNode = annotation.annotValue().get();
+        for (MappingFieldNode field : mappingConstructorExpressionNode.fields()) {
+            if (field.kind() == SPECIFIC_FIELD) {
+                SpecificFieldNode specificFieldNode = (SpecificFieldNode) field;
+                Node fieldName = specificFieldNode.fieldName();
+                if (fieldName.kind() == SyntaxKind.IDENTIFIER_TOKEN) {
+                    IdentifierToken identifierToken = (IdentifierToken) fieldName;
+                    String identifierName = identifierToken.text();
+                    if (CACHE_CONFIG.equals(identifierName) && specificFieldNode.valueExpr().isPresent()) {
+                        return getBooleanValue((MappingConstructorExpressionNode) specificFieldNode.valueExpr().get());
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     private boolean hasPrefetchMethodNameConfig(AnnotationNode annotation) {
         if (annotation.annotValue().isEmpty()) {
             return false;
@@ -367,6 +394,25 @@ public class ServiceValidator {
                     IdentifierToken identifierToken = (IdentifierToken) fieldName;
                     String identifierName = identifierToken.text();
                     return PREFETCH_METHOD_NAME_CONFIG.equals(identifierName);
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean hasCacheConfig(AnnotationNode annotation) {
+        if (annotation.annotValue().isEmpty()) {
+            return false;
+        }
+        MappingConstructorExpressionNode mappingConstructorExpressionNode = annotation.annotValue().get();
+        for (MappingFieldNode field : mappingConstructorExpressionNode.fields()) {
+            if (field.kind() == SPECIFIC_FIELD) {
+                SpecificFieldNode specificFieldNode = (SpecificFieldNode) field;
+                Node fieldName = specificFieldNode.fieldName();
+                if (fieldName.kind() == SyntaxKind.IDENTIFIER_TOKEN) {
+                    IdentifierToken identifierToken = (IdentifierToken) fieldName;
+                    String identifierName = identifierToken.text();
+                    return CACHE_CONFIG.equals(identifierName);
                 }
             }
         }
@@ -447,7 +493,23 @@ public class ServiceValidator {
         this.currentFieldPath.add(path);
         validateResourcePath(methodSymbol, location);
         validateMethod(methodSymbol, location);
+        if (!isFieldCacheEnabled()) {
+            this.enabledFieldCache = hasFieldCacheEnabled(methodSymbol);
+        }
         this.currentFieldPath.remove(path);
+    }
+
+    private boolean hasFieldCacheEnabled(MethodSymbol methodSymbol) {
+        if (hasResourceConfigAnnotation(methodSymbol)) {
+            FinderContext finderContext = new FinderContext(this.context);
+            ResourceConfigAnnotationFinder resourceConfigAnnotationFinder = new ResourceConfigAnnotationFinder(
+                    finderContext, methodSymbol);
+            Optional<AnnotationNode> annotation = resourceConfigAnnotationFinder.find();
+            if (annotation.isPresent() && hasCacheConfig(annotation.get())) {
+                return getCacheConfigEnabledField(annotation.get());
+            }
+        }
+        return false;
     }
 
     private void validateSubscribeResource(ResourceMethodSymbol methodSymbol, Location location) {

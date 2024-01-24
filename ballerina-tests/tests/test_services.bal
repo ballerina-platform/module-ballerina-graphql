@@ -385,6 +385,7 @@ service /list_inputs on basicListener {
 }
 
 service /records on basicListener {
+
     isolated resource function get detective() returns Person {
         return {
             name: "Sherlock Holmes",
@@ -2126,7 +2127,6 @@ service /annotations on wrappedListener {
     validation: false
 }
 service /constraints_config on basicListener {
-
     isolated resource function get movie(MovieDetails movie) returns string {
         return movie.name;
     }
@@ -2478,6 +2478,12 @@ service /defaultParam on wrappedListener {
 
 service /server_cache on basicListener {
     private string name = "Walter White";
+    private table<Friend> key(name) friends = table [
+        {name: "Skyler", age: 45, isMarried: true},
+        {name: "Walter White Jr.", age: 57, isMarried: true},
+        {name: "Jesse Pinkman", age: 23, isMarried: false}
+    ];
+
     isolated resource function get greet() returns string {
         return "Hello, " + self.name;
     }
@@ -2491,30 +2497,63 @@ service /server_cache on basicListener {
         return self.name;
     }
 
-    isolated remote function updateName(string name) returns string {
-        self.name = name;
-        return self.name;
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            maxAge: 120
+        }
     }
-}
-
-service /evict_server_cache on basicListener {
-    private string name = "Walter White";
-    isolated resource function get greet() returns string {
-        return "Hello, " + self.name;
+    isolated resource function get friends(boolean isMarried = false) returns Friend[] {
+        if isMarried {
+            return from Friend friend in self.friends
+                where friend.isMarried == true
+                select friend;
+        }
+        return from Friend friend in self.friends
+            where friend.isMarried == false
+            select friend;
     }
 
     @graphql:ResourceConfig {
         cacheConfig: {
-            enabled: true
+            maxAge: 180
         }
     }
-    isolated resource function get name(int id) returns string {
+    isolated resource function get getFriendService(string name) returns FriendService  {
+        Friend[] person = from Friend friend in self.friends
+        where friend.name == name
+        select friend;
+        return new FriendService(person[0].name, person[0].age, person[0].isMarried);
+    }
+
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            maxAge: 180
+        }
+    }
+    isolated resource function get getFriendServices() returns FriendService[]  {
+        return from Friend friend in self.friends
+            select new FriendService(friend.name, friend.age, friend.isMarried);
+    }
+
+    isolated remote function updateName(graphql:Context context, string name, boolean enableEvict) returns string|error {
+        if enableEvict {
+            check context.evictCache("name");
+        }
+        self.name = name;
         return self.name;
     }
 
-    isolated remote function updateName(graphql:Context context, string name) returns string|error {
-        check context.evictCache("name");
-        self.name = name;
-        return self.name;
+    isolated remote function updateFriend(graphql:Context context, string name, int age, boolean isMarried, boolean enableEvict) returns FriendService|error {
+        if enableEvict {
+            check context.evictCache("getFriendService");
+        }
+        self.friends.put({name: name, age: age, isMarried: isMarried});
+        return new FriendService(name, age, isMarried);
+    }
+
+    isolated remote function addFriend(string name, int age, boolean isMarried) returns Friend {
+        Friend friend = {name: name, age: age, isMarried: isMarried};
+        self.friends.add(friend);
+        return friend;
     }
 }

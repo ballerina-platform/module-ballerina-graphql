@@ -73,7 +73,7 @@ public type Graphiql record {|
 public type ServerCacheConfig record {|
     boolean enabled = true;
     decimal maxAge = 60;
-    int maxSize= 120;
+    int maxSize = 120;
 |};
 
 # Internal HTTP service class for GraphQL services

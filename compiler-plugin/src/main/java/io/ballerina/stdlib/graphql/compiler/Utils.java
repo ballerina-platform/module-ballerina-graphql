@@ -42,6 +42,9 @@ import io.ballerina.compiler.syntax.tree.AnnotationNode;
 import io.ballerina.compiler.syntax.tree.BasicLiteralNode;
 import io.ballerina.compiler.syntax.tree.DefaultableParameterNode;
 import io.ballerina.compiler.syntax.tree.ExpressionNode;
+import io.ballerina.compiler.syntax.tree.IdentifierToken;
+import io.ballerina.compiler.syntax.tree.MappingConstructorExpressionNode;
+import io.ballerina.compiler.syntax.tree.MappingFieldNode;
 import io.ballerina.compiler.syntax.tree.ModuleVariableDeclarationNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
@@ -89,6 +92,8 @@ public final class Utils {
     private static final String UUID_MODULE_NAME = "uuid";
     private static final String RESOURCE_CONFIG_ANNOTATION = "ResourceConfig";
     private static final String ENTITY_ANNOTATION = "Entity";
+
+    private static final String CACHE_CONFIG_ENABLE_FIELD = "enabled";
 
     private Utils() {
     }
@@ -383,6 +388,30 @@ public final class Utils {
             return stringLiteral.substring(1, stringLiteral.length() - 1);
         }
         return null;
+    }
+
+    public static boolean getBooleanValue(MappingConstructorExpressionNode mappingConstructorNode) {
+        if (mappingConstructorNode.fields().isEmpty()) {
+            return true;
+        }
+        for (MappingFieldNode field: mappingConstructorNode.fields()) {
+            if (field.kind() == SyntaxKind.SPECIFIC_FIELD) {
+                SpecificFieldNode specificFieldNode = (SpecificFieldNode) field;
+                Node fieldName = specificFieldNode.fieldName();
+                if (fieldName.kind() == SyntaxKind.IDENTIFIER_TOKEN) {
+                    IdentifierToken identifierToken = (IdentifierToken) fieldName;
+                    String identifierName = identifierToken.text();
+                    if (CACHE_CONFIG_ENABLE_FIELD.equals(identifierName) && specificFieldNode.valueExpr().isPresent()) {
+                        ExpressionNode valueExpression = specificFieldNode.valueExpr().get();
+                        if (valueExpression.kind() == SyntaxKind.BOOLEAN_LITERAL) {
+                            BasicLiteralNode stringLiteralNode = (BasicLiteralNode) valueExpression;
+                            return Boolean.parseBoolean(stringLiteralNode.toSourceCode().trim());
+                        }
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     public static String getStringValue(BasicLiteralNode expression) {

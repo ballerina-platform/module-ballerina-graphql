@@ -75,6 +75,7 @@ import static io.ballerina.stdlib.graphql.commons.utils.Utils.PACKAGE_NAME;
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.PACKAGE_ORG;
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.SUBGRAPH_SUB_MODULE_NAME;
 import static io.ballerina.stdlib.graphql.compiler.Utils.SERVICE_CONFIG_IDENTIFIER;
+import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.ENABLED_FIELD_CACHE_FIELD;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.SCHEMA_STRING_FIELD;
 
 /**
@@ -132,9 +133,10 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
             try {
                 String schemaString = getSchemaAsEncodedString(schema);
                 Node targetNode = entry.getKey();
+                boolean enabledFieldCache = modifierContext.getNodeCacheConfigMap().get(targetNode);
                 if (targetNode.kind() == SyntaxKind.SERVICE_DECLARATION) {
                     ServiceDeclarationNode updatedNode = modifyServiceDeclarationNode(
-                            (ServiceDeclarationNode) targetNode, schemaString, prefix);
+                            (ServiceDeclarationNode) targetNode, schemaString, enabledFieldCache, prefix);
                     nodeMap.put(targetNode, updatedNode);
                     this.entityTypeNamesMap.put(targetNode, this.entityUnionTypeName);
                     this.entityUnionSuffix++;
@@ -142,7 +144,7 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
                     ModuleVariableDeclarationNode graphqlServiceVariableDeclaration
                             = (ModuleVariableDeclarationNode) targetNode;
                     ModuleVariableDeclarationNode updatedNode = modifyServiceVariableDeclarationNode(
-                            schemaString, graphqlServiceVariableDeclaration, prefix);
+                            schemaString, enabledFieldCache, graphqlServiceVariableDeclaration, prefix);
                     nodeMap.put(targetNode, updatedNode);
                     this.entityTypeNamesMap.put(targetNode, this.entityUnionTypeName);
                     this.entityUnionSuffix++;
@@ -204,25 +206,27 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
     }
 
     private ModuleVariableDeclarationNode modifyServiceVariableDeclarationNode(String schemaString,
+                                                                               boolean enabledFieldCache,
                                                                                ModuleVariableDeclarationNode node,
                                                                                String prefix) {
         // noinspection OptionalGetWithoutIsPresent
         ObjectConstructorExpressionNode graphqlServiceObject
                 = (ObjectConstructorExpressionNode) node.initializer().get();
-        ObjectConstructorExpressionNode updatedGraphqlServiceObject = modifyServiceObjectNode(graphqlServiceObject,
-                                                                                              schemaString, prefix);
+        ObjectConstructorExpressionNode updatedGraphqlServiceObject =
+                modifyServiceObjectNode(graphqlServiceObject, schemaString, enabledFieldCache, prefix);
         return node.modify().withInitializer(updatedGraphqlServiceObject).apply();
     }
 
     private ObjectConstructorExpressionNode modifyServiceObjectNode(ObjectConstructorExpressionNode node,
-                                                                    String schemaString, String prefix) {
+                                                                    String schemaString, boolean enabledFieldCache,
+                                                                    String prefix) {
         NodeList<AnnotationNode> annotations = NodeFactory.createNodeList();
         if (node.annotations().isEmpty()) {
-            AnnotationNode annotationNode = getSchemaStringAnnotation(schemaString, prefix);
+            AnnotationNode annotationNode = getServiceAnnotation(schemaString, enabledFieldCache, prefix);
             annotations = annotations.add(annotationNode);
         } else {
             for (AnnotationNode annotationNode : node.annotations()) {
-                annotationNode = updateAnnotationNode(annotationNode, schemaString, prefix);
+                annotationNode = updateAnnotationNode(annotationNode, schemaString, enabledFieldCache, prefix);
                 annotations = annotations.add(annotationNode);
             }
         }
@@ -240,8 +244,8 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
     }
 
     private ServiceDeclarationNode modifyServiceDeclarationNode(ServiceDeclarationNode node, String schemaString,
-                                                                String prefix) {
-        MetadataNode metadataNode = getMetadataNode(node, schemaString, prefix);
+                                                                boolean enabledFieldCache, String prefix) {
+        MetadataNode metadataNode = getMetadataNode(node, schemaString, enabledFieldCache, prefix);
         ServiceDeclarationNode.ServiceDeclarationNodeModifier modifier = node.modify();
         modifier = modifier.withMetadata(metadataNode);
         NodeList<Node> members = node.members();
@@ -320,52 +324,54 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
         return "{" + String.join(", ", mapFields) + "}";
     }
 
-    private MetadataNode getMetadataNode(ServiceDeclarationNode node, String schemaString, String prefix) {
+    private MetadataNode getMetadataNode(ServiceDeclarationNode node, String schemaString, boolean enabledFieldCache,
+                                         String prefix) {
         if (node.metadata().isPresent()) {
-            return getMetadataNodeFromExistingMetadata(node.metadata().get(), schemaString, prefix);
+            return getMetadataNodeFromExistingMetadata(node.metadata().get(), schemaString, enabledFieldCache, prefix);
         } else {
-            return getNewMetadataNode(schemaString, prefix);
+            return getNewMetadataNode(schemaString, enabledFieldCache, prefix);
         }
     }
 
     private MetadataNode getMetadataNodeFromExistingMetadata(MetadataNode metadataNode, String schemaString,
-                                                             String prefix) {
+                                                             boolean enabledFieldCache, String prefix) {
         NodeList<AnnotationNode> annotationNodes = NodeFactory.createNodeList();
         if (metadataNode.annotations().isEmpty()) {
-            AnnotationNode annotationNode = getSchemaStringAnnotation(schemaString, prefix);
+            AnnotationNode annotationNode = getServiceAnnotation(schemaString, enabledFieldCache, prefix);
             annotationNodes = annotationNodes.add(annotationNode);
         } else {
             boolean isAnnotationFound = false;
             for (AnnotationNode annotationNode : metadataNode.annotations()) {
                 if (isGraphqlServiceConfig(annotationNode)) {
                     isAnnotationFound = true;
-                    annotationNode = updateAnnotationNode(annotationNode, schemaString, prefix);
+                    annotationNode = updateAnnotationNode(annotationNode, schemaString, enabledFieldCache, prefix);
                 }
                 annotationNodes = annotationNodes.add(annotationNode);
             }
             if (!isAnnotationFound) {
-                AnnotationNode annotationNode = getSchemaStringAnnotation(schemaString, prefix);
+                AnnotationNode annotationNode = getServiceAnnotation(schemaString, enabledFieldCache, prefix);
                 annotationNodes = annotationNodes.add(annotationNode);
             }
         }
         return NodeFactory.createMetadataNode(metadataNode.documentationString().orElse(null), annotationNodes);
     }
 
-    private AnnotationNode updateAnnotationNode(AnnotationNode annotationNode, String schemaString, String prefix) {
+    private AnnotationNode updateAnnotationNode(AnnotationNode annotationNode, String schemaString,
+                                                boolean enabledFieldCache, String prefix) {
         if (annotationNode.annotValue().isPresent()) {
             SeparatedNodeList<MappingFieldNode> updatedFields =
-                    getUpdatedFields(annotationNode.annotValue().get(), schemaString);
+                    getUpdatedFields(annotationNode.annotValue().get(), schemaString, enabledFieldCache);
             MappingConstructorExpressionNode node =
                     NodeFactory.createMappingConstructorExpressionNode(
                             NodeFactory.createToken(SyntaxKind.OPEN_BRACE_TOKEN), updatedFields,
                             NodeFactory.createToken(SyntaxKind.CLOSE_BRACE_TOKEN));
             return annotationNode.modify().withAnnotValue(node).apply();
         }
-        return getSchemaStringAnnotation(schemaString, prefix);
+        return getServiceAnnotation(schemaString, enabledFieldCache, prefix);
     }
 
     private SeparatedNodeList<MappingFieldNode> getUpdatedFields(MappingConstructorExpressionNode annotationValue,
-                                                                 String schemaString) {
+                                                                 String schemaString, boolean enabledFieldCache) {
         List<Node> fields = new ArrayList<>();
         SeparatedNodeList<MappingFieldNode> existingFields = annotationValue.fields();
         Token separator = NodeFactory.createToken(SyntaxKind.COMMA_TOKEN);
@@ -374,29 +380,37 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
             fields.add(separator);
         }
         fields.add(getSchemaStringFieldNode(schemaString));
+        fields.add(separator);
+        fields.add(getEnabledFieldCacheNode(enabledFieldCache));
         return NodeFactory.createSeparatedNodeList(fields);
     }
 
-    private MetadataNode getNewMetadataNode(String schemaString, String prefix) {
-        NodeList<AnnotationNode> annotationNodes = NodeFactory.createNodeList(getSchemaStringAnnotation(schemaString,
-                                                                                                        prefix));
+    private MetadataNode getNewMetadataNode(String schemaString, boolean enabledFieldCache, String prefix) {
+        NodeList<AnnotationNode> annotationNodes =
+                NodeFactory.createNodeList(getServiceAnnotation(schemaString, enabledFieldCache, prefix));
         return NodeFactory.createMetadataNode(null, annotationNodes);
     }
 
-    private AnnotationNode getSchemaStringAnnotation(String schemaString, String prefix) {
+    private AnnotationNode getServiceAnnotation(String schemaString, boolean enabledFieldCache, String prefix) {
         String configIdentifierString = prefix + SyntaxKind.COLON_TOKEN.stringValue() + SERVICE_CONFIG_IDENTIFIER;
         IdentifierToken identifierToken = NodeFactory.createIdentifierToken(configIdentifierString);
         Token atToken = NodeFactory.createToken(SyntaxKind.AT_TOKEN);
         SimpleNameReferenceNode nameReferenceNode = NodeFactory.createSimpleNameReferenceNode(identifierToken);
-        MappingConstructorExpressionNode annotValue = getAnnotationExpression(schemaString);
+        MappingConstructorExpressionNode annotValue = getAnnotationExpression(schemaString, enabledFieldCache);
         return NodeFactory.createAnnotationNode(atToken, nameReferenceNode, annotValue);
     }
 
-    private MappingConstructorExpressionNode getAnnotationExpression(String schemaString) {
+    private MappingConstructorExpressionNode getAnnotationExpression(String schemaString, boolean fieldCacheConfig) {
         Token openBraceToken = NodeFactory.createToken(SyntaxKind.OPEN_BRACE_TOKEN);
         Token closeBraceToken = NodeFactory.createToken(SyntaxKind.CLOSE_BRACE_TOKEN);
-        SpecificFieldNode specificFieldNode = getSchemaStringFieldNode(schemaString);
-        SeparatedNodeList<MappingFieldNode> separatedNodeList = NodeFactory.createSeparatedNodeList(specificFieldNode);
+        List<Node> fields = new ArrayList<>();
+        SpecificFieldNode schemaFieldNode = getSchemaStringFieldNode(schemaString);
+        Token separator = NodeFactory.createToken(SyntaxKind.COMMA_TOKEN);
+        fields.add(schemaFieldNode);
+        fields.add(separator);
+        SpecificFieldNode cacheFieldNode = getEnabledFieldCacheNode(fieldCacheConfig);
+        fields.add(cacheFieldNode);
+        SeparatedNodeList<MappingFieldNode> separatedNodeList = NodeFactory.createSeparatedNodeList(fields);
         return NodeFactory.createMappingConstructorExpressionNode(openBraceToken, separatedNodeList, closeBraceToken);
     }
 
@@ -405,6 +419,13 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
         Token colon = NodeFactory.createToken(SyntaxKind.COLON_TOKEN);
         String expression = "\"" + schemaString + "\"";
         ExpressionNode fieldValue = NodeParser.parseExpression(expression);
+        return NodeFactory.createSpecificFieldNode(null, fieldName, colon, fieldValue);
+    }
+
+    private SpecificFieldNode getEnabledFieldCacheNode(boolean enabledFieldCache) {
+        Node fieldName = NodeFactory.createIdentifierToken(ENABLED_FIELD_CACHE_FIELD);
+        Token colon = NodeFactory.createToken(SyntaxKind.COLON_TOKEN);
+        ExpressionNode fieldValue = NodeParser.parseExpression(String.valueOf(enabledFieldCache));
         return NodeFactory.createSpecificFieldNode(null, fieldName, colon, fieldValue);
     }
 

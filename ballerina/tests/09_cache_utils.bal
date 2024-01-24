@@ -23,7 +23,7 @@ import graphql.parser;
 function testCacheUtils() returns error? {
     parser:FieldNode[] fields = check getFieldNodesFromDocumentFile("cache_utils");
     test:assertTrue(fields.length() == 1);
-    Field 'field = getField(fields[0], Person, [], {maxAge: 10});
+    Field 'field = getField(fields[0], Person, ["person"], {maxAge: 10});
     test:assertTrue('field.isCacheEnabled());
     test:assertEquals('field.getCacheMaxAge(), 10d);
     test:assertEquals('field.getCacheKey(), "person.TYoV48w1dQ8BbOFaQ5N2IA==");
@@ -35,7 +35,7 @@ function testCacheUtils() returns error? {
 function testCacheConfigInferring() returns error? {
     parser:FieldNode[] fields = check getFieldNodesFromDocumentFile("cache_utils");
     test:assertTrue(fields.length() == 1);
-    Field 'field = getField(fields[0], Person, [], {maxAge: 10});
+    Field 'field = getField(fields[0], Person, ["person"], {maxAge: 10});
     test:assertTrue('field.getSubfields() is Field[]);
     Field[] subfields = <Field[]>'field.getSubfields();
     string[] expectedCacheKey = ["person.name.11FxOYiYfpMxmANj4kGJzg==", "person.address.t1JP49rdVkuozxi8sSh+bg=="];

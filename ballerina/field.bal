@@ -43,8 +43,9 @@ public class Field {
         self.resourcePath.push(internalNode.getName());
         self.fieldInterceptors = serviceObject is service object {} ?
             getFieldInterceptors(serviceObject, operationType, internalNode.getName(), self.resourcePath) : [];
-        self.cacheConfig = serviceObject is service object {} ? getFieldCacheConfig(serviceObject, operationType,
-            internalNode.getName(), self.resourcePath) : cacheConfig;
+        ServerCacheConfig? fieldCache = serviceObject is service object {} ?
+            getFieldCacheConfig(serviceObject, operationType, internalNode.getName(), self.resourcePath) : ();
+        self.cacheConfig = fieldCache is ServerCacheConfig ? fieldCache : cacheConfig;
         self.parentArgHashes = parentArgHashes;
     }
 
@@ -195,7 +196,7 @@ public class Field {
 
     private isolated function generateCacheKey() returns string {
         string resourcePath = "";
-        foreach string path in self.resourcePath {
+        foreach string|int path in self.path {
             resourcePath += string `${path}.`;
         }
         string hash = generateArgHash(self.internalNode.getArguments(), self.parentArgHashes);
