@@ -1,0 +1,13 @@
+query A {
+    friends(isMarried: true) {
+        name
+        age
+    }
+}
+
+mutation B {
+    updateFriend(name: "Walter White Jr.", age: 25, isMarried: true, enableEvict: false) {
+        name
+        age
+    }
+}
