@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/test;
+import ballerina/lang.runtime;
 
 @test:Config {
     groups: ["server_cache"],
@@ -42,6 +43,32 @@ isolated function testServerSideCacheInOperationalLevel(string documentFile, str
         json expectedPayload = check getJsonContentFromFile(resourceFileNames[i]);
         assertJsonValuesWithOrder(actualPayload, expectedPayload);
     }
+}
+
+@test:Config {
+    groups: ["server_cache"]
+}
+isolated function testServerSideCacheInOperationalLevelWithTTL() returns error? {
+    string url = "http://localhost:9091/server_cache_operations";
+    string document = check getGraphqlDocumentFromFile("server_cache_with_ttl");
+
+    json actualPayload = check getJsonPayloadFromService(url, document, (), "A");
+    json expectedPayload = check getJsonContentFromFile("server_cache_4");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+
+    actualPayload = check getJsonPayloadFromService(url, document, (), "B");
+    expectedPayload = check getJsonContentFromFile("server_cache_5");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+
+    actualPayload = check getJsonPayloadFromService(url, document, (), "A");
+    expectedPayload = check getJsonContentFromFile("server_cache_4");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+
+    runtime:sleep(21);
+
+    actualPayload = check getJsonPayloadFromService(url, document, (), "A");
+    expectedPayload = check getJsonContentFromFile("server_cache_1");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 function dataProviderServerCache() returns map<[string, string[], json, string[]]> {
