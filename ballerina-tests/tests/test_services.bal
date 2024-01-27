@@ -2557,3 +2557,124 @@ service /server_cache on basicListener {
         return friend;
     }
 }
+
+@graphql:ServiceConfig {
+    cacheConfig: {
+        enabled: true,
+        maxAge: 20,
+        maxSize: 15
+    }
+}
+service /server_cache_operations on basicListener {
+    private string name = "Walter White";
+    private table<Friend> key(name) friends = table [
+        {name: "Skyler", age: 45, isMarried: true},
+        {name: "Walter White Jr.", age: 57, isMarried: true},
+        {name: "Jesse Pinkman", age: 23, isMarried: false}
+    ];
+
+    private table<Asscoiate> key(name) associates = table [
+        {name: "Gus Fring", status: "dead"},
+        {name: "Tuco Salamanca", status: "dead"},
+        {name: "Saul Goodman", status: "alive"}
+    ];
+
+    isolated resource function get greet() returns string {
+        return "Hello, " + self.name;
+    }
+
+    isolated resource function get name(int id) returns string {
+        return self.name;
+    }
+
+    isolated resource function get friends(boolean isMarried = false) returns Friend[] {
+        if isMarried {
+            return from Friend friend in self.friends
+                where friend.isMarried == true
+                select friend;
+        }
+        return from Friend friend in self.friends
+            where friend.isMarried == false
+            select friend;
+    }
+
+    isolated resource function get getFriendService(string name) returns FriendService  {
+        Friend[] person = from Friend friend in self.friends
+        where friend.name == name
+        select friend;
+        return new FriendService(person[0].name, person[0].age, person[0].isMarried);
+    }
+
+    isolated resource function get getAssociateService(string name) returns AssociateService  {
+        Asscoiate[] person = from Asscoiate associate in self.associates
+        where associate.name == name
+        select associate;
+        return new AssociateService(person[0].name, person[0].status);
+    }
+
+    isolated resource function get relationship(string name) returns Relationship {
+        (Asscoiate|Friend)[] person = from Asscoiate associate in self.associates
+        where associate.name == name
+        select associate;
+        if person.length() == 0 {
+            person = from Friend friend in self.friends
+            where friend.name == name
+            select friend;
+            return new FriendService(person[0].name, (<Friend>person[0]).age, (<Friend>person[0]).isMarried);
+        }
+        return new AssociateService(person[0].name, (<Asscoiate>person[0]).status);
+    }
+
+    isolated resource function get getFriendServices() returns FriendService[]  {
+        return from Friend friend in self.friends
+            select new FriendService(friend.name, friend.age, friend.isMarried);
+    }
+
+    isolated resource function get getAllFriendServices(graphql:Context context, boolean enableEvict) returns FriendService[]|error  {
+        if enableEvict {
+            check context.invalidateAll();
+        }
+        return from Friend friend in self.friends
+            select new FriendService(friend.name, friend.age, friend.isMarried);
+    }
+
+    isolated remote function updateName(graphql:Context context, string name, boolean enableEvict) returns string|error {
+        if enableEvict {
+            check context.invalidateAll();
+        }
+        self.name = name;
+        return self.name;
+    }
+
+    isolated remote function updateFriend(graphql:Context context, string name, int age, boolean isMarried, boolean enableEvict) returns FriendService|error {
+        if enableEvict {
+            check context.invalidateAll();
+        }
+        self.friends.put({name: name, age: age, isMarried: isMarried});
+        return new FriendService(name, age, isMarried);
+    }
+
+    isolated remote function updateAssociate(graphql:Context context, string name, string status, boolean enableEvict) returns AssociateService|error {
+        if enableEvict {
+            check context.invalidateAll();
+        }
+        self.associates.put({name: name, status: status});
+        return new AssociateService(name, status);
+    }
+
+    isolated remote function addFriend(graphql:Context context, string name, int age, boolean isMarried, boolean enableEvict) returns Friend|error {
+        if enableEvict {
+            check context.invalidateAll();
+        }
+        Friend friend = {name: name, age: age, isMarried: isMarried};
+        self.friends.add(friend);
+        return friend;
+    }
+
+    resource function get status(Asscoiate[]? associates) returns string[]? {
+        if associates is Asscoiate[] {
+            return associates.map(associate => associate.status);
+        }
+        return;
+    }
+}
