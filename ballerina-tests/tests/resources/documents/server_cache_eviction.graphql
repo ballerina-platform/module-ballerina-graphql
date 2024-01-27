@@ -6,3 +6,7 @@ query A {
 mutation B {
     updateName(name: "John", enableEvict: true)
 }
+
+mutation C {
+    updateName(name: "Walter White", enableEvict: false)
+}
