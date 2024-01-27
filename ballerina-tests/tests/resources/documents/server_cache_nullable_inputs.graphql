@@ -1,0 +1,17 @@
+query A {
+    status(associates: null)
+}
+
+query B {
+    status(associates: [
+        { name: "Gus Fring", status: "dead"},
+        { name: "Saul Goodman", status: "alive"}
+    ])
+}
+
+query C {
+    status(associates: [
+        { name: "Gus Fring", status: "alive"},
+        { name: "Saul Goodman", status: "alive"}
+    ])
+}

@@ -383,3 +383,10 @@ type Friend record {|
     int age;
     boolean isMarried;
 |};
+
+type Asscoiate record {|
+    readonly string name;
+    string status;
+|};
+
+public type Relationship FriendService|AssociateService;

@@ -1,0 +1,30 @@
+query A {
+    getAllFriendServices(enableEvict: false) {
+        name
+        age
+    }
+}
+
+mutation B {
+    addFriend(name: "Badger", age: 26, isMarried: false, enableEvict: true) {
+        name
+        age
+        isMarried
+    }
+}
+
+mutation C {
+    addFriend(name: "Pete", age: 27, isMarried: false, enableEvict: true) {
+        name
+        age
+        isMarried
+    }
+}
+
+mutation D {
+    addFriend(name: "Gretchen Schwartz", age: 50, isMarried: true, enableEvict: true) {
+        name
+        age
+        isMarried
+    }
+}

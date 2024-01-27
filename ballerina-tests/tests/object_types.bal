@@ -507,3 +507,21 @@ public isolated distinct service class FriendService {
         return self.isMarried;
     }
 }
+
+public isolated distinct service class AssociateService {
+    private final string name;
+    private final string status;
+
+    public isolated function init(string name, string status) {
+        self.name = name;
+        self.status = status;
+    }
+
+    isolated resource function get name() returns string {
+        return self.name;
+    }
+
+    isolated resource function get status() returns string {
+        return self.status;
+    }
+}
