@@ -2598,11 +2598,15 @@ service /server_cache_operations on basicListener {
             select friend;
     }
 
-    isolated resource function get getFriendService(string name) returns FriendService  {
+    isolated resource function get getFriendService(string name) returns FriendService|error  {
         Friend[] person = from Friend friend in self.friends
         where friend.name == name
         select friend;
-        return new FriendService(person[0].name, person[0].age, person[0].isMarried);
+        if person != [] {
+            return new FriendService(person[0].name, person[0].age, person[0].isMarried);
+        } else {
+            return error(string `No person found with the name: ${name}`);
+        }   
     }
 
     isolated resource function get getAssociateService(string name) returns AssociateService  {
