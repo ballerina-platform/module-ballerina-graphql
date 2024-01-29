@@ -100,6 +100,10 @@ function dataProviderServerCacheOperationalLevel() returns map<[string, string[]
         // "11": ["server_cache_with_max_size", ["server_cache_with_ttl_1", "server_cache_6", "server_cache_7", "server_cache_8", "server_cache_with_ttl_1"], (), ["A", "B", "C", "D", "A"]],
         "11": ["server_cache_eviction", ["server_cache_2", "server_cache_4", "server_cache_5", "server_cache_4"], (), ["B", "A", "C", "A"]],
         // "12": ["server_cache_nullable_inputs", ["server_cache_with_nullable_inputs", "server_cache_with_nullable_inputs"], (), ["A", "B"]]
+        "13": ["server_cache_with_inputs", ["server_cache_with_nullable_inputs_2", "server_cache_with_nullable_inputs_2"], (), ["B", "C"]],
+        "14": ["server_cache_with_inputs", ["server_cache_with_empty_input_1", "server_cache_with_empty_input_2"], (), ["B", "D"]],
+        "15": ["server_cache_with_partial_responses", ["server_cache_with_partial_reponses_1", "server_cache_with_partial_reponses_2", "server_cache_with_partial_reponses_1"], (), ["A", "B", "A"]],
+        "16": ["server_cache_with_partial_responses", ["server_cache_with_partial_reponses_1", "server_cache_with_partial_reponses_2", "server_cache_with_partial_reponses_3"], (), ["A", "C", "A"]],
         "17": ["server_cache_with_errors", ["server_cache_with_errors_1", "server_cache_with_errors_2", "server_cache_with_errors_3"], (), ["A", "B", "A"]]
     };
     return dataSet;

@@ -1,5 +1,6 @@
-query A {
-    status(associates: null)
+input Associate {
+    name: String!
+    status: String
 }
 
 query B {
