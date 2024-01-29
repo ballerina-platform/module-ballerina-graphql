@@ -71,3 +71,29 @@ isolated function faultyAuthorLoaderFunction(readonly & anydata[] ids) returns A
         return validKeys.'map(key => authorTable.get(key));
     }
 };
+
+isolated function authorLoaderFunction2(readonly & anydata[] ids) returns AuthorRow[]|error {
+    readonly & int[] keys = check ids.ensureType();
+    // Simulate query: SELECT * FROM authors WHERE id IN (...keys);
+    lock {
+        dispatchCountOfAuthorLoader += 1;
+    }
+    lock {
+        readonly & int[] validKeys = keys.'filter(key => authorTable2.hasKey(key)).cloneReadOnly();
+        return keys.length() != validKeys.length() ? error("Invalid keys found for authors")
+            : validKeys.'map(key => authorTable2.get(key));
+    }
+};
+
+isolated function bookLoaderFunction2(readonly & anydata[] ids) returns BookRow[][]|error {
+    final readonly & int[] keys = check ids.ensureType();
+    // Simulate query: SELECT * FROM books WHERE author IN (...keys);
+    lock {
+        dispatchCountOfBookLoader += 1;
+    }
+    return keys.'map(isolated function(readonly & int key) returns BookRow[] {
+        lock {
+            return bookTable2.'filter(book => book.author == key).toArray().clone();
+        }
+    });
+};

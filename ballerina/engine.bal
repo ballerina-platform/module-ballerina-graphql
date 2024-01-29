@@ -294,7 +294,7 @@ isolated class Engine {
                 return check validateInterceptorReturnValue(fieldType, result, interceptorName);
             }
             any fieldValue;
-            if 'field.isCacheEnabled() {
+            if 'field.getOperationType() == parser:OPERATION_QUERY && 'field.isCacheEnabled() {
                 string cacheKey = 'field.getCacheKey();
                 any|error cachedValue = self.getFromCache(cacheKey);
                 if cachedValue is any {
@@ -302,7 +302,7 @@ isolated class Engine {
                 } else {
                     fieldValue = check self.getFieldValue(context, 'field, responseGenerator);
                     decimal maxAge = 'field.getCacheMaxAge();
-                    if maxAge > 0d {
+                    if maxAge > 0d && fieldValue !is () {
                         // remove check and log the error msg
                         _ = check self.addToCache(cacheKey, fieldValue, maxAge);
                     }

@@ -2484,8 +2484,26 @@ service /server_cache on basicListener {
         {name: "Jesse Pinkman", age: 23, isMarried: false}
     ];
 
+    private table<Enemy> key(name) enemies = table [
+        {name: "Enemy1", age:12, isMarried: false},
+        {name: "Enemy2", age:66, isMarried: true},
+        {name: "Enemy3", age:33, isMarried: false}
+    ];
+
     isolated resource function get greet() returns string {
         return "Hello, " + self.name;
+    }
+
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            enabled: true
+        }
+    }
+    isolated resource function get isAdult(int? age) returns boolean|error {
+        if age is int {
+            return age >= 18 ? true: false;
+        }
+        return error("Invalid argument type");
     }
 
     @graphql:ResourceConfig {
@@ -2535,6 +2553,65 @@ service /server_cache on basicListener {
             select new FriendService(friend.name, friend.age, friend.isMarried);
     }
 
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            maxAge: 180
+        }
+    }
+    isolated resource function get getServices(boolean isEnemy) returns HumanService[] {
+        if isEnemy {
+            return from Friend friend in self.friends
+                where friend.isMarried == false
+                select new EnemyService(friend.name, friend.age, friend.isMarried);
+        }
+        return from Friend friend in self.friends
+            where friend.isMarried == true
+            select new FriendService(friend.name, friend.age, friend.isMarried);
+    }
+
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            maxAge: 120
+        }
+    }
+    isolated resource function get enemies(boolean? isMarried = ()) returns Enemy[] {
+        if isMarried is () {
+            return from Enemy enemy in self.enemies
+                select enemy;
+        }
+        return from Enemy enemy in self.enemies
+            where enemy.isMarried == isMarried
+            select enemy;
+    }
+
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            enabled: true
+        }
+    }
+    isolated resource function get isAllMarried(string[] names) returns boolean {
+        if names is string[] {
+            foreach string name in names {
+                if self.enemies.hasKey(name) && !self.enemies.get(name).isMarried {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            enabled: true
+        }
+    }
+    isolated resource function get searchEnemy(EnemyInput enemyInput) returns Enemy? {
+        if self.enemies.hasKey(enemyInput.name) {
+            return self.enemies.get(enemyInput.name);
+        }
+        return;
+    }
+
     isolated remote function updateName(graphql:Context context, string name, boolean enableEvict) returns string|error {
         if enableEvict {
             check context.evictCache("name");
@@ -2555,5 +2632,88 @@ service /server_cache on basicListener {
         Friend friend = {name: name, age: age, isMarried: isMarried};
         self.friends.add(friend);
         return friend;
+    }
+
+    isolated remote function addEnemy(graphql:Context context, string name, int age, boolean isMarried, boolean enableEvict) returns Friend|error {
+        if enableEvict {
+            check context.evictCache("getServices");
+        }
+        Friend friend = {name: name, age: age, isMarried: isMarried};
+        self.friends.add(friend);
+        return friend;
+    }
+
+    isolated remote function addEnemy2(graphql:Context context, string name, int age, boolean isMarried, boolean enableEvict) returns Enemy|error {
+        if enableEvict {
+            check context.evictCache("enemies");
+        }
+        Enemy enemy = {name: name, age: age, isMarried: isMarried};
+        self.enemies.add(enemy);
+        return enemy;
+    }
+
+    isolated remote function removeEnemy(graphql:Context context, string name, boolean enableEvict) returns Enemy|error {
+        if enableEvict {
+            check context.evictCache("enemies");
+        }
+        return self.enemies.remove(name);
+    }
+
+    isolated remote function updateEnemy(graphql:Context context, EnemyInput enemy, boolean enableEvict) returns Enemy|error {
+        if enableEvict {
+            check context.invalidateAll();
+        }
+        Enemy enemyInput = {name: enemy.name, age: enemy.age, isMarried: true};
+        self.enemies.put(enemyInput);
+        return enemyInput;
+    }
+}
+
+const AUTHOR_LOADER_2 = "authorLoader2";
+const BOOK_LOADER_2 = "bookLoader2";
+
+isolated function initContext2(http:RequestContext requestContext, http:Request request) returns graphql:Context|error {
+    graphql:Context ctx = new;
+    ctx.registerDataLoader(AUTHOR_LOADER_2, new dataloader:DefaultDataLoader(authorLoaderFunction2));
+    ctx.registerDataLoader(BOOK_LOADER_2, new dataloader:DefaultDataLoader(bookLoaderFunction2));
+    return ctx;
+}
+
+function addAuthorIdsToAuthorLoader2(graphql:Context ctx, int[] ids) {
+    dataloader:DataLoader authorLoader = ctx.getDataLoader(AUTHOR_LOADER_2);
+    ids.forEach(function(int id) {
+        authorLoader.add(id);
+    });
+}
+
+@graphql:ServiceConfig {
+    contextInit: initContext2
+}
+service /caching_with_dataloader on wrappedListener {
+    function preAuthors(graphql:Context ctx, int[] ids) {
+        addAuthorIdsToAuthorLoader2(ctx, ids);
+    }
+
+    @graphql:ResourceConfig {
+        cacheConfig:{
+            enabled: true
+        }
+    }
+    resource function get authors(graphql:Context ctx, int[] ids) returns AuthorData2[]|error {
+        dataloader:DataLoader authorLoader = ctx.getDataLoader(AUTHOR_LOADER_2);
+        AuthorRow[] authorRows = check trap ids.map(id => check authorLoader.get(id, AuthorRow));
+        return from AuthorRow authorRow in authorRows
+            select new (authorRow);
+    }
+
+    isolated remote function updateAuthorName(graphql:Context ctx, int id, string name, boolean enableEvict = false) returns AuthorData2|error {
+        if enableEvict {
+            check ctx.evictCache("authors");
+        }
+        AuthorRow authorRow = {id: id, name};
+        lock {
+            authorTable2.put(authorRow.cloneReadOnly());
+        }
+        return new (authorRow);
     }
 }

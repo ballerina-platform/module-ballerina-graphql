@@ -383,3 +383,14 @@ type Friend record {|
     int age;
     boolean isMarried;
 |};
+
+type Enemy record {|
+    readonly string name;
+    int age;
+    boolean isMarried;
+|};
+
+type EnemyInput record {|
+    readonly string name = "Enemy6";
+    int age = 12;
+|};
