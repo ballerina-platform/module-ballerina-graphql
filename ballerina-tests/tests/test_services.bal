@@ -2926,3 +2926,33 @@ service /caching_with_dataloader on wrappedListener {
         return new (authorRow);
     }
 }
+
+@graphql:ServiceConfig {
+    cacheConfig:{
+        enabled: true
+    },
+    contextInit: initContext2
+}
+service /caching_with_dataloader_operational on wrappedListener {
+    function preAuthors(graphql:Context ctx, int[] ids) {
+        addAuthorIdsToAuthorLoader2(ctx, ids);
+    }
+
+    resource function get authors(graphql:Context ctx, int[] ids) returns AuthorData2[]|error {
+        dataloader:DataLoader authorLoader = ctx.getDataLoader(AUTHOR_LOADER_2);
+        AuthorRow[] authorRows = check trap ids.map(id => check authorLoader.get(id, AuthorRow));
+        return from AuthorRow authorRow in authorRows
+            select new (authorRow);
+    }
+
+    isolated remote function updateAuthorName(graphql:Context ctx, int id, string name, boolean enableEvict = false) returns AuthorData2|error {
+        if enableEvict {
+            check ctx.evictCache("authors");
+        }
+        AuthorRow authorRow = {id: id, name};
+        lock {
+            authorTable2.put(authorRow.cloneReadOnly());
+        }
+        return new (authorRow);
+    }
+}

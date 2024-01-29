@@ -1,0 +1,49 @@
+{
+    "data": {
+        "authors": [
+            {
+                "name": "Yual Noah Harari",
+                "books": [
+                    {
+                        "id": 1,
+                        "title": "Book 1"
+                    },
+                    {
+                        "id": 2,
+                        "title": "Book 2"
+                    },
+                    {
+                        "id": 3,
+                        "title": "Book 3"
+                    }
+                ]
+            },
+            {
+                "name": "Mark Manson",
+                "books": [
+                    {
+                        "id": 4,
+                        "title": "Book 4"
+                    },
+                    {
+                        "id": 5,
+                        "title": "Book 5"
+                    }
+                ]
+            },
+            {
+                "name": "Author 3",
+                "books": [
+                    {
+                        "id": 6,
+                        "title": "Book 6"
+                    },
+                    {
+                        "id": 7,
+                        "title": "Book 7"
+                    }
+                ]
+            }
+        ]
+    }
+}

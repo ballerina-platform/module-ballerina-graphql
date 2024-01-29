@@ -69,6 +69,21 @@ isolated function testServerSideCacheWithDataLoader(string documentFile, string[
 }
 
 @test:Config {
+    groups: ["server_cache", "data_loader"],
+    dataProvider: dataProviderServerCacheWithDataloaderInOperationalLevel
+}
+isolated function testServerSideCacheWithDataLoaderInOperationalLevel(string documentFile, string[] resourceFileNames, json variables = (), string[] operationNames = []) returns error? {
+    string url = "http://localhost:9090/caching_with_dataloader_operational";
+    string document = check getGraphqlDocumentFromFile(documentFile);
+    foreach int i in 0..< resourceFileNames.length() {
+        json actualPayload = check getJsonPayloadFromService(url, document, variables, operationNames[i]);
+        json expectedPayload = check getJsonContentFromFile(resourceFileNames[i]);
+        assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    }
+    resetDispatchCounters();
+}
+
+@test:Config {
     groups: ["server_cache"],
     dataProvider: dataProviderServerCacheOperationalLevel
 }
@@ -169,6 +184,14 @@ function dataProviderServerCacheWithDataloader() returns map<[string, string[], 
     map<[string, string[], json, string[]]> dataSet = {
         "1": ["server_cache_with_dataloader", ["server_cache_with_dataloader_1", "server_cache_with_dataloader_2", "server_cache_with_dataloader_1"], (), ["A", "B", "A"]],
         "2": ["server_cache_eviction_with_dataloader", ["server_cache_with_dataloader_1", "server_cache_with_dataloader_2", "server_cache_with_dataloader_3"], (), ["A", "B", "A"]]
+    };
+    return dataSet;
+}
+
+function dataProviderServerCacheWithDataloaderInOperationalLevel() returns map<[string, string[], json, string[]]> {
+    map<[string, string[], json, string[]]> dataSet = {
+        "1": ["server_cache_with_dataloader_operational", ["server_cache_with_dataloader_3", "server_cache_with_dataloader_5", "server_cache_with_dataloader_3"], (), ["A", "B", "A"]],
+        "2": ["server_cache_eviction_with_dataloader_operational", ["server_cache_with_dataloader_3", "server_cache_with_dataloader_5", "server_cache_with_dataloader_4"], (), ["A", "B", "A"]]
     };
     return dataSet;
 }
