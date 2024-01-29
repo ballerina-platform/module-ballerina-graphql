@@ -51,23 +51,24 @@ isolated function testServerSideCacheInOperationalLevel(string documentFile, str
 isolated function testServerSideCacheInOperationalLevelWithTTL() returns error? {
     string url = "http://localhost:9091/server_cache_operations";
     string document = check getGraphqlDocumentFromFile("server_cache_with_ttl");
-
+    runtime:sleep(21);
+    
     json actualPayload = check getJsonPayloadFromService(url, document, (), "A");
-    json expectedPayload = check getJsonContentFromFile("server_cache_4");
+    json expectedPayload = check getJsonContentFromFile("server_cache_1");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 
     actualPayload = check getJsonPayloadFromService(url, document, (), "B");
-    expectedPayload = check getJsonContentFromFile("server_cache_5");
+    expectedPayload = check getJsonContentFromFile("server_cache_10");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 
     actualPayload = check getJsonPayloadFromService(url, document, (), "A");
-    expectedPayload = check getJsonContentFromFile("server_cache_4");
+    expectedPayload = check getJsonContentFromFile("server_cache_1");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 
     runtime:sleep(21);
 
     actualPayload = check getJsonPayloadFromService(url, document, (), "A");
-    expectedPayload = check getJsonContentFromFile("server_cache_1");
+    expectedPayload = check getJsonContentFromFile("server_cache_9");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
@@ -78,7 +79,7 @@ function dataProviderServerCache() returns map<[string, string[], json, string[]
         "3": ["server_cache_with_records", ["server_cache_with_rec_1", "server_cache_with_rec_2", "server_cache_with_rec_1"], (), ["A", "B", "A"]],
         "4": ["server_cache_with_service_obj", ["server_cache_with_svc_obj_1", "server_cache_with_svc_obj_2", "server_cache_with_svc_obj_1"], (), ["A", "B", "A"]],
         "5": ["server_cache_eviction_with_service_obj", ["server_cache_with_svc_obj_1", "server_cache_with_svc_obj_2", "server_cache_with_svc_obj_3"], (), ["A", "B", "A"]],
-        "6": ["server_cache_with_arrays", ["server_cache_with_arrays_1", "server_cache_with_arrays_2", "server_cache_with_arrays_3"], (), ["A", "B", "A"]],
+        "6": ["server_cache_with_arrays", ["server_cache_with_arrays_1", "server_cache_with_arrays_2", "server_cache_with_arrays_1"], (), ["A", "B", "A"]],
         "7": ["server_cache_eviction_with_arrays", ["server_cache_with_arrays_1", "server_cache_with_arrays_2", "server_cache_with_arrays_4"], (), ["A", "B", "A"]]
     };
     return dataSet;

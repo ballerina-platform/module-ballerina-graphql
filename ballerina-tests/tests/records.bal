@@ -384,7 +384,7 @@ type Friend record {|
     boolean isMarried;
 |};
 
-type Asscoiate record {|
+type Associate record {|
     readonly string name;
     string status;
 |};

@@ -4,5 +4,5 @@ query A {
 }
 
 mutation B {
-    updateName(name: "Walter White", enableEvict: false)
+    updateName(name: "Heisenberg", enableEvict: false)
 }

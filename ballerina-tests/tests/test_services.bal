@@ -2573,7 +2573,7 @@ service /server_cache_operations on basicListener {
         {name: "Jesse Pinkman", age: 23, isMarried: false}
     ];
 
-    private table<Asscoiate> key(name) associates = table [
+    private table<Associate> key(name) associates = table [
         {name: "Gus Fring", status: "dead"},
         {name: "Tuco Salamanca", status: "dead"},
         {name: "Saul Goodman", status: "alive"}
@@ -2606,14 +2606,14 @@ service /server_cache_operations on basicListener {
     }
 
     isolated resource function get getAssociateService(string name) returns AssociateService  {
-        Asscoiate[] person = from Asscoiate associate in self.associates
+        Associate[] person = from Associate associate in self.associates
         where associate.name == name
         select associate;
         return new AssociateService(person[0].name, person[0].status);
     }
 
     isolated resource function get relationship(string name) returns Relationship {
-        (Asscoiate|Friend)[] person = from Asscoiate associate in self.associates
+        (Associate|Friend)[] person = from Associate associate in self.associates
         where associate.name == name
         select associate;
         if person.length() == 0 {
@@ -2622,7 +2622,7 @@ service /server_cache_operations on basicListener {
             select friend;
             return new FriendService(person[0].name, (<Friend>person[0]).age, (<Friend>person[0]).isMarried);
         }
-        return new AssociateService(person[0].name, (<Asscoiate>person[0]).status);
+        return new AssociateService(person[0].name, (<Associate>person[0]).status);
     }
 
     isolated resource function get getFriendServices() returns FriendService[]  {
@@ -2648,7 +2648,7 @@ service /server_cache_operations on basicListener {
 
     isolated remote function updateFriend(graphql:Context context, string name, int age, boolean isMarried, boolean enableEvict) returns FriendService|error {
         if enableEvict {
-            check context.invalidateAll();
+            check context.evictCache("getFriendService");
         }
         self.friends.put({name: name, age: age, isMarried: isMarried});
         return new FriendService(name, age, isMarried);
@@ -2664,15 +2664,17 @@ service /server_cache_operations on basicListener {
 
     isolated remote function addFriend(graphql:Context context, string name, int age, boolean isMarried, boolean enableEvict) returns Friend|error {
         if enableEvict {
-            check context.invalidateAll();
+            check context.evictCache("getFriendService");
+            check context.evictCache("getAllFriendServices");
+            check context.evictCache("friends");
         }
         Friend friend = {name: name, age: age, isMarried: isMarried};
         self.friends.add(friend);
         return friend;
     }
 
-    resource function get status(Asscoiate[]? associates) returns string[]? {
-        if associates is Asscoiate[] {
+    resource function get status(Associate[]? associates) returns string[]? {
+        if associates is Associate[] {
             return associates.map(associate => associate.status);
         }
         return;
