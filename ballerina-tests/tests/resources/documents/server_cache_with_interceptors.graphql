@@ -1,0 +1,13 @@
+query A {
+    person {
+        name
+        age
+    }
+}
+
+mutation B {
+    updatePerson(name: "Agent Schrader") {
+        name
+        age
+    }
+}

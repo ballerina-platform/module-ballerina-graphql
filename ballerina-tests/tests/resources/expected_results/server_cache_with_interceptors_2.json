@@ -1,0 +1,8 @@
+{
+    "data": {
+        "updatePerson": {
+            "name":"Agent Schrader",
+            "age": 43
+        }
+    }
+}

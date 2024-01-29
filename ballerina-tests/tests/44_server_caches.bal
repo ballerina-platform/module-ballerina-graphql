@@ -72,6 +72,38 @@ isolated function testServerSideCacheInOperationalLevelWithTTL() returns error? 
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
+// @test:Config {
+//     groups: ["server_cache"]
+// }
+// isolated function testCachingWithInterceptors() returns error? {
+//     string url = "http://localhost:9091/server_cache_interceptor";
+//     string resourceFileName = "server_cache_with_interceptors";
+//     string document = check getGraphqlDocumentFromFile(resourceFileName);
+//     json actualPayload = check getJsonPayloadFromService(url, document, (), "A");
+//     json expectedPayload = check getJsonContentFromFile(resourceFileName);
+//     io:println("Actual Payload 01: ", actualPayload);
+//     expectedPayload = actualPayload;
+//     actualPayload = check getJsonPayloadFromService(url, document, (), "B");
+//     io:println("Actual Payload 02: ", actualPayload);
+//     actualPayload = check getJsonPayloadFromService(url, document, (), "A");
+//     io:println("Actual Payload 01: ", actualPayload);
+//     assertJsonValuesWithOrder(actualPayload, expectedPayload);
+// }
+
+// @test:Config {
+//     groups: ["dataloader", "query", "server_cache"],
+//     after: resetDispatchCounters
+// }
+// isolated function testDataLoaderWithCaching() returns error? {
+//     graphql:Client graphqlClient = check new ("http://localhost:9091/server_cache_operations");
+//     string document = check getGraphqlDocumentFromFile("dataloader_with_query");
+//     json response = check graphqlClient->execute(document);
+//     json expectedPayload = check getJsonContentFromFile("dataloader_with_query");
+//     assertJsonValuesWithOrder(response, expectedPayload);
+//     assertDispatchCountForAuthorLoader(1);
+//     assertDispatchCountForBookLoader(1);
+// }
+
 function dataProviderServerCache() returns map<[string, string[], json, string[]]> {
     map<[string, string[], json, string[]]> dataSet = {
         "1": ["server_cache", ["server_cache_1", "server_cache_2", "server_cache_3"], (), ["A", "B", "A"]],
