@@ -1,8 +1,5 @@
 {
     "data": {
-        "addFriend": {
-            "name": "Lalo Salamanca",
-            "age": 44
-        }
+        "isAdult": false
     }
 }

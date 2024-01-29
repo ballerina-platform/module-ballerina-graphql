@@ -18,7 +18,7 @@ import ballerina/test;
 import ballerina/lang.runtime;
 
 @test:Config {
-    groups: ["server_cache"],
+    groups: ["server_cache", "a"],
     dataProvider: dataProviderServerCache
 }
 isolated function testServerSideCache(string documentFile, string[] resourceFileNames, json variables = (), string[] operationNames = []) returns error? {
@@ -29,6 +29,43 @@ isolated function testServerSideCache(string documentFile, string[] resourceFile
         json expectedPayload = check getJsonContentFromFile(resourceFileNames[i]);
         assertJsonValuesWithOrder(actualPayload, expectedPayload);
     }
+}
+
+function dataProviderServerCache() returns map<[string, string[], json, string[]]> {
+    map<[string, string[], json, string[]]> dataSet = {
+        "1": ["server_cache", ["server_cache_1", "server_cache_2", "server_cache_3"], (), ["A", "B", "A"]],
+        "2": ["server_cache_eviction", ["server_cache_2", "server_cache_4"], (), ["B", "A"]],
+        "3": ["server_cache_with_records", ["server_cache_with_rec_1", "server_cache_with_rec_2", "server_cache_with_rec_1"], (), ["A", "B", "A"]],
+        "4": ["server_cache_with_service_obj", ["server_cache_with_svc_obj_1", "server_cache_with_svc_obj_2", "server_cache_with_svc_obj_1"], (), ["A", "B", "A"]],
+        "5": ["server_cache_eviction_with_service_obj", ["server_cache_with_svc_obj_1", "server_cache_with_svc_obj_2", "server_cache_with_svc_obj_3"], (), ["A", "B", "A"]],
+        "6": ["server_cache_with_arrays", ["server_cache_with_arrays_1", "server_cache_with_arrays_2", "server_cache_with_arrays_3"], (), ["A", "B", "A"]],
+        "7": ["server_cache_eviction_with_arrays", ["server_cache_with_arrays_1", "server_cache_with_arrays_2", "server_cache_with_arrays_4"], (), ["A", "B", "A"]],
+        "8": ["server_cache_with_union", ["server_cache_with_union_1", "server_cache_with_union_2", "server_cache_with_union_1"], (), ["A", "B", "A"]],
+        "9": ["server_cache_eviction_with_union", ["server_cache_with_union_1", "server_cache_with_union_3", "server_cache_with_union_4"], (), ["A", "B", "A"]],
+        "10": ["server_cache_with_errors", ["server_cache_with_errors_1", "server_cache_with_errors_2"], (), ["A", "B"]],
+        "11": ["server_cache_with_nullable_inputs", ["server_cache_with_nullable_inputs_1", "server_cache_with_nullable_inputs_2", "server_cache_with_nullable_inputs_1"], (), ["A", "B", "A"]],
+        "12": ["server_cache_eviction_with_nullable_inputs", ["server_cache_eviction_with_nullable_inputs_1", "server_cache_eviction_with_nullable_inputs_2", "server_cache_eviction_with_nullable_inputs_3"], (), ["A", "B", "A"]],
+        "13": ["server_cache_with_list_inputs", ["server_cache_eviction_with_list_inputs_1", "server_cache_eviction_with_list_inputs_2", "server_cache_eviction_with_list_inputs_1"], {"names": ["Enemy3"]}, ["A", "B", "A"]],
+        "14": ["server_cache_eviction_with_list_inputs", ["server_cache_eviction_with_list_inputs_1", "server_cache_eviction_with_list_inputs_2", "server_cache_eviction_with_list_inputs_3"], {"names": ["Enemy3"]}, ["A", "B", "A"]],
+        "15": ["server_cache_with_null_values", ["server_cache_with_null_values_1", "server_cache_with_null_values_2", "server_cache_with_null_values_3"], (), ["A", "B", "A"]],
+        "16": ["server_cache_with_input_object", ["server_cache_with_input_object_1", "server_cache_with_input_object_2", "server_cache_with_input_object_3"], (), ["A", "B", "A"]]
+    };
+    return dataSet;
+}
+
+@test:Config {
+    groups: ["server_cache", "data_loader", "dl"],
+    dataProvider: dataProviderServerCacheWithDataloader
+}
+isolated function testServerSideCacheWithDataLoader(string documentFile, string[] resourceFileNames, json variables = (), string[] operationNames = []) returns error? {
+    string url = "http://localhost:9090/caching_with_dataloader";
+    string document = check getGraphqlDocumentFromFile(documentFile);
+    foreach int i in 0..< resourceFileNames.length() {
+        json actualPayload = check getJsonPayloadFromService(url, document, variables, operationNames[i]);
+        json expectedPayload = check getJsonContentFromFile(resourceFileNames[i]);
+        assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    }
+    resetDispatchCounters();
 }
 
 @test:Config {
@@ -104,19 +141,6 @@ isolated function testServerSideCacheInOperationalLevelWithTTL() returns error? 
 //     assertDispatchCountForBookLoader(1);
 // }
 
-function dataProviderServerCache() returns map<[string, string[], json, string[]]> {
-    map<[string, string[], json, string[]]> dataSet = {
-        "1": ["server_cache", ["server_cache_1", "server_cache_2", "server_cache_3"], (), ["A", "B", "A"]],
-        "2": ["server_cache_eviction", ["server_cache_2", "server_cache_4"], (), ["B", "A"]],
-        "3": ["server_cache_with_records", ["server_cache_with_rec_1", "server_cache_with_rec_2", "server_cache_with_rec_1"], (), ["A", "B", "A"]],
-        "4": ["server_cache_with_service_obj", ["server_cache_with_svc_obj_1", "server_cache_with_svc_obj_2", "server_cache_with_svc_obj_1"], (), ["A", "B", "A"]],
-        "5": ["server_cache_eviction_with_service_obj", ["server_cache_with_svc_obj_1", "server_cache_with_svc_obj_2", "server_cache_with_svc_obj_3"], (), ["A", "B", "A"]],
-        "6": ["server_cache_with_arrays", ["server_cache_with_arrays_1", "server_cache_with_arrays_2", "server_cache_with_arrays_1"], (), ["A", "B", "A"]],
-        "7": ["server_cache_eviction_with_arrays", ["server_cache_with_arrays_1", "server_cache_with_arrays_2", "server_cache_with_arrays_4"], (), ["A", "B", "A"]]
-    };
-    return dataSet;
-}
-
 function dataProviderServerCacheOperationalLevel() returns map<[string, string[], json, string[]]> {
     map<[string, string[], json, string[]]> dataSet = {
         "1": ["server_cache", ["server_cache_1", "server_cache_2", "server_cache_1"], (), ["A", "B", "A"]],
@@ -132,11 +156,19 @@ function dataProviderServerCacheOperationalLevel() returns map<[string, string[]
         // "11": ["server_cache_with_max_size", ["server_cache_with_ttl_1", "server_cache_6", "server_cache_7", "server_cache_8", "server_cache_with_ttl_1"], (), ["A", "B", "C", "D", "A"]],
         "11": ["server_cache_eviction", ["server_cache_2", "server_cache_4", "server_cache_5", "server_cache_4"], (), ["B", "A", "C", "A"]],
         // "12": ["server_cache_nullable_inputs", ["server_cache_with_nullable_inputs", "server_cache_with_nullable_inputs"], (), ["A", "B"]]
-        "13": ["server_cache_with_inputs", ["server_cache_with_nullable_inputs_2", "server_cache_with_nullable_inputs_2"], (), ["B", "C"]],
+        "13": ["server_cache_with_inputs", ["server_cache_with_nullable_inputs_7", "server_cache_with_nullable_inputs_7"], (), ["B", "C"]],
         "14": ["server_cache_with_inputs", ["server_cache_with_empty_input_1", "server_cache_with_empty_input_2"], (), ["B", "D"]],
         "15": ["server_cache_with_partial_responses", ["server_cache_with_partial_reponses_1", "server_cache_with_partial_reponses_2", "server_cache_with_partial_reponses_1"], (), ["A", "B", "A"]],
         "16": ["server_cache_with_partial_responses", ["server_cache_with_partial_reponses_1", "server_cache_with_partial_reponses_2", "server_cache_with_partial_reponses_3"], (), ["A", "C", "A"]],
-        "17": ["server_cache_with_errors", ["server_cache_with_errors_1", "server_cache_with_errors_2", "server_cache_with_errors_3"], (), ["A", "B", "A"]]
+        "17": ["server_cache_with_errors_2", ["server_cache_with_errors_4", "server_cache_with_errors_5", "server_cache_with_errors_3"], (), ["A", "B", "A"]]
+    };
+    return dataSet;
+}
+
+function dataProviderServerCacheWithDataloader() returns map<[string, string[], json, string[]]> {
+    map<[string, string[], json, string[]]> dataSet = {
+        "1": ["server_cache_with_dataloader", ["server_cache_with_dataloader_1", "server_cache_with_dataloader_2", "server_cache_with_dataloader_1"], (), ["A", "B", "A"]],
+        "2": ["server_cache_eviction_with_dataloader", ["server_cache_with_dataloader_1", "server_cache_with_dataloader_2", "server_cache_with_dataloader_3"], (), ["A", "B", "A"]]
     };
     return dataSet;
 }

@@ -1,14 +1,16 @@
 {
-    "errors":[
+    "errors": [
         {
-            "message":"No person found with the name: Lalo Salamanca", 
-            "locations":[
+            "message": "Invalid argument type",
+            "locations": [
                 {
-                    "line":2,
-                    "column":5
+                    "line": 2,
+                    "column": 5
                 }
-            ], 
-            "path": ["getFriendService"]
+            ],
+            "path": [
+                "isAdult"
+            ]
         }
     ],
     "data": null

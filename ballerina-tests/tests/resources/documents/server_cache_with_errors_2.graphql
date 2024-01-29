@@ -1,0 +1,13 @@
+query A {
+    getFriendService(name: "Lalo Salamanca") {
+        name
+        age
+    }
+}
+
+mutation B {
+    addFriend(name: "Lalo Salamanca", age: 44, isMarried: false, enableEvict: false) {
+        name
+        age
+    }
+}
