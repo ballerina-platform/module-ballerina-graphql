@@ -412,7 +412,9 @@ public class ServiceValidator {
                 if (fieldName.kind() == SyntaxKind.IDENTIFIER_TOKEN) {
                     IdentifierToken identifierToken = (IdentifierToken) fieldName;
                     String identifierName = identifierToken.text();
-                    return CACHE_CONFIG.equals(identifierName);
+                    if (CACHE_CONFIG.equals(identifierName)) {
+                        return true;
+                    }
                 }
             }
         }

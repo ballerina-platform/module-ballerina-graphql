@@ -1,13 +1,7 @@
 query A {
-    person {
-        name
-        age
-    }
+    enemy
 }
 
 mutation B {
-    updatePerson(name: "Agent Schrader") {
-        name
-        age
-    }
+    updateEnemy(name: "Snape", enableEvict: false)
 }
