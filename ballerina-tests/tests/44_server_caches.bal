@@ -18,7 +18,7 @@ import ballerina/test;
 import ballerina/lang.runtime;
 
 @test:Config {
-    groups: ["server_cache", "a"],
+    groups: ["server_cache"],
     dataProvider: dataProviderServerCache
 }
 isolated function testServerSideCache(string documentFile, string[] resourceFileNames, json variables = (), string[] operationNames = []) returns error? {
@@ -54,7 +54,7 @@ function dataProviderServerCache() returns map<[string, string[], json, string[]
 }
 
 @test:Config {
-    groups: ["server_cache", "data_loader", "dl"],
+    groups: ["server_cache", "data_loader"],
     dataProvider: dataProviderServerCacheWithDataloader
 }
 isolated function testServerSideCacheWithDataLoader(string documentFile, string[] resourceFileNames, json variables = (), string[] operationNames = []) returns error? {
@@ -124,38 +124,6 @@ isolated function testServerSideCacheInOperationalLevelWithTTL() returns error? 
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-// @test:Config {
-//     groups: ["server_cache"]
-// }
-// isolated function testCachingWithInterceptors() returns error? {
-//     string url = "http://localhost:9091/server_cache_interceptor";
-//     string resourceFileName = "server_cache_with_interceptors";
-//     string document = check getGraphqlDocumentFromFile(resourceFileName);
-//     json actualPayload = check getJsonPayloadFromService(url, document, (), "A");
-//     json expectedPayload = check getJsonContentFromFile(resourceFileName);
-//     io:println("Actual Payload 01: ", actualPayload);
-//     expectedPayload = actualPayload;
-//     actualPayload = check getJsonPayloadFromService(url, document, (), "B");
-//     io:println("Actual Payload 02: ", actualPayload);
-//     actualPayload = check getJsonPayloadFromService(url, document, (), "A");
-//     io:println("Actual Payload 01: ", actualPayload);
-//     assertJsonValuesWithOrder(actualPayload, expectedPayload);
-// }
-
-// @test:Config {
-//     groups: ["dataloader", "query", "server_cache"],
-//     after: resetDispatchCounters
-// }
-// isolated function testDataLoaderWithCaching() returns error? {
-//     graphql:Client graphqlClient = check new ("http://localhost:9091/server_cache_operations");
-//     string document = check getGraphqlDocumentFromFile("dataloader_with_query");
-//     json response = check graphqlClient->execute(document);
-//     json expectedPayload = check getJsonContentFromFile("dataloader_with_query");
-//     assertJsonValuesWithOrder(response, expectedPayload);
-//     assertDispatchCountForAuthorLoader(1);
-//     assertDispatchCountForBookLoader(1);
-// }
-
 function dataProviderServerCacheOperationalLevel() returns map<[string, string[], json, string[]]> {
     map<[string, string[], json, string[]]> dataSet = {
         "1": ["server_cache", ["server_cache_1", "server_cache_2", "server_cache_1"], (), ["A", "B", "A"]],
@@ -195,6 +163,20 @@ function dataProviderServerCacheWithDataloader() returns map<[string, string[], 
 
 isolated function testServerSideCacheWithInterceptors(string documentFile, string[] resourceFileNames, json variables = (), string[] operationNames = []) returns error? {
     string url = "http://localhost:9091/field_caching_with_interceptors";
+    string document = check getGraphqlDocumentFromFile(documentFile);
+    foreach int i in 0..< resourceFileNames.length() {
+        json actualPayload = check getJsonPayloadFromService(url, document, variables, operationNames[i]);
+        json expectedPayload = check getJsonContentFromFile(resourceFileNames[i]);
+        assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    }
+}
+
+@test:Config {
+    groups: ["server_cache", "data_loader"],
+    dataProvider: dataProviderServerCacheWithInterceptors
+}
+isolated function testServerSideCacheWithInterceptorInOperationalLevel(string documentFile, string[] resourceFileNames, json variables = (), string[] operationNames = []) returns error? {
+    string url = "http://localhost:9091/caching_with_interceptor_operations";
     string document = check getGraphqlDocumentFromFile(documentFile);
     foreach int i in 0..< resourceFileNames.length() {
         json actualPayload = check getJsonPayloadFromService(url, document, variables, operationNames[i]);
