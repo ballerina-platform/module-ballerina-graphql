@@ -2669,6 +2669,156 @@ service /server_cache on basicListener {
     }
 }
 
+service /evict_server_cache on basicListener {
+    private string name = "Walter White";
+    isolated resource function get greet() returns string {
+        return "Hello, " + self.name;
+    }
+
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            enabled: true
+        }
+    }
+    isolated resource function get name(int id) returns string {
+        return self.name;
+    }
+
+    isolated remote function updateName(graphql:Context context, string name) returns string|error {
+        check context.evictCache("name");
+        self.name = name;
+        return self.name;
+    }
+}
+
+@graphql:ServiceConfig {
+    cacheConfig: {
+        enabled: true,
+        maxAge: 20,
+        maxSize: 15
+    },
+    contextInit: initContext
+}
+service /server_cache_operations on basicListener {
+    private string name = "Walter White";
+    private table<Friend> key(name) friends = table [
+        {name: "Skyler", age: 45, isMarried: true},
+        {name: "Walter White Jr.", age: 57, isMarried: true},
+        {name: "Jesse Pinkman", age: 23, isMarried: false}
+    ];
+
+    private table<Associate> key(name) associates = table [
+        {name: "Gus Fring", status: "dead"},
+        {name: "Tuco Salamanca", status: "dead"},
+        {name: "Saul Goodman", status: "alive"}
+    ];
+
+    isolated resource function get greet() returns string {
+        return "Hello, " + self.name;
+    }
+
+    isolated resource function get name(int id) returns string {
+        return self.name;
+    }
+
+    isolated resource function get friends(boolean isMarried = false) returns Friend[] {
+        if isMarried {
+            return from Friend friend in self.friends
+                where friend.isMarried == true
+                select friend;
+        }
+        return from Friend friend in self.friends
+            where friend.isMarried == false
+            select friend;
+    }
+
+    isolated resource function get getFriendService(string name) returns FriendService|error  {
+        Friend[] person = from Friend friend in self.friends
+        where friend.name == name
+        select friend;
+        if person != [] {
+            return new FriendService(person[0].name, person[0].age, person[0].isMarried);
+        } else {
+            return error(string `No person found with the name: ${name}`);
+        }   
+    }
+
+    isolated resource function get getAssociateService(string name) returns AssociateService  {
+        Associate[] person = from Associate associate in self.associates
+        where associate.name == name
+        select associate;
+        return new AssociateService(person[0].name, person[0].status);
+    }
+
+    isolated resource function get relationship(string name) returns Relationship {
+        (Associate|Friend)[] person = from Associate associate in self.associates
+        where associate.name == name
+        select associate;
+        if person.length() == 0 {
+            person = from Friend friend in self.friends
+            where friend.name == name
+            select friend;
+            return new FriendService(person[0].name, (<Friend>person[0]).age, (<Friend>person[0]).isMarried);
+        }
+        return new AssociateService(person[0].name, (<Associate>person[0]).status);
+    }
+
+    isolated resource function get getFriendServices() returns FriendService[]  {
+        return from Friend friend in self.friends
+            select new FriendService(friend.name, friend.age, friend.isMarried);
+    }
+
+    isolated resource function get getAllFriendServices(graphql:Context context, boolean enableEvict) returns FriendService[]|error  {
+        if enableEvict {
+            check context.invalidateAll();
+        }
+        return from Friend friend in self.friends
+            select new FriendService(friend.name, friend.age, friend.isMarried);
+    }
+
+    isolated remote function updateName(graphql:Context context, string name, boolean enableEvict) returns string|error {
+        if enableEvict {
+            check context.invalidateAll();
+        }
+        self.name = name;
+        return self.name;
+    }
+
+    isolated remote function updateFriend(graphql:Context context, string name, int age, boolean isMarried, boolean enableEvict) returns FriendService|error {
+        if enableEvict {
+            check context.evictCache("getFriendService");
+        }
+        self.friends.put({name: name, age: age, isMarried: isMarried});
+        return new FriendService(name, age, isMarried);
+    }
+
+    isolated remote function updateAssociate(graphql:Context context, string name, string status, boolean enableEvict) returns AssociateService|error {
+        if enableEvict {
+            check context.invalidateAll();
+        }
+        self.associates.put({name: name, status: status});
+        return new AssociateService(name, status);
+    }
+
+    isolated remote function addFriend(graphql:Context context, string name, int age, boolean isMarried, boolean enableEvict) returns Friend|error {
+        if enableEvict {
+            check context.evictCache("getFriendService");
+            check context.evictCache("getAllFriendServices");
+            check context.evictCache("friends");
+        }
+        Friend friend = {name: name, age: age, isMarried: isMarried};
+        self.friends.add(friend);
+        return friend;
+    }
+
+    resource function get status(Associate[]? associates) returns string[]? {
+        if associates is Associate[] {
+            return associates.map(associate => associate.status);
+        }
+        return;
+    }
+}
+
 const AUTHOR_LOADER_2 = "authorLoader2";
 const BOOK_LOADER_2 = "bookLoader2";
 
@@ -2718,6 +2868,36 @@ service /caching_with_dataloader on wrappedListener {
     }
 }
 
+@graphql:ServiceConfig {
+    cacheConfig:{
+        enabled: true
+    },
+    contextInit: initContext2
+}
+service /caching_with_dataloader_operational on wrappedListener {
+    function preAuthors(graphql:Context ctx, int[] ids) {
+        addAuthorIdsToAuthorLoader2(ctx, ids);
+    }
+
+    resource function get authors(graphql:Context ctx, int[] ids) returns AuthorData2[]|error {
+        dataloader:DataLoader authorLoader = ctx.getDataLoader(AUTHOR_LOADER_2);
+        AuthorRow[] authorRows = check trap ids.map(id => check authorLoader.get(id, AuthorRow));
+        return from AuthorRow authorRow in authorRows
+            select new (authorRow);
+    }
+
+    isolated remote function updateAuthorName(graphql:Context ctx, int id, string name, boolean enableEvict = false) returns AuthorData2|error {
+        if enableEvict {
+            check ctx.evictCache("authors");
+        }
+        AuthorRow authorRow = {id: id, name};
+        lock {
+            authorTable2.put(authorRow.cloneReadOnly());
+        }
+        return new (authorRow);
+    }
+}
+
 service /field_caching_with_interceptors on basicListener {
     private string name = "voldemort";
 
@@ -2727,6 +2907,31 @@ service /field_caching_with_interceptors on basicListener {
             enabled: true,
             maxAge: 15
         }
+    }
+    resource function get enemy() returns string {
+        return self.name;
+    }
+
+    remote function updateEnemy(graphql:Context context, string name, boolean enableEvict) returns string|error {
+        if enableEvict {
+            check context.evictCache("enemy");
+        }
+        self.name = name;
+        return self.name;
+    }
+}
+
+@graphql:ServiceConfig {
+    cacheConfig:{
+        enabled: true
+    },
+    contextInit: initContext2
+}
+service /caching_with_interceptor_operations on basicListener {
+    private string name = "voldemort";
+
+    @graphql:ResourceConfig {
+        interceptors: [new StringInterceptor1(), new StringInterceptor2(), new StringInterceptor3()]
     }
     resource function get enemy() returns string {
         return self.name;

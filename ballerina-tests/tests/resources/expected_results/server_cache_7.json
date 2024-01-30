@@ -1,0 +1,9 @@
+{
+    "data": {
+        "addFriend": {
+            "name": "Pete",
+            "age": 27,
+            "isMarried": false
+        }
+    }
+}

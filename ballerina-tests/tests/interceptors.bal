@@ -352,6 +352,16 @@ readonly service class InterceptMutation2 {
     }
 }
 
+// readonly service class InterceptMutation3 {
+//     *graphql:Interceptor;
+
+//     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
+//         _ = context.resolve('field);
+//         Person p = {name: "ASAC Schrader", age: 43, address: {number: "4901", street: "Cumbre Del Sur Court NE", city: "New Mexico"}};
+//         return p;
+//     }
+// }
+
 readonly service class InvalidInterceptor1 {
     *graphql:Interceptor;
 
@@ -847,7 +857,7 @@ readonly service class ServiceLevelInterceptor {
     }
 
     isolated function grantAccess(string fieldName) returns boolean {
-        string[] grantedFields = ["profile", "books", "setName", "person", "setAge", "customer", "newBooks"];
+        string[] grantedFields = ["profile", "books", "setName", "person", "setAge", "customer", "newBooks", "updatePerson", "person"];
         if grantedFields.indexOf(fieldName) is int {
             return true;
         }
