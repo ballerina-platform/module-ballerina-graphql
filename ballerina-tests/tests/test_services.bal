@@ -2717,3 +2717,26 @@ service /caching_with_dataloader on wrappedListener {
         return new (authorRow);
     }
 }
+
+service /field_caching_with_interceptors on basicListener {
+    private string name = "voldemort";
+
+    @graphql:ResourceConfig {
+        interceptors: [new StringInterceptor1(), new StringInterceptor2(), new StringInterceptor3()],
+        cacheConfig:{
+            enabled: true,
+            maxAge: 15
+        }
+    }
+    resource function get enemy() returns string {
+        return self.name;
+    }
+
+    remote function updateEnemy(graphql:Context context, string name, boolean enableEvict) returns string|error {
+        if enableEvict {
+            check context.evictCache("enemy");
+        }
+        self.name = name;
+        return self.name;
+    }
+}

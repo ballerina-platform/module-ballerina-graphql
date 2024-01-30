@@ -17,7 +17,7 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["server_cache", "a"],
+    groups: ["server_cache"],
     dataProvider: dataProviderServerCache
 }
 isolated function testServerSideCache(string documentFile, string[] resourceFileNames, json variables = (), string[] operationNames = []) returns error? {
@@ -53,7 +53,7 @@ function dataProviderServerCache() returns map<[string, string[], json, string[]
 }
 
 @test:Config {
-    groups: ["server_cache", "data_loader", "dl"],
+    groups: ["server_cache", "data_loader"],
     dataProvider: dataProviderServerCacheWithDataloader
 }
 isolated function testServerSideCacheWithDataLoader(string documentFile, string[] resourceFileNames, json variables = (), string[] operationNames = []) returns error? {
@@ -71,6 +71,28 @@ function dataProviderServerCacheWithDataloader() returns map<[string, string[], 
     map<[string, string[], json, string[]]> dataSet = {
         "1": ["server_cache_with_dataloader", ["server_cache_with_dataloader_1", "server_cache_with_dataloader_2", "server_cache_with_dataloader_1"], (), ["A", "B", "A"]],
         "2": ["server_cache_eviction_with_dataloader", ["server_cache_with_dataloader_1", "server_cache_with_dataloader_2", "server_cache_with_dataloader_3"], (), ["A", "B", "A"]]
+    };
+    return dataSet;
+}
+
+@test:Config {
+    groups: ["server_cache", "data_loader"],
+    dataProvider: dataProviderServerCacheWithInterceptors
+}
+isolated function testServerSideCacheWithInterceptors(string documentFile, string[] resourceFileNames, json variables = (), string[] operationNames = []) returns error? {
+    string url = "http://localhost:9091/field_caching_with_interceptors";
+    string document = check getGraphqlDocumentFromFile(documentFile);
+    foreach int i in 0..< resourceFileNames.length() {
+        json actualPayload = check getJsonPayloadFromService(url, document, variables, operationNames[i]);
+        json expectedPayload = check getJsonContentFromFile(resourceFileNames[i]);
+        assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    }
+}
+
+function dataProviderServerCacheWithInterceptors() returns map<[string, string[], json, string[]]> {
+    map<[string, string[], json, string[]]> dataSet = {
+        "1": ["server_cache_with_interceptors", ["server_cache_with_interceptors_1", "server_cache_with_interceptors_2", "server_cache_with_interceptors_1"], (), ["A", "B", "A"]],
+        "2": ["server_cache_eviction_with_interceptors", ["server_cache_with_interceptors_1", "server_cache_with_interceptors_2", "server_cache_with_interceptors_3"], (), ["A", "B", "A"]]
     };
     return dataSet;
 }
