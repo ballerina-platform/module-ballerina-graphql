@@ -1,0 +1,9 @@
+{
+    "data": {
+        "addFriend": {
+            "name": "Gretchen Schwartz",
+            "age": 50,
+            "isMarried": true
+        }
+    }
+}

@@ -394,3 +394,10 @@ type EnemyInput record {|
     readonly string name = "Enemy6";
     int age = 12;
 |};
+
+type Associate record {|
+    readonly string name;
+    string status;
+|};
+
+public type Relationship FriendService|AssociateService;

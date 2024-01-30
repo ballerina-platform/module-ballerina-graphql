@@ -1,0 +1,27 @@
+
+{
+    "data": {
+        "getFriendServices": [
+            {
+                "name": "Skyler",
+                "age": 45
+            },
+            {
+                "name": "Walter White Jr.",
+                "age": 25
+            },
+            {
+                "name": "Jesse Pinkman",
+                "age": 30
+            },
+            {
+                "name": "Elliott Schwartz",
+                "age": 51
+            },
+            {
+                "name": "Tyler",
+                "age": 28
+            }
+        ]
+    }
+}
