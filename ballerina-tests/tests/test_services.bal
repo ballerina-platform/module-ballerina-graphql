@@ -2817,66 +2817,7 @@ service /server_cache_operations on basicListener {
         }
         return;
     }
-
-    // function preAuthors(graphql:Context ctx, int[] ids) {
-    //     addAuthorIdsToAuthorLoader(ctx, ids);
-    // }
-
-    // resource function get authors(graphql:Context ctx, int[] ids) returns AuthorData[]|error {
-    //     dataloader:DataLoader authorLoader = ctx.getDataLoader(AUTHOR_LOADER);
-    //     AuthorRow[] authorRows = check trap ids.map(id => check authorLoader.get(id, AuthorRow));
-    //     return from AuthorRow authorRow in authorRows
-    //         select new (authorRow);
-    // }
-
-    // remote function updateAutorName(graphql:Context ctx, int id, string name) returns AuthorData|error {
-    //     [int, string] key = [id, name];
-    //     dataloader:DataLoader authorUpdateLoader = ctx.getDataLoader(AUTHOR_UPDATE_LOADER);
-    //     AuthorRow authorRow = check authorUpdateLoader.get(key);
-    //     return new (authorRow);
-    // }
 }
-
-// @graphql:ServiceConfig {
-//     cacheConfig: {
-//         enabled: true,
-//         maxAge: 20,
-//         maxSize: 15
-//     },
-//     contextInit: initContext
-// }
-// isolated service /server_cache_interceptor on basicListener {
-//     private Person p = {
-//         name: "Hank",
-//         age: 43,
-//         address: {number: "4901", street: "Cumbre Del Sur Court NE", city: "New Mexico"}
-//     };
-
-//     @graphql:ResourceConfig {
-//         interceptors: [new InterceptQuery(), new ServiceLevelInterceptor()]
-//     }
-//     isolated resource function get person() returns Person|error {        
-//         lock {
-//             return self.p;
-//         }
-//     }
-
-//     isolated remote function updatePerson(string name) returns Person {
-//         lock {
-//             Person p = {name: name, age: self.p.age, address: self.p.address};
-//             self.p = p;
-//             return self.p;
-//         }
-//     }
-
-//     isolated remote function setName(string name) returns Person {
-//         lock {
-//             Person p = {name: name, age: self.p.age, address: self.p.address};
-//             self.p = p;
-//             return self.p;
-//         }
-//     }
-// }
 
 const AUTHOR_LOADER_2 = "authorLoader2";
 const BOOK_LOADER_2 = "bookLoader2";
