@@ -31,16 +31,16 @@ isolated function testInputParameters(string resourceFileName) returns error? {
 
 function dataProviderInputParameters() returns string[][] {
     return [
-        ["functions_with_input_parameter"]
-        // ["input_parameter_type_not_present_in_return_types"],
-        // ["query_without_default_parameter"],
-        // ["query_with_default_parameter"],
-        // ["float_as_input"],
-        // ["coerce_int_input_to_float"],
-        // ["optional_enum_argument_without_value"],
-        // ["optional_enum_argument_with_value"],
-        // ["input_with_escape_characters"],
-        // ["input_with_unicode_characters"]
+        ["functions_with_input_parameter"],
+        ["input_parameter_type_not_present_in_return_types"],
+        ["query_without_default_parameter"],
+        ["query_with_default_parameter"],
+        ["float_as_input"],
+        ["coerce_int_input_to_float"],
+        ["optional_enum_argument_without_value"],
+        ["optional_enum_argument_with_value"],
+        ["input_with_escape_characters"],
+        ["input_with_unicode_characters"]
     ];
 }
 

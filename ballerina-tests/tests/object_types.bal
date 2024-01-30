@@ -497,14 +497,29 @@ public isolated distinct service class FriendService {
         self.isMarried = isMarried;
     }
 
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            maxAge: 180
+        }
+    }
     isolated resource function get name() returns string {
         return self.name;
     }
 
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            maxAge: 180
+        }
+    }
     isolated resource function get age() returns int {
         return self.age;
     }
 
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            maxAge: 180
+        }
+    }
     isolated resource function get isMarried() returns boolean {
         return self.isMarried;
     }

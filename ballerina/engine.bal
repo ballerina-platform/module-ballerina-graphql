@@ -74,10 +74,9 @@ isolated class Engine {
     isolated function getFromCache(string key) returns any|error {
         cache:Cache? cache = self.cache;
         if cache is cache:Cache {
-            io:println(cache.get(key));
             return cache.get(key);
         }
-        return error("no cache table found!");
+        return error("Cache table not found!");
     }
 
     isolated function validate(string documentString, string? operationName, map<json>? variables)

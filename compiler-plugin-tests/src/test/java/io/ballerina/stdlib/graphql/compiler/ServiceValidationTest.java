@@ -294,7 +294,7 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_FUNCTION, "Interceptor", "execute");
-        assertErrorMessage(diagnostic, message, 80, 5);
+        assertErrorMessage(diagnostic, message, 91, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS);

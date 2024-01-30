@@ -67,7 +67,7 @@ public type Graphiql record {|
 
 # Represent the cache configurations of GraphQL server.
 #
-# + enabled - State of the cache
+# + enabled - State of the caching
 # + maxAge - TTL of the cache in seconds
 # + maxSize - Maximum number of cache entries
 public type ServerCacheConfig record {|

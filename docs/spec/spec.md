@@ -104,9 +104,11 @@ The conforming implementation of the specification is released and included in t
         * 7.1.6 [Service Interceptors](#716-service-interceptors)
         * 7.1.7 [Introspection Configurations](#717-introspection-configurations)
         * 7.1.8 [Constraint Configurations](#718-constraint-configurations)
+        * 7.1.9 [Operation Cache Configurations](#719-operation-cache-configurations)
     * 7.2 [Resource Configuration](#72-resource-configuration)
         * 7.2.1 [Field Interceptors](#721-field-interceptors)
         * 7.2.2 [Prefetch Method Name Configuration](#722-prefetch-method-name-configuration)
+        * 7.2.3 [Field Cache Configurations](#723-field-cache-configuration)
     * 7.3 [Interceptor Configuration](#73-interceptor-configuration)
         * 7.3.1 [Scope Configuration](#731-scope-configuration)
     * 7.4 [ID Annotation](#74-id-annotation)
@@ -1760,6 +1762,37 @@ service on new graphql:Listener(9090) {
 }
 ```
 
+#### 7.1.9 Operation Cache Configurations
+
+The `cacheConfig` field is used to provide the GraphQL operation-level cache configuration to enable the caching for `query` operations.
+
+###### Example: Operation Cache Configurations
+
+```ballerina
+@graphql:ServiceConfig {
+    cacheConfig: {
+        enabled: true,
+        maxAge: 60,
+        maxSize: 120
+    }
+}
+service on new graphql:Listener(9090) {
+    // ...
+}
+```
+
+##### 7.1.9.1 The `enabled` Field
+The optinal field `enabled` accepts a `boolean` that denotes whether the server-side operation-level cache is enabled or not. By default, it has been set to `true`.
+
+##### 7.1.9.2 The `maxAge` Field
+The optional field `maxAge` accepts a valid `decimal` value which considers as the TTL(Time To Live) in seconds. The default maxAge is `60` seconds.
+
+##### 7.1.9.3 The `maxSize` Field
+The optional field `maxSize` accepts an int that denotes the maximum number of cache entries in the cache table. By default, it has been set to `120`.
+
+#### 7.1.6 Service Interceptors
+
+
 ### 7.2 Resource Configuration
 
 The configurations stated in the `graphql:ResourceConfig`, are used to change the behavior of a particular GraphQL resolver. These configurations are applied to the resolver functions.
@@ -1815,6 +1848,27 @@ service on new graphql:Listener(9090) {
         prefetchMethodName: "loadBooks"
     }
     resource function get books(graphql:Context ctx) returns Book[] {
+      // ...
+   }
+}
+```
+#### 7.2.3 Field Cache Configuration
+
+The `cacheConfig` field is used to provide the field-level cache configs. The fields are as same as the operation-level cache configs.
+
+###### Example: Field Cache Configs
+
+```ballerina
+service on new graphql:Listener(9090) {
+
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            enabled: true,
+            maxAge: 60,
+            maxSize: 120
+        }
+    }
+    resource function get name(int id) returns string {
       // ...
    }
 }

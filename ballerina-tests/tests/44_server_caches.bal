@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/test;
+import ballerina/lang.runtime;
 
 @test:Config {
     groups: ["server_cache"],
@@ -76,7 +77,7 @@ function dataProviderServerCacheWithDataloader() returns map<[string, string[], 
 }
 
 @test:Config {
-    groups: ["server_cache", "data_loader"],
+    groups: ["server_cache", "interceptors"],
     dataProvider: dataProviderServerCacheWithInterceptors
 }
 isolated function testServerSideCacheWithInterceptors(string documentFile, string[] resourceFileNames, json variables = (), string[] operationNames = []) returns error? {
@@ -95,4 +96,30 @@ function dataProviderServerCacheWithInterceptors() returns map<[string, string[]
         "2": ["server_cache_eviction_with_interceptors", ["server_cache_with_interceptors_1", "server_cache_with_interceptors_2", "server_cache_with_interceptors_3"], (), ["A", "B", "A"]]
     };
     return dataSet;
+}
+
+@test:Config {
+    groups: ["server_cache"]
+}
+isolated function testServerCacheEvictionWithTTL() returns error? {
+    string url = "http://localhost:9091/field_caching_with_interceptors";
+    string document = check getGraphqlDocumentFromFile("server_cache_with_TTL");
+
+    json actualPayload = check getJsonPayloadFromService(url, document, (), "A");
+    json expectedPayload = check getJsonContentFromFile("server_cache_eviction_with_TTL_1");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+
+    actualPayload = check getJsonPayloadFromService(url, document, {"name": "Potter"}, "B");
+    expectedPayload = check getJsonContentFromFile("server_cache_eviction_with_TTL_2");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+
+    actualPayload = check getJsonPayloadFromService(url, document, (), "A");
+    expectedPayload = check getJsonContentFromFile("server_cache_eviction_with_TTL_1");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+
+    runtime:sleep(11);
+
+    actualPayload = check getJsonPayloadFromService(url, document, (), "A");
+    expectedPayload = check getJsonContentFromFile("server_cache_eviction_with_TTL_3");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

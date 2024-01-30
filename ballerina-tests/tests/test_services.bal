@@ -2531,11 +2531,6 @@ service /server_cache on basicListener {
             select friend;
     }
 
-    @graphql:ResourceConfig {
-        cacheConfig: {
-            maxAge: 180
-        }
-    }
     isolated resource function get getFriendService(string name) returns FriendService  {
         Friend[] person = from Friend friend in self.friends
         where friend.name == name
@@ -2719,7 +2714,8 @@ service /caching_with_dataloader on wrappedListener {
 }
 
 service /field_caching_with_interceptors on basicListener {
-    private string name = "voldemort";
+    private string enemy = "voldemort";
+    private string friend = "Harry";
 
     @graphql:ResourceConfig {
         interceptors: [new StringInterceptor1(), new StringInterceptor2(), new StringInterceptor3()],
@@ -2729,14 +2725,29 @@ service /field_caching_with_interceptors on basicListener {
         }
     }
     resource function get enemy() returns string {
-        return self.name;
+        return self.enemy;
+    }
+
+    @graphql:ResourceConfig {
+        cacheConfig:{
+            enabled: true,
+            maxAge: 10
+        }
+    }
+    resource function get friend() returns string {
+        return self.friend;
     }
 
     remote function updateEnemy(graphql:Context context, string name, boolean enableEvict) returns string|error {
         if enableEvict {
             check context.evictCache("enemy");
         }
-        self.name = name;
-        return self.name;
+        self.enemy = name;
+        return self.enemy;
+    }
+
+    remote function updateFriend(string name) returns string|error {
+        self.friend = name;
+        return self.friend;
     }
 }
