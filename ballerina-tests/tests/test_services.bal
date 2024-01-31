@@ -385,7 +385,6 @@ service /list_inputs on basicListener {
 }
 
 service /records on basicListener {
-
     isolated resource function get detective() returns Person {
         return {
             name: "Sherlock Holmes",
@@ -2127,6 +2126,7 @@ service /annotations on wrappedListener {
     validation: false
 }
 service /constraints_config on basicListener {
+
     isolated resource function get movie(MovieDetails movie) returns string {
         return movie.name;
     }

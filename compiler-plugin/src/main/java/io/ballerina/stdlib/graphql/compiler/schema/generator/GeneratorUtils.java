@@ -53,7 +53,9 @@ public class GeneratorUtils {
     public static final String MAP_KEY_ARGUMENT_DESCRIPTION =
             "[auto-generated]: The key of the value required from a map";
     public static final String SCHEMA_STRING_FIELD = "schemaString";
-    public static final String ENABLED_FIELD_CACHE_FIELD = "enabledFieldCache";
+    public static final String ENABLED_CACHE_FIELD = "enabled";
+    public static final String MAX_SIZE_CACHE_FIELD = "maxSize";
+    public static final String FIELD_CACHE_CONFIG_FIELD = "fieldCacheConfig";
 
     public static String getTypeName(TypeSymbol typeSymbol) {
         switch (typeSymbol.typeKind()) {

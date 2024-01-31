@@ -1813,9 +1813,6 @@ The optional field `maxAge` accepts a valid `decimal` value which considers as t
 ##### 7.1.9.3 The `maxSize` Field
 The optional field `maxSize` accepts an int that denotes the maximum number of cache entries in the cache table. By default, it has been set to `120`.
 
-#### 7.1.6 Service Interceptors
-
-
 ### 7.2 Resource Configuration
 
 The configurations stated in the `graphql:ResourceConfig`, are used to change the behavior of a particular GraphQL resolver. These configurations are applied to the resolver functions.
@@ -1875,6 +1872,7 @@ service on new graphql:Listener(9090) {
    }
 }
 ```
+
 #### 7.2.3 Field Cache Configuration
 
 The `cacheConfig` field is used to provide the field cache configs. The fields are as same as the operation cache configs. The field configurations override the operation configurations.
@@ -2777,9 +2775,9 @@ dataloader:DataLoader authorLoader = context.getDataLoader("authorLoader");
 
 ##### 10.1.1.6 Evict Cache from Context
 
-To evict a cache entry from the server side caching, the `evictCache` method can be used. It requires one parameter.
+To evict a cache entry from the server-side caching, the `evictCache` method can be used. It requires one parameter:
 
-- `path` - The path of the field that needed to be evict the cache. The path should be specified as path segments combined with periods.
+- `path` - The path of the field that needs to be evicted from the cache. The path should be specified as path segments combined with periods.
 
 If the provided path does not match any existing cache entries, an error will be returned.
 
@@ -2791,7 +2789,7 @@ check context.evictCache("profile.address.city");
 
 ##### 10.1.1.7 Invalidate All Caches from Context
 
-To clear the entire cache table, the `invalidateAll` method can be used. The method does not take any arguments. An error will be returned if the cache table cannot be cleared.
+To clear the entire cache table, you can use the `invalidateAll` method. This method does not take any arguments. An error will be returned if the cache table cannot be cleared.
 
 ###### Example: Invalidate All Caches from Context
 
@@ -3755,7 +3753,7 @@ This section describes the caching mechanisms in the Ballerina GraphQL module.
 
 #### 10.7.1 Server-side Caching
 
-The Ballerina GraphQL module offers built-in server-side caching for GraphQL `query` operations. The caching operates as in-memory caching, implemented using the Ballerina cache module. The module generates cache keys based on the argument and the path. The default eviction policy will utilize the Least Recently Used (LRU) mechanism.
+The Ballerina GraphQL module offers built-in server-side caching for GraphQL `query` operations. The caching operates as in-memory caching, implemented using the Ballerina cache module. The GraphQL module generates cache keys based on the arguments and the path. In server-side caching, the `errors` and `null` values are skipped when caching. There are two different ways called `operation caching` and `field caching` to enable server-side caching.
 
 ##### 10.7.1.1 Operation Caching
 
@@ -3767,7 +3765,7 @@ The GraphQL field caching can be enabled only for a specific field. This can be 
 
 #### 10.7.1.3 Cache Eviction
 
-The Ballerina GraphQL module provides APIs for manual cache eviction, in addition to the LRU cache eviction. These APIs can be accessed through the `[graphql:Context](#101-context-object)` object.
+Since server-side caching is implemented using the Ballerina cache module, the default eviction policy will utilize the `Least Recently Used (LRU)` mechanism. In addition to LRU cache eviction, the GraphQL module provides APIs for manual cache eviction. Currently, it provides `evictCache` and `invalidateAll` APIs for manual cache eviction. These APIs can be accessed through the [graphql:Context](#101-context-object) object.
 
 ##### 10.7.1.3.1 The `evictCache` Method
 

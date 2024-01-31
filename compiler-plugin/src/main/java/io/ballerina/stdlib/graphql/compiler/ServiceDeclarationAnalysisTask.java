@@ -64,6 +64,6 @@ public class ServiceDeclarationAnalysisTask extends ServiceAnalysisTask {
         Schema schema = generateSchema(context, interfaceEntityFinder, node, description);
         DocumentId documentId = context.documentId();
         addToModifierContextMap(documentId, node, schema);
-        addToModifierContextMap(documentId, node, serviceValidator.isFieldCacheEnabled());
+        addToModifierContextMap(documentId, node, serviceValidator.getCacheConfigContext());
     }
 }

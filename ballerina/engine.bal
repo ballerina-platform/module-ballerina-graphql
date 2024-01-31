@@ -19,7 +19,6 @@ import graphql.parser;
 import ballerina/cache;
 import ballerina/jballerina.java;
 import ballerina/uuid;
-import ballerina/io;
 
 isolated class Engine {
     private final readonly & __Schema schema;
@@ -32,7 +31,7 @@ isolated class Engine {
 
     isolated function init(string schemaString, int? maxQueryDepth, Service s,
                            readonly & (readonly & Interceptor)[] interceptors, boolean introspection,
-                           boolean validation, ServerCacheConfig? cacheConfig = (), boolean enabledFieldCache = false)
+                           boolean validation, ServerCacheConfig? cacheConfig = (), ServerCacheConfig? fieldCacheConfig = ())
     returns Error? {
         if maxQueryDepth is int && maxQueryDepth < 1 {
             return error Error("Max query depth value must be a positive integer");
@@ -43,8 +42,7 @@ isolated class Engine {
         self.introspection = introspection;
         self.validation = validation;
         self.cacheConfig = cacheConfig.cloneReadOnly();
-        self.cache = cacheConfig is ServerCacheConfig ? new ({capacity:cacheConfig.maxSize, evictionFactor:0.2, defaultMaxAge:cacheConfig.maxAge})
-            : enabledFieldCache ? new({capacity:120, evictionFactor:0.2, defaultMaxAge:60}):();
+        self.cache = initCacheTable(cacheConfig, fieldCacheConfig);
         self.addService(s);
     }
 
@@ -68,7 +66,7 @@ isolated class Engine {
         if self.cache is cache:Cache {
             return (<cache:Cache>self.cache).put(key, value, maxAge);
         }
-        return;
+        return error("Cache table not found!");
     }
 
     isolated function getFromCache(string key) returns any|error {
@@ -302,7 +300,6 @@ isolated class Engine {
                     fieldValue = check self.getFieldValue(context, 'field, responseGenerator);
                     decimal maxAge = 'field.getCacheMaxAge();
                     if maxAge > 0d && fieldValue !is () {
-                        // remove check and log the error msg
                         _ = check self.addToCache(cacheKey, fieldValue, maxAge);
                     }
                 }
@@ -395,16 +392,13 @@ isolated class Engine {
         return 'field.getFieldValue();
     }
 
-    private isolated function initCacheTable(ServerCacheConfig cacheConfig) returns cache:Cache
-        => new ({capacity:cacheConfig.maxSize, evictionFactor:0.2, defaultMaxAge:cacheConfig.maxAge});
-
     isolated function evictCache(string path) returns error? {
-        if self.cache is cache:Cache {
-            string[] keys = (<cache:Cache>self.cache).keys().filter(isolated function (string key) returns boolean {
+        cache:Cache? cache = self.cache;
+        if cache is cache:Cache {
+            string[] keys = cache.keys().filter(isolated function (string key) returns boolean {
                 return key.startsWith(path);
             });
             foreach string key in keys {
-                io:println("removed - ", key);
                 _ = check (<cache:Cache>self.cache).invalidate(key);
             }
         }

@@ -16,6 +16,7 @@
 
 import graphql.parser;
 
+import ballerina/cache;
 import ballerina/jballerina.java;
 import ballerina/lang.regexp;
 
@@ -109,7 +110,7 @@ isolated function getTypeNameFromValue(any value) returns string = @java:Method 
 # Obtains the schema representation of a federated subgraph, expressed in the SDL format.
 # + encodedSchemaString - Compile time auto generated schema
 # + return - Subgraph schema in SDL format as a string on success, or an error otherwise
-public isolated function getSdlString(string encodedSchemaString) 
+public isolated function getSdlString(string encodedSchemaString)
 returns string|error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
 } external;
@@ -118,4 +119,13 @@ isolated function getDefaultPrefetchMethodName(string fieldName) returns string 
     return re `^[a-z]`.replace(fieldName, isolated function(regexp:Groups groups) returns string {
         return string `${DEFAULT_PREFETCH_METHOD_NAME_PREFIX}${groups[0].substring().toUpperAscii()}`;
     });
+}
+
+isolated function initCacheTable(ServerCacheConfig? operationCacheConfig, ServerCacheConfig? fieldCacheConfig) returns cache:Cache? {
+    if operationCacheConfig is ServerCacheConfig && operationCacheConfig.enabled {
+        return new ({capacity:operationCacheConfig.maxSize, evictionFactor:0.2, defaultMaxAge:operationCacheConfig.maxAge});
+    } else if fieldCacheConfig is ServerCacheConfig && fieldCacheConfig.enabled {
+        return new({capacity:fieldCacheConfig.maxSize, evictionFactor:0.2, defaultMaxAge:fieldCacheConfig.maxAge});
+    }
+    return;
 }

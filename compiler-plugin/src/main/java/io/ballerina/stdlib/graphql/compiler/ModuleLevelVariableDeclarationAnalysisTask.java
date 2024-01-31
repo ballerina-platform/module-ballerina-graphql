@@ -77,7 +77,7 @@ public class ModuleLevelVariableDeclarationAnalysisTask extends ServiceAnalysisT
         DocumentId documentId = context.documentId();
         addToModifierContextMap(documentId, moduleVariableDeclarationNode, schema);
         addToModifierContextMap(documentId, moduleVariableDeclarationNode,
-                serviceObjectValidator.isFieldCacheEnabled());
+                serviceObjectValidator.getCacheConfigContext());
     }
 
     public static String getDescription(SemanticModel semanticModel,

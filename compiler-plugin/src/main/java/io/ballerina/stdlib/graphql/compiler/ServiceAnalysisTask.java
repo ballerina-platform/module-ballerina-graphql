@@ -93,13 +93,13 @@ public abstract class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnal
         }
     }
 
-    public void addToModifierContextMap(DocumentId documentId, Node node, boolean enabledResourceCache) {
+    public void addToModifierContextMap(DocumentId documentId, Node node, CacheConfigContext cacheConfigContext) {
         if (this.modifierContextMap.containsKey(documentId)) {
             GraphqlModifierContext modifierContext = this.modifierContextMap.get(documentId);
-            modifierContext.add(node, enabledResourceCache);
+            modifierContext.add(node, cacheConfigContext);
         } else {
             GraphqlModifierContext modifierContext = new GraphqlModifierContext();
-            modifierContext.add(node, enabledResourceCache);
+            modifierContext.add(node, cacheConfigContext);
             this.modifierContextMap.put(documentId, modifierContext);
         }
     }

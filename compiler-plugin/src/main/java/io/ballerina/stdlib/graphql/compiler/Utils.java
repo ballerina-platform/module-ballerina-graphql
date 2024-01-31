@@ -94,6 +94,8 @@ public final class Utils {
     private static final String ENTITY_ANNOTATION = "Entity";
 
     private static final String CACHE_CONFIG_ENABLE_FIELD = "enabled";
+    private static final String CACHE_CONFIG_MAX_SIZE_FIELD = "maxSize";
+    private static final int DEFAULT_MAX_SIZE = 120;
 
     private Utils() {
     }
@@ -412,6 +414,31 @@ public final class Utils {
             }
         }
         return true;
+    }
+
+    public static int getMaxSize(MappingConstructorExpressionNode mappingConstructorNode) {
+        if (mappingConstructorNode.fields().isEmpty()) {
+            return DEFAULT_MAX_SIZE;
+        }
+        for (MappingFieldNode field: mappingConstructorNode.fields()) {
+            if (field.kind() == SyntaxKind.SPECIFIC_FIELD) {
+                SpecificFieldNode specificFieldNode = (SpecificFieldNode) field;
+                Node fieldName = specificFieldNode.fieldName();
+                if (fieldName.kind() == SyntaxKind.IDENTIFIER_TOKEN) {
+                    IdentifierToken identifierToken = (IdentifierToken) fieldName;
+                    String identifierName = identifierToken.text();
+                    if (CACHE_CONFIG_MAX_SIZE_FIELD.equals(identifierName) &&
+                            specificFieldNode.valueExpr().isPresent()) {
+                        ExpressionNode valueExpression = specificFieldNode.valueExpr().get();
+                        if (valueExpression.kind() == SyntaxKind.NUMERIC_LITERAL) {
+                            BasicLiteralNode integerLiteralNode = (BasicLiteralNode) valueExpression;
+                            return Integer.parseInt(integerLiteralNode.toSourceCode().trim());
+                        }
+                    }
+                }
+            }
+        }
+        return DEFAULT_MAX_SIZE;
     }
 
     public static String getStringValue(BasicLiteralNode expression) {

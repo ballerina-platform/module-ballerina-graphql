@@ -26,7 +26,7 @@
 # + introspection - Whether to enable or disable the introspection on the service
 # + validation - Whether to enable or disable the constraint validation
 # + cacheConfig - The cache configurations for the operations
-# + enabledFieldCache - State whether enabled or disabled the field cache. This is auto-generated at the compile time
+# + fieldCacheConfig - The field cache config derived from the resource annotations. This is auto-generated at the compile time
 public type GraphqlServiceConfig record {|
     int maxQueryDepth?;
     ListenerAuthConfig[] auth?;
@@ -38,7 +38,7 @@ public type GraphqlServiceConfig record {|
     boolean introspection = true;
     boolean validation = true;
     ServerCacheConfig cacheConfig?;
-    readonly boolean enabledFieldCache = false;
+    readonly ServerCacheConfig? fieldCacheConfig = ();
 |};
 
 # The annotation to configure a GraphQL service.

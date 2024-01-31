@@ -118,9 +118,9 @@ public isolated class Context {
         }
     }
 
-    # Remove a cache entries related to the given path.
+    # Remove cache entries related to the given path.
     #
-    # + path - The path corresponding to the cache entries to be removed (Ex: "Query.getUsers")
+    # + path - The path corresponding to the cache entries to be removed (Ex: "person.address.city")
     # + return - The error if the cache eviction fails or nil otherwise
     public isolated function evictCache(string path) returns error? {
         Engine? engine = self.getEngine();

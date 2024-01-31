@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/graphql;
+
 service /custom_prefix on graphqlListener {
     @graphql:ResourceConfig {
         cacheConfig: {

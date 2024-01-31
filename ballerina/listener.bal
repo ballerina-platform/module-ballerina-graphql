@@ -71,13 +71,13 @@ public class Listener {
         readonly & (readonly & Interceptor)[] interceptors = getServiceInterceptors(serviceConfig);
         boolean introspection = getIntrospection(serviceConfig);
         boolean validation = getValidation(serviceConfig);
-        ServerCacheConfig? cacheConfig = getCacheConfig(serviceConfig);
-        boolean enabledFieldCache = getEnabledFieldCache(serviceConfig);
+        ServerCacheConfig? operationCacheConfig = getCacheConfig(serviceConfig);
+        ServerCacheConfig? fieldCacheConfig = getFieldCacheConfigFromServiceConfig(serviceConfig);
         Engine engine;
         if self.graphiql.enabled {
             check validateGraphiqlPath(self.graphiql.path);
             string gqlServiceBasePath = name is () ? "" : getBasePath(name);
-            engine = check new (schemaString, maxQueryDepth, s, interceptors, introspection, validation, cacheConfig, enabledFieldCache);
+            engine = check new (schemaString, maxQueryDepth, s, interceptors, introspection, validation, operationCacheConfig, fieldCacheConfig);
             __Schema & readonly schema = engine.getSchema();
             __Type? subscriptionType = schema.subscriptionType;
             string graphqlUrl = string `${self.httpEndpoint}/${gqlServiceBasePath}`;
@@ -91,7 +91,7 @@ public class Listener {
                 return error Error("Error occurred while attaching the GraphiQL endpoint", result);
             }
         } else {
-            engine = check new (schemaString, maxQueryDepth, s, interceptors, introspection, validation, cacheConfig, enabledFieldCache);
+            engine = check new (schemaString, maxQueryDepth, s, interceptors, introspection, validation, operationCacheConfig, fieldCacheConfig);
         }
 
         HttpService httpService = getHttpService(engine, serviceConfig);

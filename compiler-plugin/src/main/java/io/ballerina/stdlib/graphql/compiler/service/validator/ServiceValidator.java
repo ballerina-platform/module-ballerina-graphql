@@ -65,6 +65,7 @@ import io.ballerina.compiler.syntax.tree.TypeDefinitionNode;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.commons.types.TypeName;
+import io.ballerina.stdlib.graphql.compiler.CacheConfigContext;
 import io.ballerina.stdlib.graphql.compiler.FinderContext;
 import io.ballerina.stdlib.graphql.compiler.Utils;
 import io.ballerina.stdlib.graphql.compiler.diagnostics.CompilationDiagnostic;
@@ -89,6 +90,7 @@ import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEntityAnnotationNode;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEntityAnnotationSymbol;
+import static io.ballerina.stdlib.graphql.compiler.Utils.getMaxSize;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getRecordFieldWithDefaultValueNode;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getRecordTypeDefinitionNode;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getStringValue;
@@ -128,7 +130,7 @@ public class ServiceValidator {
     private final boolean isSubgraph;
     private TypeSymbol rootInputParameterTypeSymbol;
     private final List<String> currentFieldPath;
-    private boolean enabledFieldCache;
+    private CacheConfigContext cacheConfigContext;
 
     private static final String FIELD_PATH_SEPARATOR = ".";
     private static final String PREFETCH_METHOD_PREFIX = "pre";
@@ -147,7 +149,7 @@ public class ServiceValidator {
         this.hasQueryType = false;
         this.currentFieldPath = new ArrayList<>();
         this.isSubgraph = isSubgraph;
-        this.enabledFieldCache = false;
+        this.cacheConfigContext = new CacheConfigContext(false);
     }
 
     public void validate() {
@@ -246,8 +248,8 @@ public class ServiceValidator {
         return this.errorOccurred;
     }
 
-    public boolean isFieldCacheEnabled() {
-        return this.enabledFieldCache;
+    public CacheConfigContext getCacheConfigContext() {
+        return this.cacheConfigContext;
     }
 
     private void validateService() {
@@ -362,7 +364,7 @@ public class ServiceValidator {
         return null;
     }
 
-    private boolean getCacheConfigEnabledField(AnnotationNode annotation) {
+    private void updateCacheConfigContextFromAnnot(AnnotationNode annotation) {
         // noinspection OptionalGetWithoutIsPresent
         MappingConstructorExpressionNode mappingConstructorExpressionNode = annotation.annotValue().get();
         for (MappingFieldNode field : mappingConstructorExpressionNode.fields()) {
@@ -373,12 +375,18 @@ public class ServiceValidator {
                     IdentifierToken identifierToken = (IdentifierToken) fieldName;
                     String identifierName = identifierToken.text();
                     if (CACHE_CONFIG.equals(identifierName) && specificFieldNode.valueExpr().isPresent()) {
-                        return getBooleanValue((MappingConstructorExpressionNode) specificFieldNode.valueExpr().get());
+                        boolean enabled =
+                                getBooleanValue((MappingConstructorExpressionNode) specificFieldNode.valueExpr().get());
+                        if (enabled) {
+                            int maxSize =
+                                    getMaxSize((MappingConstructorExpressionNode) specificFieldNode.valueExpr().get());
+                            this.cacheConfigContext.setEnabled(enabled);
+                            this.cacheConfigContext.setMaxSize(maxSize);
+                        }
                     }
                 }
             }
         }
-        return false;
     }
 
     private boolean hasPrefetchMethodNameConfig(AnnotationNode annotation) {
@@ -495,23 +503,20 @@ public class ServiceValidator {
         this.currentFieldPath.add(path);
         validateResourcePath(methodSymbol, location);
         validateMethod(methodSymbol, location);
-        if (!isFieldCacheEnabled()) {
-            this.enabledFieldCache = hasFieldCacheEnabled(methodSymbol);
-        }
+        updateCacheConfigContext(methodSymbol);
         this.currentFieldPath.remove(path);
     }
 
-    private boolean hasFieldCacheEnabled(MethodSymbol methodSymbol) {
+    private void updateCacheConfigContext(MethodSymbol methodSymbol) {
         if (hasResourceConfigAnnotation(methodSymbol)) {
             FinderContext finderContext = new FinderContext(this.context);
             ResourceConfigAnnotationFinder resourceConfigAnnotationFinder = new ResourceConfigAnnotationFinder(
                     finderContext, methodSymbol);
             Optional<AnnotationNode> annotation = resourceConfigAnnotationFinder.find();
             if (annotation.isPresent() && hasCacheConfig(annotation.get())) {
-                return getCacheConfigEnabledField(annotation.get());
+                updateCacheConfigContextFromAnnot(annotation.get());
             }
         }
-        return false;
     }
 
     private void validateSubscribeResource(ResourceMethodSymbol methodSymbol, Location location) {
