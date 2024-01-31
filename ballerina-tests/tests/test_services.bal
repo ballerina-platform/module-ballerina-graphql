@@ -2735,7 +2735,7 @@ service /server_cache_operations on basicListener {
             return new FriendService(person[0].name, person[0].age, person[0].isMarried);
         } else {
             return error(string `No person found with the name: ${name}`);
-        }   
+        }
     }
 
     isolated resource function get getAssociateService(string name) returns AssociateService  {

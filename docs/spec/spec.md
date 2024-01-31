@@ -105,6 +105,9 @@ The conforming implementation of the specification is released and included in t
         * 7.1.7 [Introspection Configurations](#717-introspection-configurations)
         * 7.1.8 [Constraint Configurations](#718-constraint-configurations)
         * 7.1.9 [Operation Cache Configurations](#719-operation-cache-configurations)
+            * 7.1.9.1 [The `enabled` Field](#7191-the-enabled-field)
+            * 7.1.9.2 [The `maxAge` Field](#7192-the-maxage-field)
+            * 7.1.9.3 [The `maxSize` Field](#7193-the-maxsize-field)
     * 7.2 [Resource Configuration](#72-resource-configuration)
         * 7.2.1 [Field Interceptors](#721-field-interceptors)
         * 7.2.2 [Prefetch Method Name Configuration](#722-prefetch-method-name-configuration)
@@ -150,6 +153,8 @@ The conforming implementation of the specification is released and included in t
             * 10.1.1.3 [Remove Attribute from Context](#10113-remove-attribute-from-context)
             * 10.1.1.4 [Register DataLoader in Context](#10114-register-dataloader-in-context)
             * 10.1.1.5 [Get DataLoader from Context](#10115-get-dataloader-from-context)
+            * 10.1.1.6 [Evict Cache from Context](#10116-evict-cache-from-context)
+            * 10.1.1.7 [Invalidate All Caches from Context](#10117-invalidate-all-caches-from-context)
         * 10.1.2 [Accessing the Context](#1012-accessing-the-context-object)
         * 10.1.3 [Resolving Field Value](#1013-resolving-field-value)
     * 10.2 [Field Object](#102-field-object)
@@ -195,6 +200,13 @@ The conforming implementation of the specification is released and included in t
             * 10.6.3.1 [Import `graphql.dataloader` Submodule](#10631-import-graphqldataloader-submodule)
             * 10.6.3.2 [Register DataLoaders to Context via ContextInit Function](#10632-register-dataloaders-to-context-via-contextinit-function)
             * 10.6.3.3 [Define the Corresponding `prefetch` Method](#10633-define-the-corresponding-prefetch-method)
+    * 10.7 [Caching](#107-caching)
+        * 10.7.1 [Server-side Caching](#1071-server-side-caching)
+            * 10.7.1.1 [Operation Caching](#10711-operation-caching)
+            * 10.7.1.2 [Field Caching](#10712-field-caching)
+            * 10.7.1.3 [Cache Eviction](#10713-cache-eviction)
+                * 10.7.1.3.1 [The `evictCache` Method](#107131-the-evictcache-method)
+                * 10.7.1.3.2 [The `invalidateAll` Method](#107132-the-invalidateall-method)
 
 ## 1. Overview
 
@@ -1764,7 +1776,7 @@ service on new graphql:Listener(9090) {
 
 #### 7.1.9 Operation Cache Configurations
 
-The `cacheConfig` field is used to provide the GraphQL operation-level cache configuration to enable the caching for `query` operations.
+The `cacheConfig` field is used to provide the GraphQL operation cache configuration to enable the caching for `query` operations.
 
 ###### Example: Operation Cache Configurations
 
@@ -1781,8 +1793,19 @@ service on new graphql:Listener(9090) {
 }
 ```
 
+###### Example: Enable Operation Cache with Default Values
+
+```ballerina
+@graphql:ServiceConfig {
+    cacheConfig: {}
+}
+service on new graphql:Listener(9090) {
+    // ...
+}
+```
+
 ##### 7.1.9.1 The `enabled` Field
-The optinal field `enabled` accepts a `boolean` that denotes whether the server-side operation-level cache is enabled or not. By default, it has been set to `true`.
+The optinal field `enabled` accepts a `boolean` that denotes whether the server-side operation cache is enabled or not. By default, it has been set to `true`.
 
 ##### 7.1.9.2 The `maxAge` Field
 The optional field `maxAge` accepts a valid `decimal` value which considers as the TTL(Time To Live) in seconds. The default maxAge is `60` seconds.
@@ -1854,7 +1877,7 @@ service on new graphql:Listener(9090) {
 ```
 #### 7.2.3 Field Cache Configuration
 
-The `cacheConfig` field is used to provide the field-level cache configs. The fields are as same as the operation-level cache configs.
+The `cacheConfig` field is used to provide the field cache configs. The fields are as same as the operation cache configs. The field configurations override the operation configurations.
 
 ###### Example: Field Cache Configs
 
@@ -2750,6 +2773,30 @@ If the specified key does not exist in the context, the `getDataLoader()` method
 
 ```ballerina
 dataloader:DataLoader authorLoader = context.getDataLoader("authorLoader");
+```
+
+##### 10.1.1.6 Evict Cache from Context
+
+To evict a cache entry from the server side caching, the `evictCache` method can be used. It requires one parameter.
+
+- `path` - The path of the field that needed to be evict the cache. The path should be specified as path segments combined with periods.
+
+If the provided path does not match any existing cache entries, an error will be returned.
+
+###### Example: Evict Cache from Context
+
+```ballerina
+check context.evictCache("profile.address.city");
+```
+
+##### 10.1.1.7 Invalidate All Caches from Context
+
+To clear the entire cache table, the `invalidateAll` method can be used. The method does not take any arguments. An error will be returned if the cache table cannot be cleared.
+
+###### Example: Invalidate All Caches from Context
+
+```ballerina
+check context.invalidateAll();
 ```
 
 #### 10.1.2 Accessing the Context Object
@@ -3701,3 +3748,141 @@ isolated function followersLoaderFunction(readonly & anydata[] ids) returns Foll
 ```
 
 The above example utilizes three DataLoader instances: `postsLoader`, `rePostsLoader`, and `followersLoader`. These DataLoaders are associated with the batch load functions `postsLoaderFunction`, `rePostsLoaderFunction`, and `followersLoaderFunction`. The 'post' field in the example utilizes the `postsLoader` and `rePostsLoader` DataLoaders, while the 'followers' field utilizes the `followersLoader` DataLoader. This demonstrates how different fields can utilize specific DataLoaders to efficiently load and retrieve related data in GraphQL resolvers.
+
+### 10.7 Caching
+
+This section describes the caching mechanisms in the Ballerina GraphQL module.
+
+#### 10.7.1 Server-side Caching
+
+The Ballerina GraphQL module offers built-in server-side caching for GraphQL `query` operations. The caching operates as in-memory caching, implemented using the Ballerina cache module. The module generates cache keys based on the argument and the path. The default eviction policy will utilize the Least Recently Used (LRU) mechanism.
+
+##### 10.7.1.1 Operation Caching
+
+Operation caching can be used to cache the entire operation, and this can be enabled by providing the [operation cache configurations](#719-operation-cache-configurations). Once enabled, the GraphQL server initiates caching for all subfields of `query` operations. The fields requested through query operations will be cached based on the specified cache configurations
+
+##### 10.7.1.2 Field Caching
+
+The GraphQL field caching can be enabled only for a specific field. This can be done by providing the [field cache configurations](#723-field-cache-configuration). Once the field caching is enabled for a field, it will be applied to the sub-fields of that field.
+
+#### 10.7.1.3 Cache Eviction
+
+The Ballerina GraphQL module provides APIs for manual cache eviction, in addition to the LRU cache eviction. These APIs can be accessed through the `[graphql:Context](#101-context-object)` object.
+
+##### 10.7.1.3.1 The `evictCache` Method
+
+The `evictCache` method accepts a string-type path as an argument. This method removes all cache entries related to the given path. If the provided path does not match any existing cache entries, an error will be returned.
+
+```ballerina
+public isolated function evictCache(string path) returns error? {}
+```
+
+##### 10.7.1.3.2 The `invalidateAll` Method
+
+The `invalidateAll` method can be used to clear the entire cache table. This method does not take any arguments. An error will be returned if the cache table cannot be cleared.
+
+```ballerina
+public isolated function invalidateAll() returns error? {}
+```
+
+###### Example: Operation Cache Enabling and Eviction
+
+```ballerina
+import ballerina/graphql;
+
+@graphql:ServiceConfig {
+    cacheConfig: {
+        enabled: true,
+        maxAge: 50
+    }
+}
+service /graphql on new graphql:Listener(9090) {
+    private string name = "Ballerina GraphQL";
+    private string 'type = "code first";
+
+    resource function get name() returns string {
+        return self.name;
+    }
+
+    resource function get 'type() returns string {
+        return self.'type;
+    }
+
+    remote function updateName(graphql:Context context, string name) returns string|error {
+        check context.evictCache("name");
+        self.name = name
+        return self.name;
+    }
+}
+```
+
+In this example, caching is enabled at the operation level. Therefore, the fields `name` and `type` will be cached. When updating the name with a mutation, the cached values become invalid. Hence, the `evictCache` function can be used to evict the existing cache values.
+
+###### Example: Field Cache Enabling and Eviction
+
+```ballerina
+import ballerina/graphql;
+
+type Friend record {|
+    readonly string name;
+    int age;
+    boolean isMarried;
+|};
+
+service /graphql on new graphql:Listener(9090) {
+    private table<Friend> key(name) friends = table [
+        {name: "Skyler", age: 45, isMarried: true},
+        {name: "Jesse Pinkman", age: 23, isMarried: false}
+    ];
+
+    isolated resource function get friends(boolean isMarried = false) returns Person[] {
+        if isMarried {
+            return from Friend friend in self.friends
+                where friend.isMarried == true
+                select new Person(friend.name, friend.age, isMarried);
+        }
+        return from Friend friend in self.friends
+            where friend.isMarried == false
+            select new Person(friend.name, friend.age, isMarried);
+    }
+
+    isolated remote function updateAge(graphql:Context context, string name, int age) returns Person|error {
+        check context.evictCache("friends.age");
+        Friend friend = self.friends.get(name);
+        self.friends.put({name: name, age: age, isMarried: friend.isMarried});
+        return new Person(name, age, friend.isMarried);
+    }
+}
+
+public isolated distinct service class Person {
+    private final string name;
+    private final int age;
+    private final boolean isMarried;
+
+    public isolated function init(string name, int age, boolean isMarried) {
+        self.name = name;
+        self.age = age;
+        self.isMarried = isMarried;
+    }
+
+    isolated resource function get name() returns string {
+        return self.name;
+    }
+
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            enabled: true,
+            maxAge 20
+        }
+    }
+    isolated resource function get age() returns int {
+        return self.age;
+    }
+
+    isolated resource function get isMarried() returns boolean {
+        return self.isMarried;
+    }
+}
+```
+
+In this example, GraphQL field caching is enabled for the `age` field via the resource configurations. When the age is changed using the `updateAge` operation, the `evictCache` API is used to remove the existing cache entries related to the age field.
