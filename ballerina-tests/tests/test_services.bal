@@ -2476,6 +2476,22 @@ service /defaultParam on wrappedListener {
     resource function get nestedField() returns NestedField => new;
 }
 
+class ServiceDeclarationOnObjectField {
+
+    private graphql:Service objectFieldService = service object {
+        resource function get greeting() returns string {
+            return "Hello world";
+        }
+    };
+
+    public function init() {}
+
+    public function getService() returns graphql:Service {
+        return self.objectFieldService;
+    }
+
+}
+
 service /server_cache on basicListener {
     private string name = "Walter White";
     private table<Friend> key(name) friends = table [
@@ -2609,7 +2625,7 @@ service /server_cache on basicListener {
 
     isolated remote function updateName(graphql:Context context, string name, boolean enableEvict) returns string|error {
         if enableEvict {
-            check context.evictCache("name");
+            check context.invalidate("name");
         }
         self.name = name;
         return self.name;
@@ -2617,7 +2633,7 @@ service /server_cache on basicListener {
 
     isolated remote function updateFriend(graphql:Context context, string name, int age, boolean isMarried, boolean enableEvict) returns FriendService|error {
         if enableEvict {
-            check context.evictCache("getFriendService");
+            check context.invalidate("getFriendService");
         }
         self.friends.put({name: name, age: age, isMarried: isMarried});
         return new FriendService(name, age, isMarried);
@@ -2631,7 +2647,7 @@ service /server_cache on basicListener {
 
     isolated remote function addEnemy(graphql:Context context, string name, int age, boolean isMarried, boolean enableEvict) returns Friend|error {
         if enableEvict {
-            check context.evictCache("getServices");
+            check context.invalidate("getServices");
         }
         Friend friend = {name: name, age: age, isMarried: isMarried};
         self.friends.add(friend);
@@ -2640,7 +2656,7 @@ service /server_cache on basicListener {
 
     isolated remote function addEnemy2(graphql:Context context, string name, int age, boolean isMarried, boolean enableEvict) returns Enemy|error {
         if enableEvict {
-            check context.evictCache("enemies");
+            check context.invalidate("enemies");
         }
         Enemy enemy = {name: name, age: age, isMarried: isMarried};
         self.enemies.add(enemy);
@@ -2649,7 +2665,7 @@ service /server_cache on basicListener {
 
     isolated remote function removeEnemy(graphql:Context context, string name, boolean enableEvict) returns Enemy|error {
         if enableEvict {
-            check context.evictCache("enemies");
+            check context.invalidate("enemies");
         }
         return self.enemies.remove(name);
     }
@@ -2680,7 +2696,7 @@ service /evict_server_cache on basicListener {
     }
 
     isolated remote function updateName(graphql:Context context, string name) returns string|error {
-        check context.evictCache("name");
+        check context.invalidate("name");
         self.name = name;
         return self.name;
     }
@@ -2781,7 +2797,7 @@ service /server_cache_operations on basicListener {
 
     isolated remote function updateFriend(graphql:Context context, string name, int age, boolean isMarried, boolean enableEvict) returns FriendService|error {
         if enableEvict {
-            check context.evictCache("getFriendService");
+            check context.invalidate("getFriendService");
         }
         self.friends.put({name: name, age: age, isMarried: isMarried});
         return new FriendService(name, age, isMarried);
@@ -2797,9 +2813,9 @@ service /server_cache_operations on basicListener {
 
     isolated remote function addFriend(graphql:Context context, string name, int age, boolean isMarried, boolean enableEvict) returns Friend|error {
         if enableEvict {
-            check context.evictCache("getFriendService");
-            check context.evictCache("getAllFriendServices");
-            check context.evictCache("friends");
+            check context.invalidate("getFriendService");
+            check context.invalidate("getAllFriendServices");
+            check context.invalidate("friends");
         }
         Friend friend = {name: name, age: age, isMarried: isMarried};
         self.friends.add(friend);
@@ -2853,7 +2869,7 @@ service /caching_with_dataloader on wrappedListener {
 
     isolated remote function updateAuthorName(graphql:Context ctx, int id, string name, boolean enableEvict = false) returns AuthorData2|error {
         if enableEvict {
-            check ctx.evictCache("authors");
+            check ctx.invalidate("authors");
         }
         AuthorRow authorRow = {id: id, name};
         lock {
@@ -2883,7 +2899,7 @@ service /caching_with_dataloader_operational on wrappedListener {
 
     isolated remote function updateAuthorName(graphql:Context ctx, int id, string name, boolean enableEvict = false) returns AuthorData2|error {
         if enableEvict {
-            check ctx.evictCache("authors");
+            check ctx.invalidate("authors");
         }
         AuthorRow authorRow = {id: id, name};
         lock {
@@ -2920,7 +2936,7 @@ service /field_caching_with_interceptors on basicListener {
 
     remote function updateEnemy(graphql:Context context, string name, boolean enableEvict) returns string|error {
         if enableEvict {
-            check context.evictCache("enemy");
+            check context.invalidate("enemy");
         }
         self.enemy = name;
         return self.enemy;
@@ -2950,7 +2966,7 @@ service /caching_with_interceptor_operations on basicListener {
 
     remote function updateEnemy(graphql:Context context, string name, boolean enableEvict) returns string|error {
         if enableEvict {
-            check context.evictCache("enemy");
+            check context.invalidate("enemy");
         }
         self.name = name;
         return self.name;

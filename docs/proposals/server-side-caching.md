@@ -24,7 +24,7 @@ When it comes to GraphQL services, the latency, number of requests to fetch the 
 
 ## Description
 
-GraphQL server-side caching is a crucial feature that helps developers enhance the user experience. This proposal mainly focuses on server-side in-memory caching, which utilizes query operations. To enable more granular-level cache management, it introduces configuration capabilities at operation-level and field-level. The Ballerina cache module is used to handle the cache internally using a single cache table. The GraphQL package automatically generates cache keys based on resource paths and arguments for optimized caching. In specific scenarios, developers may need to remove particular cache entries based on specific operations. Hence, the proposal includes dedicated APIs within the GraphQL context object for efficient cache eviction.
+GraphQL server-side caching is a crucial feature that helps developers enhance the user experience. This proposal mainly focuses on server-side in-memory caching, which utilizes query operations. To enable more granular-level cache management, it introduces configuration capabilities at operation-level and field-level. The Ballerina cache module is used to handle the cache internally using a single cache table. The GraphQL package automatically generates cache keys based on resource paths and arguments for optimized caching. In specific scenarios, developers may need to remove particular cache entries based on specific operations. Hence, the proposal includes dedicated APIs within the GraphQL context object for efficient cache invalidateion.
 
 ### Cache Configurations
 
@@ -50,7 +50,7 @@ public type GraphqlServiceConfig record {|
 
 ### Field Level Cache
 
-The GraphQL server side caching can be enabled only for a specific field. This can be enabled by providing the cache configurations via ResourceConfig. The field-level cache configurations are identical to the service-level cache configurations, and it can override the operation-level configurations.
+The GraphQL server-side caching can be enabled only for a specific field. This can be enabled by providing the cache configurations via ResourceConfig. The field-level cache configurations are identical to the service-level cache configurations, and it can override the operation-level configurations.
 
 ```ballerina
 public type GraphqlResourceConfig record {|
@@ -60,7 +60,7 @@ public type GraphqlResourceConfig record {|
 
 ### Cache Key Generation
 
-The cache key is generated using both the resource path and arguments. Argument values are converted into a Base64-encoded hash value, and the path is added as a prefix to the hashed arguments. In cases where there are no arguments, the cache key will be the path. The sub fields cache key is generated in the same way as described above. It includes all the argument values encountered within that path to generate the hash.
+The cache key is generated using both the resource path and arguments. Argument values are converted into a Base64-encoded hash value, and the path is added as a prefix to the hashed arguments. In cases where there are no arguments, the cache key will be the path. The sub-fields cache key is generated in the same way as described above. It includes all the argument values encountered within that path to generate the hash.
 
 Ex:
 
@@ -71,12 +71,12 @@ profile.friends.#[(id),{...},[ids]]
 
 ### Cache Eviction
 
-Cache eviction is crucial functionality in some cases. Hence, the dedicated APIs for cache eviction are included in GraphQL context objects. The developers can manually evict the cache using the API. If developers possess the exact path for a particular field that requires removal from the cache, they can provide the path as a string to the cache eviction function `evictCache`. This action will remove all cache entries associated with that specific path. Additionally, developers can clear the entire cache using the `invalidateAll`` API.
+Cache invalidation is a crucial functionality in some cases. Hence, the dedicated APIs for cache invalidation are included in GraphQL context objects. The developers can manually invalidate the cache using the API. If developers possess the exact path for a particular field that requires removal from the cache, they can provide the path as a string to the `invalidate` function. This action will remove all cache entries associated with that specific path. Additionally, developers can clear the entire cache using the `invalidateAll` API.
 
 ```ballerina
 public isolated class Context {
 
-    public isolated function evictCache(string path) returns error? {}
+    public isolated function invalidate(string path) returns error? {}
 
     public isolated function invalidateAll() returns error? {}
 }
@@ -130,13 +130,13 @@ It generates the following cache map.
 * If the user wishes to clear the cache entry related to the `name` field, the API call should be as follows. This action will specifically remove the entry associated with the name field.
 
 ```ballerina
-context.evictCache(“profile.name”);
+context.invalidate(“profile.name”);
 ```
 
-* If the developer intends to clear the cache associated with `profile`, the API call should follow this format. This action will remove all cache entries linked to profile, including its sub fields. In the provided example, executing this will clear the entire cache table, as all cache entries are connected to profile.
+* If the developer intends to clear the cache associated with `profile`, the API call should follow this format. This action will remove all cache entries linked to the profile, including its sub-fields. In the provided example, executing this will clear the entire cache table, as all cache entries are connected to the profile.
 
 ```ballerina
-context.evictCache(“profile”);
+context.invalidate(“profile”);
 ```
 
 * If the provided path does not match any existing cache entries, an error will be returned. Developers can handle this error. In such cases, developers have the option to either directly return an error or log a message, depending on the use case.

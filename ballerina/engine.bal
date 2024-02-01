@@ -392,7 +392,7 @@ isolated class Engine {
         return 'field.getFieldValue();
     }
 
-    isolated function evictCache(string path) returns error? {
+    isolated function invalidate(string path) returns error? {
         cache:Cache? cache = self.cache;
         if cache is cache:Cache {
             string[] keys = cache.keys().filter(isolated function (string key) returns boolean {

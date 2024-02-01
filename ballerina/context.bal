@@ -121,18 +121,18 @@ public isolated class Context {
     # Remove cache entries related to the given path.
     #
     # + path - The path corresponding to the cache entries to be removed (Ex: "person.address.city")
-    # + return - The error if the cache eviction fails or nil otherwise
-    public isolated function evictCache(string path) returns error? {
+    # + return - The error if the cache invalidateion fails or nil otherwise
+    public isolated function invalidate(string path) returns error? {
         Engine? engine = self.getEngine();
         if engine is Engine {
-            return engine.evictCache(path);
+            return engine.invalidate(path);
         }
         return;
     }
 
     # Remove all cache entries.
     #
-    # + return - The error if the cache eviction fails or nil otherwise
+    # + return - The error if the cache invalidateion fails or nil otherwise
     public isolated function invalidateAll() returns error? {
         Engine? engine = self.getEngine();
         if engine is Engine {

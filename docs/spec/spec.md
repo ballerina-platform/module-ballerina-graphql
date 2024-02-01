@@ -205,7 +205,7 @@ The conforming implementation of the specification is released and included in t
             * 10.7.1.1 [Operation Caching](#10711-operation-caching)
             * 10.7.1.2 [Field Caching](#10712-field-caching)
             * 10.7.1.3 [Cache Eviction](#10713-cache-eviction)
-                * 10.7.1.3.1 [The `evictCache` Method](#107131-the-evictcache-method)
+                * 10.7.1.3.1 [The `invalidate` Method](#107131-the-invalidate-method)
                 * 10.7.1.3.2 [The `invalidateAll` Method](#107132-the-invalidateall-method)
 
 ## 1. Overview
@@ -2775,7 +2775,7 @@ dataloader:DataLoader authorLoader = context.getDataLoader("authorLoader");
 
 ##### 10.1.1.6 Evict Cache from Context
 
-To evict a cache entry from the server-side caching, the `evictCache` method can be used. It requires one parameter:
+To evict a cache entry from the server-side caching, the `invalidate` method can be used. It requires one parameter:
 
 - `path` - The path of the field that needs to be evicted from the cache. The path should be specified as path segments combined with periods.
 
@@ -2784,7 +2784,7 @@ If the provided path does not match any existing cache entries, an error will be
 ###### Example: Evict Cache from Context
 
 ```ballerina
-check context.evictCache("profile.address.city");
+check context.invalidate("profile.address.city");
 ```
 
 ##### 10.1.1.7 Invalidate All Caches from Context
@@ -3765,14 +3765,14 @@ The GraphQL field caching can be enabled only for a specific field. This can be 
 
 #### 10.7.1.3 Cache Eviction
 
-Since server-side caching is implemented using the Ballerina cache module, the default eviction policy will utilize the `Least Recently Used (LRU)` mechanism. In addition to LRU cache eviction, the GraphQL module provides APIs for manual cache eviction. Currently, it provides `evictCache` and `invalidateAll` APIs for manual cache eviction. These APIs can be accessed through the [graphql:Context](#101-context-object) object.
+Since server-side caching is implemented using the Ballerina cache module, the default eviction policy will utilize the `Least Recently Used (LRU)` mechanism. In addition to LRU cache eviction, the GraphQL module provides APIs for manual cache eviction. Currently, it provides `invalidate` and `invalidateAll` APIs for manual cache eviction. These APIs can be accessed through the [graphql:Context](#101-context-object) object.
 
-##### 10.7.1.3.1 The `evictCache` Method
+##### 10.7.1.3.1 The `invalidate` Method
 
-The `evictCache` method accepts a string-type path as an argument. This method removes all cache entries related to the given path. If the provided path does not match any existing cache entries, an error will be returned.
+The `invalidate` method accepts a string-type path as an argument. This method removes all cache entries related to the given path. If the provided path does not match any existing cache entries, an error will be returned.
 
 ```ballerina
-public isolated function evictCache(string path) returns error? {}
+public isolated function invalidate(string path) returns error? {}
 ```
 
 ##### 10.7.1.3.2 The `invalidateAll` Method
@@ -3807,14 +3807,14 @@ service /graphql on new graphql:Listener(9090) {
     }
 
     remote function updateName(graphql:Context context, string name) returns string|error {
-        check context.evictCache("name");
+        check context.invalidate("name");
         self.name = name
         return self.name;
     }
 }
 ```
 
-In this example, caching is enabled at the operation level. Therefore, the fields `name` and `type` will be cached. When updating the name with a mutation, the cached values become invalid. Hence, the `evictCache` function can be used to evict the existing cache values.
+In this example, caching is enabled at the operation level. Therefore, the field `name` and `type` will be cached. When updating the name with a mutation, the cached values become invalid. Hence, the `invalidate` function can be used to evict the existing cache values.
 
 ###### Example: Field Cache Enabling and Eviction
 
@@ -3845,7 +3845,7 @@ service /graphql on new graphql:Listener(9090) {
     }
 
     isolated remote function updateAge(graphql:Context context, string name, int age) returns Person|error {
-        check context.evictCache("friends.age");
+        check context.invalidate("friends.age");
         Friend friend = self.friends.get(name);
         self.friends.put({name: name, age: age, isMarried: friend.isMarried});
         return new Person(name, age, friend.isMarried);
@@ -3883,4 +3883,4 @@ public isolated distinct service class Person {
 }
 ```
 
-In this example, GraphQL field caching is enabled for the `age` field via the resource configurations. When the age is changed using the `updateAge` operation, the `evictCache` API is used to remove the existing cache entries related to the age field.
+In this example, GraphQL field caching is enabled for the `age` field via the resource configurations. When the age is changed using the `updateAge` operation, the `invalidate` method is used to remove the existing cache entries related to the age field.

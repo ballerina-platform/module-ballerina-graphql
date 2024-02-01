@@ -144,3 +144,45 @@ function testAttachServiceWithSubscriptionToHttp1BasedListener() returns error? 
         check validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
     }
 }
+
+@test:Config {
+    groups: ["listener", "service_object"]
+}
+function testServiceDeclarationUsingLocalServiceObject() returns error? {
+    graphql:Service localService = service object {
+        resource function get greeting() returns string {
+            return "Hello world";
+        }
+    };
+    check basicListener.attach(localService, "/local_service_object");
+
+    string url = "http://localhost:9091/local_service_object";
+    string document = string `query { greeting }`;
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            greeting: "Hello world"
+        }
+    };
+    check basicListener.detach(localService);
+    test:assertEquals(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["listener", "service_object"]
+}
+function testServiceDeclarationUsingObjectField() returns error? {
+    graphql:Service localService = (new ServiceDeclarationOnObjectField()).getService();
+    check basicListener.attach(localService, "/object_field_service_object");
+
+    string url = "http://localhost:9091/object_field_service_object";
+    string document = string `query { greeting }`;
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        data: {
+            greeting: "Hello world"
+        }
+    };
+    check basicListener.detach(localService);
+    test:assertEquals(actualPayload, expectedPayload);
+}
