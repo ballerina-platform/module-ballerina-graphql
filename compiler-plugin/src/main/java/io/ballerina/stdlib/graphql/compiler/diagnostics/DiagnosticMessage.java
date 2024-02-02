@@ -96,6 +96,8 @@ public enum DiagnosticMessage {
                       + " only supported for 'remote' methods and 'get' resource methods"),
     ERROR_146("invalid empty record type ''{0}'' found for GraphQL object type at field ''{1}''"),
     ERROR_147("invalid empty record type ''{0}'' found for GraphQL input object type at field ''{1}''"),
+    ERROR_148("field ''{0}'' in ServiceConfig is not allowed to be modified. "
+                      + "The value will be generated automatically by the GraphQL module"),
 
     WARNING_201("invalid usage of @deprecated directive found in ''{0}''. Input object field(s) deprecation "
                         + "is not supported by the current GraphQL spec"),

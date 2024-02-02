@@ -53,6 +53,7 @@ import io.ballerina.compiler.syntax.tree.IdentifierToken;
 import io.ballerina.compiler.syntax.tree.ListConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.MappingConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.MappingFieldNode;
+import io.ballerina.compiler.syntax.tree.MetadataNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.NodeList;
 import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
@@ -100,11 +101,14 @@ import static io.ballerina.stdlib.graphql.compiler.Utils.isContextParameter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isDistinctServiceClass;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isDistinctServiceReference;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isFileUploadParameter;
+import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlServiceConfig;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isPrimitiveTypeSymbol;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isRemoteMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isResourceMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isServiceClass;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isValidGraphqlParameter;
+import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.FIELD_CACHE_CONFIG_FIELD;
+import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.SCHEMA_STRING_FIELD;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.RESOURCE_FUNCTION_GET;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.RESOURCE_FUNCTION_SUBSCRIBE;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.getLocation;
@@ -225,6 +229,9 @@ public class ServiceValidator {
     private void validateServiceObject() {
         ObjectConstructorExpressionNode objectConstructorExpNode = (ObjectConstructorExpressionNode) serviceNode;
         List<Node> serviceMethodNodes = getServiceMethodNodes(objectConstructorExpNode.members());
+        if (!objectConstructorExpNode.annotations().isEmpty()) {
+            validateAnnotation(objectConstructorExpNode);
+        }
         validateRootServiceMethods(serviceMethodNodes, objectConstructorExpNode.location());
         if (!this.hasQueryType) {
             addDiagnostic(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, objectConstructorExpNode.location());
@@ -255,11 +262,53 @@ public class ServiceValidator {
     private void validateService() {
         ServiceDeclarationNode serviceDeclarationNode = (ServiceDeclarationNode) this.context.node();
         List<Node> serviceMethodNodes = getServiceMethodNodes(serviceDeclarationNode.members());
+        if (serviceDeclarationNode.metadata().isPresent()) {
+            validateAnnotation(serviceDeclarationNode.metadata().get());
+        }
         validateRootServiceMethods(serviceMethodNodes, serviceDeclarationNode.location());
         if (!this.hasQueryType) {
             addDiagnostic(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, serviceDeclarationNode.location());
         }
         validateEntitiesResolverReturnTypes();
+    }
+
+    private void validateAnnotation(MetadataNode metadataNode) {
+        for (AnnotationNode annotationNode : metadataNode.annotations()) {
+            if (isGraphqlServiceConfig(annotationNode)) {
+                validateServiceAnnotation(annotationNode);
+            }
+        }
+    }
+
+    private void validateAnnotation(ObjectConstructorExpressionNode node) {
+        for (AnnotationNode annotationNode : node.annotations()) {
+            if (isGraphqlServiceConfig(annotationNode)) {
+                validateServiceAnnotation(annotationNode);
+            }
+        }
+    }
+
+    private void validateServiceAnnotation(AnnotationNode annotationNode) {
+        if (annotationNode.annotValue().isPresent()) {
+            for (MappingFieldNode field : annotationNode.annotValue().get().fields()) {
+                validateServiceAnnotationField(field);
+            }
+        }
+    }
+
+    private void validateServiceAnnotationField(MappingFieldNode field) {
+        if (field.kind() == SPECIFIC_FIELD) {
+            SpecificFieldNode specificFieldNode = (SpecificFieldNode) field;
+            Node fieldName = specificFieldNode.fieldName();
+            if (fieldName.kind() == SyntaxKind.IDENTIFIER_TOKEN) {
+                IdentifierToken identifierToken = (IdentifierToken) fieldName;
+                String identifierName = identifierToken.text();
+                if (SCHEMA_STRING_FIELD.equals(identifierName) || FIELD_CACHE_CONFIG_FIELD.equals(identifierName)) {
+                    addDiagnostic(CompilationDiagnostic.INVALID_MODIFICATION_OF_SERVICE_CONFIG_FIELD,
+                            serviceNode.location(), identifierName);
+                }
+            }
+        }
     }
 
     private List<Node> getServiceMethodNodes(NodeList<Node> serviceMembers) {

@@ -37,7 +37,6 @@ import io.ballerina.compiler.syntax.tree.NodeParser;
 import io.ballerina.compiler.syntax.tree.NonTerminalNode;
 import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.ObjectFieldNode;
-import io.ballerina.compiler.syntax.tree.QualifiedNameReferenceNode;
 import io.ballerina.compiler.syntax.tree.SeparatedNodeList;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.compiler.syntax.tree.SimpleNameReferenceNode;
@@ -81,6 +80,7 @@ import static io.ballerina.stdlib.graphql.commons.utils.Utils.PACKAGE_NAME;
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.PACKAGE_ORG;
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.SUBGRAPH_SUB_MODULE_NAME;
 import static io.ballerina.stdlib.graphql.compiler.Utils.SERVICE_CONFIG_IDENTIFIER;
+import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlServiceConfig;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.ENABLED_CACHE_FIELD;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.FIELD_CACHE_CONFIG_FIELD;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.MAX_SIZE_CACHE_FIELD;
@@ -536,17 +536,6 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
         objectOutputStream.flush();
         objectOutputStream.close();
         return new String(Base64.getEncoder().encode(outputStream.toByteArray()), StandardCharsets.UTF_8);
-    }
-
-    private boolean isGraphqlServiceConfig(AnnotationNode annotationNode) {
-        if (annotationNode.annotReference().kind() != SyntaxKind.QUALIFIED_NAME_REFERENCE) {
-            return false;
-        }
-        QualifiedNameReferenceNode referenceNode = ((QualifiedNameReferenceNode) annotationNode.annotReference());
-        if (!PACKAGE_NAME.equals(referenceNode.modulePrefix().text())) {
-            return false;
-        }
-        return SERVICE_CONFIG_IDENTIFIER.equals(referenceNode.identifier().text());
     }
 
     private void updateContext(SourceModifierContext context, Location location,
