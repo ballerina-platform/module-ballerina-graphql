@@ -63,8 +63,9 @@ isolated class Engine {
     }
 
     isolated function addToCache(string key, any value, decimal maxAge) returns any|error {
-        if self.cache is cache:Cache {
-            return (<cache:Cache>self.cache).put(key, value, maxAge);
+        cache:Cache? cache = self.cache;
+        if cache is cache:Cache {
+            return cache.put(key, value, maxAge);
         }
         return error("Cache table not found!");
     }
@@ -383,7 +384,7 @@ isolated class Engine {
         _ = resourcePath.pop();
     }
 
-    private isolated function getFieldValue(Context context,Field 'field, ResponseGenerator responseGenerator) returns any|error {
+    private isolated function getFieldValue(Context context, Field 'field, ResponseGenerator responseGenerator) returns any|error {
         if 'field.getOperationType() == parser:OPERATION_QUERY {
             return self.resolveResourceMethod(context, 'field, responseGenerator);
         } else if 'field.getOperationType() == parser:OPERATION_MUTATION {
@@ -399,15 +400,16 @@ isolated class Engine {
                 return key.startsWith(path);
             });
             foreach string key in keys {
-                _ = check (<cache:Cache>self.cache).invalidate(key);
+                _ = check cache.invalidate(key);
             }
         }
         return;
     }
 
     isolated function invalidateAll() returns error? {
-        if self.cache is cache:Cache {
-            return (<cache:Cache>self.cache).invalidateAll();
+        cache:Cache? cache = self.cache;
+        if cache is cache:Cache {
+            return cache.invalidateAll();
         }
         return;
     }

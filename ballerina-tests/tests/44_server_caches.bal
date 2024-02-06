@@ -68,6 +68,14 @@ isolated function testServerSideCacheWithDataLoader(string documentFile, string[
     resetDispatchCounters();
 }
 
+function dataProviderServerCacheWithDataloader() returns map<[string, string[], json, string[]]> {
+    map<[string, string[], json, string[]]> dataSet = {
+        "1": ["server_cache_with_dataloader", ["server_cache_with_dataloader_1", "server_cache_with_dataloader_2", "server_cache_with_dataloader_1"], (), ["A", "B", "A"]],
+        "2": ["server_cache_eviction_with_dataloader", ["server_cache_with_dataloader_1", "server_cache_with_dataloader_2", "server_cache_with_dataloader_3"], (), ["A", "B", "A"]]
+    };
+    return dataSet;
+}
+
 @test:Config {
     groups: ["server_cache", "data_loader"],
     dataProvider: dataProviderServerCacheWithDataloaderInOperationalLevel
@@ -83,6 +91,14 @@ isolated function testServerSideCacheWithDataLoaderInOperationalLevel(string doc
     resetDispatchCounters();
 }
 
+function dataProviderServerCacheWithDataloaderInOperationalLevel() returns map<[string, string[], json, string[]]> {
+    map<[string, string[], json, string[]]> dataSet = {
+        "1": ["server_cache_with_dataloader_operational", ["server_cache_with_dataloader_3", "server_cache_with_dataloader_5", "server_cache_with_dataloader_3"], (), ["A", "B", "A"]],
+        "2": ["server_cache_eviction_with_dataloader_operational", ["server_cache_with_dataloader_3", "server_cache_with_dataloader_5", "server_cache_with_dataloader_4"], (), ["A", "B", "A"]]
+    };
+    return dataSet;
+}
+
 @test:Config {
     groups: ["server_cache"],
     dataProvider: dataProviderServerCacheOperationalLevel
@@ -95,33 +111,6 @@ isolated function testServerSideCacheInOperationalLevel(string documentFile, str
         json expectedPayload = check getJsonContentFromFile(resourceFileNames[i]);
         assertJsonValuesWithOrder(actualPayload, expectedPayload);
     }
-}
-
-@test:Config {
-    groups: ["server_cache"]
-}
-isolated function testServerSideCacheInOperationalLevelWithTTL() returns error? {
-    string url = "http://localhost:9091/server_cache_operations";
-    string document = check getGraphqlDocumentFromFile("server_cache_with_ttl");
-    runtime:sleep(21);
-
-    json actualPayload = check getJsonPayloadFromService(url, document, (), "A");
-    json expectedPayload = check getJsonContentFromFile("server_cache_1");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-
-    actualPayload = check getJsonPayloadFromService(url, document, (), "B");
-    expectedPayload = check getJsonContentFromFile("server_cache_10");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-
-    actualPayload = check getJsonPayloadFromService(url, document, (), "A");
-    expectedPayload = check getJsonContentFromFile("server_cache_1");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-
-    runtime:sleep(21);
-
-    actualPayload = check getJsonPayloadFromService(url, document, (), "A");
-    expectedPayload = check getJsonContentFromFile("server_cache_9");
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 function dataProviderServerCacheOperationalLevel() returns map<[string, string[], json, string[]]> {
@@ -142,14 +131,6 @@ function dataProviderServerCacheOperationalLevel() returns map<[string, string[]
         "14": ["server_cache_with_partial_responses", ["server_cache_with_partial_reponses_1", "server_cache_with_partial_reponses_2", "server_cache_with_partial_reponses_1"], (), ["A", "B", "A"]],
         "15": ["server_cache_with_partial_responses", ["server_cache_with_partial_reponses_1", "server_cache_with_partial_reponses_2", "server_cache_with_partial_reponses_3"], (), ["A", "C", "A"]],
         "16": ["server_cache_with_errors_2", ["server_cache_with_errors_4", "server_cache_with_errors_5", "server_cache_with_errors_3"], (), ["A", "B", "A"]]
-    };
-    return dataSet;
-}
-
-function dataProviderServerCacheWithDataloader() returns map<[string, string[], json, string[]]> {
-    map<[string, string[], json, string[]]> dataSet = {
-        "1": ["server_cache_with_dataloader", ["server_cache_with_dataloader_1", "server_cache_with_dataloader_2", "server_cache_with_dataloader_1"], (), ["A", "B", "A"]],
-        "2": ["server_cache_eviction_with_dataloader", ["server_cache_with_dataloader_1", "server_cache_with_dataloader_2", "server_cache_with_dataloader_3"], (), ["A", "B", "A"]]
     };
     return dataSet;
 }
@@ -190,12 +171,31 @@ function dataProviderServerCacheWithInterceptors() returns map<[string, string[]
     return dataSet;
 }
 
-function dataProviderServerCacheWithDataloaderInOperationalLevel() returns map<[string, string[], json, string[]]> {
-    map<[string, string[], json, string[]]> dataSet = {
-        "1": ["server_cache_with_dataloader_operational", ["server_cache_with_dataloader_3", "server_cache_with_dataloader_5", "server_cache_with_dataloader_3"], (), ["A", "B", "A"]],
-        "2": ["server_cache_eviction_with_dataloader_operational", ["server_cache_with_dataloader_3", "server_cache_with_dataloader_5", "server_cache_with_dataloader_4"], (), ["A", "B", "A"]]
-    };
-    return dataSet;
+@test:Config {
+    groups: ["server_cache"]
+}
+isolated function testServerSideCacheInOperationalLevelWithTTL() returns error? {
+    string url = "http://localhost:9091/server_cache_operations";
+    string document = check getGraphqlDocumentFromFile("server_cache_operations_with_TTL");
+    runtime:sleep(21);
+
+    json actualPayload = check getJsonPayloadFromService(url, document, (), "A");
+    json expectedPayload = check getJsonContentFromFile("server_cache_1");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+
+    actualPayload = check getJsonPayloadFromService(url, document, (), "B");
+    expectedPayload = check getJsonContentFromFile("server_cache_10");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+
+    actualPayload = check getJsonPayloadFromService(url, document, (), "A");
+    expectedPayload = check getJsonContentFromFile("server_cache_1");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+
+    runtime:sleep(21);
+
+    actualPayload = check getJsonPayloadFromService(url, document, (), "A");
+    expectedPayload = check getJsonContentFromFile("server_cache_9");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
 @test:Config {
@@ -203,7 +203,7 @@ function dataProviderServerCacheWithDataloaderInOperationalLevel() returns map<[
 }
 isolated function testServerCacheEvictionWithTTL() returns error? {
     string url = "http://localhost:9091/field_caching_with_interceptors";
-    string document = check getGraphqlDocumentFromFile("server_cache_with_TTL");
+    string document = check getGraphqlDocumentFromFile("server_cache_fields_with_TTL");
 
     json actualPayload = check getJsonPayloadFromService(url, document, (), "A");
     json expectedPayload = check getJsonContentFromFile("server_cache_eviction_with_TTL_1");

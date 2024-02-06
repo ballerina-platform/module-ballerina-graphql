@@ -2951,8 +2951,7 @@ service /field_caching_with_interceptors on basicListener {
 @graphql:ServiceConfig {
     cacheConfig:{
         enabled: true
-    },
-    contextInit: initContext2
+    }
 }
 service /caching_with_interceptor_operations on basicListener {
     private string name = "voldemort";

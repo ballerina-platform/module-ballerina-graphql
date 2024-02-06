@@ -71,5 +71,3 @@ public function main() returns error? {
     TestService serviceClass = new ();
     check serviceClass.startService();
 }
-
-
