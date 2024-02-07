@@ -27,12 +27,14 @@ public class Field {
     private string[] resourcePath;
     private readonly & Interceptor[] fieldInterceptors;
     private final ServerCacheConfig? cacheConfig;
-    private final string[] parentArgHashes;
+    private final readonly & string[] parentArgHashes;
+    private final boolean cacheEnabled;
+    private final decimal cacheMaxAge;
 
     isolated function init(parser:FieldNode internalNode, __Type fieldType, service object {}? serviceObject = (),
                            (string|int)[] path = [], parser:RootOperationType operationType = parser:OPERATION_QUERY,
                            string[] resourcePath = [], any|error fieldValue = (), ServerCacheConfig? cacheConfig = (),
-                           string[] parentArgHashes = []) {
+                           readonly & string[] parentArgHashes = []) {
         self.internalNode = internalNode;
         self.serviceObject = serviceObject;
         self.fieldType = fieldType;
@@ -45,8 +47,16 @@ public class Field {
             getFieldInterceptors(serviceObject, operationType, internalNode.getName(), self.resourcePath) : [];
         ServerCacheConfig? fieldCache = serviceObject is service object {} ?
             getFieldCacheConfig(serviceObject, operationType, internalNode.getName(), self.resourcePath) : ();
-        self.cacheConfig = fieldCache is ServerCacheConfig ? fieldCache : cacheConfig;
+        ServerCacheConfig? updatedCacheConfig = fieldCache is ServerCacheConfig ? fieldCache : cacheConfig;
+        self.cacheConfig = updatedCacheConfig;
         self.parentArgHashes = parentArgHashes;
+        if updatedCacheConfig is ServerCacheConfig {
+            self.cacheEnabled = updatedCacheConfig.enabled;
+            self.cacheMaxAge = updatedCacheConfig.maxAge;
+        } else {
+            self.cacheEnabled = false;
+            self.cacheMaxAge = 0d;
+        }
     }
 
     # Returns the name of the field.
@@ -136,8 +146,8 @@ public class Field {
                 foreach __Field 'field in typeFields {
                     if 'field.name == selection.getName() {
                         result.push(new Field(selection, 'field.'type, (),[...currentPath, ...unwrappedPath, 'field.name],
-                            self.operationType.clone(), self.resourcePath.clone(), cacheConfig = self.cacheConfig.clone(),
-                            parentArgHashes = self.parentArgHashes.clone()));
+                            self.operationType.clone(), self.resourcePath.clone(), cacheConfig = self.cacheConfig,
+                            parentArgHashes = self.parentArgHashes));
                         break;
                     }
                 }
@@ -170,8 +180,7 @@ public class Field {
     }
 
     isolated function isCacheEnabled() returns boolean {
-        ServerCacheConfig? cacheConfig = self.getCacheConfig();
-        return cacheConfig is ServerCacheConfig && cacheConfig.enabled;
+        return self.cacheEnabled;
     }
 
     isolated function getCacheConfig() returns ServerCacheConfig? {
@@ -183,14 +192,10 @@ public class Field {
     }
 
     isolated function getCacheMaxAge() returns decimal {
-        ServerCacheConfig? cacheConfig = self.getCacheConfig();
-        if cacheConfig is ServerCacheConfig {
-            return cacheConfig.maxAge;
-        }
-        return 0d;
+        return self.cacheMaxAge;
     }
 
-    isolated function getParentArgHashes() returns string[] {
+    isolated function getParentArgHashes() returns readonly & string[] {
         return self.parentArgHashes;
     }
 

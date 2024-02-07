@@ -104,14 +104,14 @@ The conforming implementation of the specification is released and included in t
         * 7.1.6 [Service Interceptors](#716-service-interceptors)
         * 7.1.7 [Introspection Configurations](#717-introspection-configurations)
         * 7.1.8 [Constraint Configurations](#718-constraint-configurations)
-        * 7.1.9 [Operation Cache Configurations](#719-operation-cache-configurations)
+        * 7.1.9 [Operation-level Cache Configurations](#719-operation-level-cache-configurations)
             * 7.1.9.1 [The `enabled` Field](#7191-the-enabled-field)
             * 7.1.9.2 [The `maxAge` Field](#7192-the-maxage-field)
             * 7.1.9.3 [The `maxSize` Field](#7193-the-maxsize-field)
     * 7.2 [Resource Configuration](#72-resource-configuration)
         * 7.2.1 [Field Interceptors](#721-field-interceptors)
         * 7.2.2 [Prefetch Method Name Configuration](#722-prefetch-method-name-configuration)
-        * 7.2.3 [Field Cache Configurations](#723-field-cache-configuration)
+        * 7.2.3 [Field-level Cache Configurations](#723-field-level-cache-configuration)
     * 7.3 [Interceptor Configuration](#73-interceptor-configuration)
         * 7.3.1 [Scope Configuration](#731-scope-configuration)
     * 7.4 [ID Annotation](#74-id-annotation)
@@ -202,8 +202,8 @@ The conforming implementation of the specification is released and included in t
             * 10.6.3.3 [Define the Corresponding `prefetch` Method](#10633-define-the-corresponding-prefetch-method)
     * 10.7 [Caching](#107-caching)
         * 10.7.1 [Server-side Caching](#1071-server-side-caching)
-            * 10.7.1.1 [Operation Caching](#10711-operation-caching)
-            * 10.7.1.2 [Field Caching](#10712-field-caching)
+            * 10.7.1.1 [Operation-level Caching](#10711-operation-level-caching)
+            * 10.7.1.2 [Field-level Caching](#10712-field-level-caching)
             * 10.7.1.3 [Cache Eviction](#10713-cache-eviction)
                 * 10.7.1.3.1 [The `invalidate` Method](#107131-the-invalidate-method)
                 * 10.7.1.3.2 [The `invalidateAll` Method](#107132-the-invalidateall-method)
@@ -1774,26 +1774,11 @@ service on new graphql:Listener(9090) {
 }
 ```
 
-#### 7.1.9 Operation Cache Configurations
+#### 7.1.9 Operation-level Cache Configurations
 
-The `cacheConfig` field is used to provide the GraphQL operation cache configuration to enable the caching for `query` operations.
+The `cacheConfig` field is used to provide the GraphQL operation-level cache configuration to enable the caching for `query` operations.
 
-###### Example: Operation Cache Configurations
-
-```ballerina
-@graphql:ServiceConfig {
-    cacheConfig: {
-        enabled: true,
-        maxAge: 60,
-        maxSize: 120
-    }
-}
-service on new graphql:Listener(9090) {
-    // ...
-}
-```
-
-###### Example: Enable Operation Cache with Default Values
+###### Example: Enable Operation-level Cache with Default Values
 
 ```ballerina
 @graphql:ServiceConfig {
@@ -1804,13 +1789,31 @@ service on new graphql:Listener(9090) {
 }
 ```
 
+###### Example: Operation-level Cache Configurations
+
+```ballerina
+@graphql:ServiceConfig {
+    cacheConfig: {
+        enabled: false
+        maxAge: 100,
+        maxSize: 150
+    }
+}
+service on new graphql:Listener(9090) {
+    // ...
+}
+```
+
 ##### 7.1.9.1 The `enabled` Field
+
 The optinal field `enabled` accepts a `boolean` that denotes whether the server-side operation cache is enabled or not. By default, it has been set to `true`.
 
 ##### 7.1.9.2 The `maxAge` Field
-The optional field `maxAge` accepts a valid `decimal` value which considers as the TTL(Time To Live) in seconds. The default maxAge is `60` seconds.
+
+The optional field `maxAge` accepts a valid `decimal` value which is considerd as the TTL(Time To Live) in seconds. The default maxAge is `60` seconds.
 
 ##### 7.1.9.3 The `maxSize` Field
+
 The optional field `maxSize` accepts an int that denotes the maximum number of cache entries in the cache table. By default, it has been set to `120`.
 
 ### 7.2 Resource Configuration
@@ -1873,11 +1876,11 @@ service on new graphql:Listener(9090) {
 }
 ```
 
-#### 7.2.3 Field Cache Configuration
+#### 7.2.3 Field-level Cache Configuration
 
-The `cacheConfig` field is used to provide the field cache configs. The fields are as same as the operation cache configs. The field configurations override the operation configurations.
+The `cacheConfig` field is used to provide the field-level cache configs. The fields are as same as the operation cache configs. The field configurations override the operation configurations.
 
-###### Example: Field Cache Configs
+###### Example: Field-level Cache Configs
 
 ```ballerina
 service on new graphql:Listener(9090) {
@@ -1885,8 +1888,8 @@ service on new graphql:Listener(9090) {
     @graphql:ResourceConfig {
         cacheConfig: {
             enabled: true,
-            maxAge: 60,
-            maxSize: 120
+            maxAge: 90,
+            maxSize: 80
         }
     }
     resource function get name(int id) returns string {
@@ -3595,7 +3598,7 @@ distinct service class Author {
 }
 ```
 
-###### Example: Overriding the Defalut `prefetch` Method Name
+###### Example: Overriding the Default `prefetch` Method Name
 
 ```ballerina
 distinct service class Author {
@@ -3612,7 +3615,7 @@ distinct service class Author {
 }
 ```
 
-Bringing everything together, the subsequent examples demonstrates how to engage a DataLoader with a GraphQL service.
+Bringing everything together, the subsequent examples demonstrate how to engage a DataLoader with a GraphQL service.
 
 ###### Example: Utilizing a DataLoader in a GraphQL Service
 
@@ -3753,15 +3756,15 @@ This section describes the caching mechanisms in the Ballerina GraphQL module.
 
 #### 10.7.1 Server-side Caching
 
-The Ballerina GraphQL module offers built-in server-side caching for GraphQL `query` operations. The caching operates as in-memory caching, implemented using the Ballerina cache module. The GraphQL module generates cache keys based on the arguments and the path. In server-side caching, the `errors` and `null` values are skipped when caching. There are two different ways called `operation caching` and `field caching` to enable server-side caching.
+The Ballerina GraphQL module offers built-in server-side caching for GraphQL `query` operations. The caching operates as in-memory caching, implemented using the Ballerina cache module. The GraphQL module generates cache keys based on the arguments and the path. In server-side caching, the `errors` and `null` values are skipped when caching. There are two different ways called `operation-level caching` and `field-level caching` to enable server-side caching.
 
-##### 10.7.1.1 Operation Caching
+##### 10.7.1.1 Operation-level Caching
 
-Operation caching can be used to cache the entire operation, and this can be enabled by providing the [operation cache configurations](#719-operation-cache-configurations). Once enabled, the GraphQL server initiates caching for all subfields of `query` operations. The fields requested through query operations will be cached based on the specified cache configurations
+Operation-level caching can be used to cache the entire operation, and this can be enabled by providing the [operation cache configurations](#719-operation-level-cache-configurations). Once enabled, the GraphQL server initiates caching for all subfields of `query` operations. The fields requested through query operations will be cached based on the specified cache configurations
 
-##### 10.7.1.2 Field Caching
+##### 10.7.1.2 Field-level Caching
 
-The GraphQL field caching can be enabled only for a specific field. This can be done by providing the [field cache configurations](#723-field-cache-configuration). Once the field caching is enabled for a field, it will be applied to the sub-fields of that field.
+The GraphQL field-level caching can be enabled only for a specific field. This can be done by providing the [field cache configurations](#723-field-level-cache-configuration). Once the field-level caching is enabled for a field, it will be applied to the sub-fields of that field.
 
 #### 10.7.1.3 Cache Eviction
 
@@ -3783,7 +3786,7 @@ The `invalidateAll` method can be used to clear the entire cache table. This met
 public isolated function invalidateAll() returns error? {}
 ```
 
-###### Example: Operation Cache Enabling and Eviction
+###### Example: Operation-level Cache Enabling and Eviction
 
 ```ballerina
 import ballerina/graphql;
@@ -3816,7 +3819,7 @@ service /graphql on new graphql:Listener(9090) {
 
 In this example, caching is enabled at the operation level. Therefore, the field `name` and `type` will be cached. When updating the name with a mutation, the cached values become invalid. Hence, the `invalidate` function can be used to evict the existing cache values.
 
-###### Example: Field Cache Enabling and Eviction
+###### Example: Field-level Cache Enabling and Eviction
 
 ```ballerina
 import ballerina/graphql;
@@ -3883,4 +3886,4 @@ public isolated distinct service class Person {
 }
 ```
 
-In this example, GraphQL field caching is enabled for the `age` field via the resource configurations. When the age is changed using the `updateAge` operation, the `invalidate` method is used to remove the existing cache entries related to the age field.
+In this example, GraphQL field-level caching is enabled for the `age` field via the resource configurations. When the age is changed using the `updateAge` operation, the `invalidate` method is used to remove the existing cache entries related to the age field.

@@ -31,7 +31,8 @@ isolated class Engine {
 
     isolated function init(string schemaString, int? maxQueryDepth, Service s,
                            readonly & (readonly & Interceptor)[] interceptors, boolean introspection,
-                           boolean validation, ServerCacheConfig? cacheConfig = (), ServerCacheConfig? fieldCacheConfig = ())
+                           boolean validation, ServerCacheConfig? cacheConfig = (),
+                           ServerCacheConfig? fieldCacheConfig = ())
     returns Error? {
         if maxQueryDepth is int && maxQueryDepth < 1 {
             return error Error("Max query depth value must be a positive integer");
@@ -41,7 +42,7 @@ isolated class Engine {
         self.interceptors = interceptors;
         self.introspection = introspection;
         self.validation = validation;
-        self.cacheConfig = cacheConfig.cloneReadOnly();
+        self.cacheConfig = cacheConfig;
         self.cache = initCacheTable(cacheConfig, fieldCacheConfig);
         self.addService(s);
     }
@@ -284,7 +285,8 @@ isolated class Engine {
 
         (readonly & Interceptor)? interceptor = context.getNextInterceptor('field);
         __Type fieldType = 'field.getFieldType();
-        ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone(), 'field.getCacheConfig().clone(), 'field.getParentArgHashes().clone());
+        ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone(),
+                                                   'field.getCacheConfig(), 'field.getParentArgHashes());
         do {
             if interceptor is readonly & Interceptor {
                 any|error result = self.executeInterceptor(interceptor, 'field, context);

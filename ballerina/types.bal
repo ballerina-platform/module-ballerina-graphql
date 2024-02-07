@@ -70,7 +70,7 @@ public type Graphiql record {|
 # + enabled - State of the caching
 # + maxAge - TTL of the cache in seconds
 # + maxSize - Maximum number of cache entries
-public type ServerCacheConfig record {|
+public type ServerCacheConfig  readonly & record{|
     boolean enabled = true;
     decimal maxAge = 60;
     int maxSize = 120;

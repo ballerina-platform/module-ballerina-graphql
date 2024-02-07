@@ -23,12 +23,13 @@ class ResponseGenerator {
     private final Context context;
     private (string|int)[] path;
     private final __Type fieldType;
-    private final ServerCacheConfig? cacheConfig;
-    private final string[] parentArgHashes;
+    private final readonly & ServerCacheConfig? cacheConfig;
+    private final readonly & string[] parentArgHashes;
 
     private final string functionNameGetFragmentFromService = "";
 
-    isolated function init(Engine engine, Context context, __Type fieldType, (string|int)[] path = [], ServerCacheConfig? cacheConfig = (), string[] parentArgHashes = []) {
+    isolated function init(Engine engine, Context context, __Type fieldType, (string|int)[] path = [],
+                           ServerCacheConfig? cacheConfig = (), readonly & string[] parentArgHashes = []) {
         self.engine = engine;
         self.context = context;
         self.path = path;
