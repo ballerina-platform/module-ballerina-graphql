@@ -4,12 +4,7 @@ public class CacheConfigContext {
     private Boolean enabled;
     private int maxSize;
 
-    public CacheConfigContext(Boolean enabled, int maxSize) {
-        this.enabled = enabled;
-        this.maxSize = maxSize;
-    }
-
-    public CacheConfigContext(Boolean enabled) {
+    CacheConfigContext(Boolean enabled) {
         this.enabled = enabled;
         this.maxSize = 0;
     }

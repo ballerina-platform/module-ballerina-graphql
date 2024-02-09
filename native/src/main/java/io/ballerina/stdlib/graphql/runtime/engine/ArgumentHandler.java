@@ -516,7 +516,7 @@ public class ArgumentHandler {
         return result;
     }
 
-    public static Type getEffectiveType(IntersectionType intersectionType) {
+    static Type getEffectiveType(IntersectionType intersectionType) {
         for (Type constituentType : intersectionType.getConstituentTypes()) {
             if (constituentType.getTag() != TypeTags.READONLY_TAG) {
                 return constituentType;

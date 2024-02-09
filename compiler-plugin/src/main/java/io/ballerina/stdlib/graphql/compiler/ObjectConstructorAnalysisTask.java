@@ -55,7 +55,8 @@ public class ObjectConstructorAnalysisTask extends ServiceAnalysisTask {
         }
 
         InterfaceEntityFinder interfaceEntityFinder = getInterfaceEntityFinder(context.semanticModel());
-        ServiceValidator serviceValidator = getServiceValidator(context, node, interfaceEntityFinder);
+        ServiceValidator serviceValidator = getServiceValidator(context, node, interfaceEntityFinder,
+                                                    new CacheConfigContext(false));
         if (serviceValidator.isErrorOccurred()) {
             return;
         }

@@ -339,7 +339,7 @@ public class Engine {
         return isRecordReturnType(resourceMethod.getType().getReturnType());
     }
 
-    public static boolean isRecordReturnType(Type returnType) {
+    static boolean isRecordReturnType(Type returnType) {
         if (returnType.getTag() == TypeTags.UNION_TAG) {
             for (Type memberType : ((UnionType) returnType).getMemberTypes()) {
                 if (isRecordReturnType(memberType)) {

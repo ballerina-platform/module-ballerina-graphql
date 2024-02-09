@@ -399,7 +399,7 @@ isolated class Engine {
         cache:Cache? cache = self.cache;
         if cache is cache:Cache {
             string[] keys = cache.keys().filter(isolated function (string key) returns boolean {
-                return key.startsWith(path);
+                return key.startsWith(string `${path}.`);
             });
             foreach string key in keys {
                 _ = check cache.invalidate(key);

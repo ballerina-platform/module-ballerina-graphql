@@ -57,10 +57,12 @@ public abstract class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnal
     }
 
     public ServiceValidator getServiceValidator(SyntaxNodeAnalysisContext context, Node node,
-                                                InterfaceEntityFinder interfaceEntityFinder) {
+                                                InterfaceEntityFinder interfaceEntityFinder,
+                                                CacheConfigContext cacheConfigContext) {
         boolean isSubgraph = isSubgraphService(node, context);
         nodeSubgraphMap.put(node, isSubgraph);
-        ServiceValidator serviceValidator = new ServiceValidator(context, node, interfaceEntityFinder, isSubgraph);
+        ServiceValidator serviceValidator =
+                new ServiceValidator(context, node, interfaceEntityFinder, isSubgraph, cacheConfigContext);
         serviceValidator.validate();
         return serviceValidator;
     }

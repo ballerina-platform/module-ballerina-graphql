@@ -145,7 +145,8 @@ public class ServiceValidator {
     private static final String CACHE_CONFIG = "cacheConfig";
 
     public ServiceValidator(SyntaxNodeAnalysisContext context, Node serviceNode,
-                            InterfaceEntityFinder interfaceEntityFinder, boolean isSubgraph) {
+                            InterfaceEntityFinder interfaceEntityFinder, boolean isSubgraph,
+                            CacheConfigContext cacheConfigContext) {
         this.context = context;
         this.serviceNode = serviceNode;
         this.interfaceEntityFinder = interfaceEntityFinder;
@@ -153,7 +154,7 @@ public class ServiceValidator {
         this.hasQueryType = false;
         this.currentFieldPath = new ArrayList<>();
         this.isSubgraph = isSubgraph;
-        this.cacheConfigContext = new CacheConfigContext(false);
+        this.cacheConfigContext = cacheConfigContext;
     }
 
     public void validate() {

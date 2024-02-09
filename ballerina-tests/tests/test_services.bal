@@ -2633,7 +2633,7 @@ service /server_cache on basicListener {
 
     isolated remote function updateFriend(graphql:Context context, string name, int age, boolean isMarried, boolean enableEvict) returns FriendService|error {
         if enableEvict {
-            check context.invalidate("getFriendService");
+            check context.invalidateAll();
         }
         self.friends.put({name: name, age: age, isMarried: isMarried});
         return new FriendService(name, age, isMarried);
@@ -2797,7 +2797,7 @@ service /server_cache_operations on basicListener {
 
     isolated remote function updateFriend(graphql:Context context, string name, int age, boolean isMarried, boolean enableEvict) returns FriendService|error {
         if enableEvict {
-            check context.invalidate("getFriendService");
+            check context.invalidateAll();
         }
         self.friends.put({name: name, age: age, isMarried: isMarried});
         return new FriendService(name, age, isMarried);

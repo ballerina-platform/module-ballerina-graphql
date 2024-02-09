@@ -1776,7 +1776,7 @@ service on new graphql:Listener(9090) {
 
 #### 7.1.9 Operation-level Cache Configurations
 
-The `cacheConfig` field is used to provide the operation-level cache configuration to enable the [GraphQL caching](#107-caching) for `query` operations.
+The `cacheConfig` field is used to provide the operation-level cache configuration to enable the [GraphQL caching](#10711-operation-level-caching) for `query` operations.
 
 ###### Example: Enable Operation-level Cache with Default Values
 
@@ -1878,7 +1878,7 @@ service on new graphql:Listener(9090) {
 
 #### 7.2.3 Field-level Cache Configuration
 
-The `cacheConfig` field is used to provide the field-level cache configs. The fields are as same as the operation cache configs.
+The `cacheConfig` field is used to provide the [field-level cache](#10712-field-level-caching) configs. The fields are as same as the operation cache configs.
 
 ###### Example: Field-level Cache Configs
 
