@@ -1,0 +1,44 @@
+query A {
+    user(id:1) {
+        id
+    }
+}
+
+query B {
+    user(id:1) {
+        id
+        name
+    }
+}
+
+query C {
+    user(id:1) {
+        id
+        name
+        age
+    }
+}
+
+mutation D {
+    updateUser(id:1, name:"White", age:45, enableEvict:false) {
+        id
+        name
+        age
+    }
+}
+
+mutation E {
+    updateUser(id:1, name:"White", age:45, enableEvict:true) {
+        id
+        name
+        age
+    }
+}
+
+mutation F {
+    updateUser(id:1, name:"Walter", age:45, enableEvict:true) {
+        id
+        name
+        age
+    }
+}

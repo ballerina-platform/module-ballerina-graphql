@@ -129,3 +129,8 @@ isolated function initCacheTable(ServerCacheConfig? operationCacheConfig, Server
     }
     return;
 }
+
+isolated function hasRecordReturnType(service object {} serviceObject, string[] path)
+    returns boolean = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+} external;

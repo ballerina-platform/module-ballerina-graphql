@@ -516,9 +516,30 @@ public isolated function __addError(Context context, ErrorDetail errorDetail) {
     context.addError(errorDetail);
 }
 
-isolated function generateArgHash(parser:ArgumentNode[] arguments, string[] parentArgHashes = []) returns string {
-    any[] argValues = [...parentArgHashes];
+isolated function generateArgHash(parser:ArgumentNode[] arguments, string[] parentArgHashes = [],
+                                  string[] optionalFields = []) returns string {
+    any[] argValues = [...parentArgHashes, ...optionalFields];
     argValues.push(...arguments.'map((arg) => arg.getValue()));
     byte[] hash = crypto:hashMd5(argValues.toString().toBytes());
     return hash.toBase64();
+}
+
+isolated function getNullableFieldsFromType(__Type fieldType) returns string[] {
+    string[] nullableFields = [];
+    __Field[]? fields = unwrapNonNullype(fieldType).fields;
+    if fields is __Field[] {
+        foreach __Field 'field in fields {
+            if isNullableField('field.'type) {
+                nullableFields.push('field.name);
+            }
+        }
+    }
+    return nullableFields;
+}
+
+isolated function isNullableField(__Type 'type) returns boolean {
+    if 'type.kind == NON_NULL {
+        return false;
+    }
+    return true;
 }

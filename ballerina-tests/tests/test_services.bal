@@ -2971,3 +2971,32 @@ service /caching_with_interceptor_operations on basicListener {
         return self.name;
     }
 }
+
+service /dynamic_response on basicListener {
+    private User user = {id: 1, name: "John", age: 25};
+
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            enabled: true,
+            maxAge: 600
+        }
+    }
+    resource function get user(graphql:Field 'field, int id) returns User {
+        string[] sub = 'field.getSubfieldNames();
+        if sub.length() == 1 {
+            return {id: self.user.id};
+        }else if sub.length() == 2 {
+            return {id: self.user.id, name: self.user.name};
+        } else {
+            return self.user;
+        }
+    }
+
+    remote function updateUser(graphql:Context context, int id, string name, int age, boolean enableEvict) returns User|error {
+        if enableEvict {
+            check context.invalidate("user");
+        }
+        self.user = {id:id, name:name, age:age};
+        return self.user;
+    }
+}

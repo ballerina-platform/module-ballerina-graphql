@@ -223,3 +223,28 @@ isolated function testServerCacheEvictionWithTTL() returns error? {
     expectedPayload = check getJsonContentFromFile("server_cache_eviction_with_TTL_3");
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["server_cache", "records"],
+    dataProvider: dataProviderServerSideCacheWithDynamicResponse
+}
+isolated function testServerSideCacheWithDynamicResponse(string documentFile, string[] resourceFileNames, json variables = (), string[] operationNames = []) returns error? {
+    string url = "http://localhost:9091/dynamic_response";
+    string document = check getGraphqlDocumentFromFile(documentFile);
+    foreach int i in 0..< resourceFileNames.length() {
+        json actualPayload = check getJsonPayloadFromService(url, document, variables, operationNames[i]);
+        json expectedPayload = check getJsonContentFromFile(resourceFileNames[i]);
+        assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    }
+}
+
+function dataProviderServerSideCacheWithDynamicResponse() returns map<[string, string[], json, string[]]> {
+    map<[string, string[], json, string[]]> dataSet = {
+        "1": ["server_cache_with_dynamic_responses", ["server_cache_with_dynamic_responses_1", "server_cache_with_dynamic_responses_2", "server_cache_with_dynamic_responses_3"], (), ["A", "B", "C"]],
+        "2": ["server_cache_with_dynamic_responses", ["server_cache_with_dynamic_responses_2", "server_cache_with_dynamic_responses_4", "server_cache_with_dynamic_responses_2"], (), ["B", "D", "B"]],
+        "3": ["server_cache_with_dynamic_responses", ["server_cache_with_dynamic_responses_3", "server_cache_with_dynamic_responses_4", "server_cache_with_dynamic_responses_3"], (), ["C", "D", "C"]],
+        "4": ["server_cache_with_dynamic_responses", ["server_cache_with_dynamic_responses_3", "server_cache_with_dynamic_responses_4", "server_cache_with_dynamic_responses_5"], (), ["C", "E", "C"]],
+        "5": ["server_cache_with_dynamic_responses", ["server_cache_with_dynamic_responses_6", "server_cache_with_dynamic_responses_7", "server_cache_with_dynamic_responses_8"], (), ["B", "F", "B"]]
+    };
+    return dataSet;
+}

@@ -1776,7 +1776,7 @@ service on new graphql:Listener(9090) {
 
 #### 7.1.9 Operation-level Cache Configurations
 
-The `cacheConfig` field is used to provide the GraphQL operation-level cache configuration to enable the caching for `query` operations.
+The `cacheConfig` field is used to provide the operation-level cache configuration to enable the [GraphQL caching](#107-caching) for `query` operations.
 
 ###### Example: Enable Operation-level Cache with Default Values
 
@@ -1878,7 +1878,7 @@ service on new graphql:Listener(9090) {
 
 #### 7.2.3 Field-level Cache Configuration
 
-The `cacheConfig` field is used to provide the field-level cache configs. The fields are as same as the operation cache configs. The field configurations override the operation configurations.
+The `cacheConfig` field is used to provide the field-level cache configs. The fields are as same as the operation cache configs.
 
 ###### Example: Field-level Cache Configs
 
@@ -3764,7 +3764,7 @@ Operation-level caching can be used to cache the entire operation, and this can 
 
 ##### 10.7.1.2 Field-level Caching
 
-The GraphQL field-level caching can be enabled only for a specific field. This can be done by providing the [field cache configurations](#723-field-level-cache-configuration). Once the field-level caching is enabled for a field, it will be applied to the sub-fields of that field.
+The GraphQL field-level caching can be enabled only for a specific field. This can be done by providing the [field cache configurations](#723-field-level-cache-configuration). Once the field-level caching is enabled for a field, it will be applied to the sub-fields of that field. The field-level cache configuration can be used to override the operation-level cache configurations.
 
 #### 10.7.1.3 Cache Eviction
 
@@ -3836,6 +3836,12 @@ service /graphql on new graphql:Listener(9090) {
         {name: "Jesse Pinkman", age: 23, isMarried: false}
     ];
 
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            enabled: true,
+            maxAge 20
+        }
+    }
     isolated resource function get friends(boolean isMarried = false) returns Person[] {
         if isMarried {
             return from Friend friend in self.friends
@@ -3870,20 +3876,62 @@ public isolated distinct service class Person {
         return self.name;
     }
 
-    @graphql:ResourceConfig {
-        cacheConfig: {
-            enabled: true,
-            maxAge 20
-        }
-    }
     isolated resource function get age() returns int {
         return self.age;
     }
 
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            enabled: false
+        }
+    }
     isolated resource function get isMarried() returns boolean {
         return self.isMarried;
     }
 }
 ```
 
-In this example, GraphQL field-level caching is enabled for the `age` field via the resource configurations. When the age is changed using the `updateAge` operation, the `invalidate` method is used to remove the existing cache entries related to the age field.
+In this example, GraphQL field-level caching is enabled for the `friends` field via the resource configurations. The configuration applies to its subfields, the `name` and `age` fields will be cached.  Since the caching is disabled for the field `isMarried`, it will not be cached. When the age is changed using the `updateAge` operation, the `invalidate` method is used to remove the existing cache entries related to the age field.
+
+###### Example: Overrides Operation-level Cache Config
+
+```ballerina
+import ballerina/graphql;
+
+@graphql:ServiceConfig {
+    cacheConfig: {
+        enabled: true,
+        maxAge: 50
+    }
+}
+service /graphql on new graphql:Listener(9090) {
+    private string name = "Ballerina GraphQL";
+    private string 'type = "code first";
+    private string version = "V1.11.0";
+
+    resource function get name() returns string {
+        return self.name;
+    }
+
+    resource function get 'type() returns string {
+        return self.'type;
+    }
+
+    @graphql:ServiceConfig {
+        cacheConfig: {
+            enabled: false
+        }
+    }
+    resource function get version() returns string {
+        return self.'type;
+    }
+
+    remote function updateName(graphql:Context context, string name) returns string|error {
+        check context.invalidate("name");
+        self.name = name
+        return self.name;
+    }
+}
+```
+
+In this example, caching is enabled at the operation level. Therefore, the field `name` and `type` will be cached. Since the field-level cache configuration overrides the parent cache configurations, the field `version` will not be cached. When updating the name with a mutation, the cached values become invalid. Hence, the `invalidate` function can be used to evict the existing cache values.

@@ -401,3 +401,9 @@ type Associate record {|
 |};
 
 public type Relationship FriendService|AssociateService;
+
+type User record {|
+    int id?;
+    string name?;
+    int age?;
+|};
