@@ -483,3 +483,110 @@ distinct service class NestedField {
             ],
             @graphql:ID string[] j = ["id1"]) returns string? => ();
 }
+
+public type HumanService FriendService|EnemyService;
+
+public isolated distinct service class FriendService {
+    private final string name;
+    private final int age;
+    private final boolean isMarried;
+
+    public isolated function init(string name, int age, boolean isMarried) {
+        self.name = name;
+        self.age = age;
+        self.isMarried = isMarried;
+    }
+
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            maxAge: 180
+        }
+    }
+    isolated resource function get name() returns string {
+        return self.name;
+    }
+
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            maxAge: 180
+        }
+    }
+    isolated resource function get age() returns int {
+        return self.age;
+    }
+
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            maxAge: 180
+        }
+    }
+    isolated resource function get isMarried() returns boolean {
+        return self.isMarried;
+    }
+}
+
+public isolated distinct service class AssociateService {
+    private final string name;
+    private final string status;
+
+    public isolated function init(string name, string status) {
+        self.name = name;
+        self.status = status;
+    }
+
+    isolated resource function get name() returns string {
+        return self.name;
+    }
+
+    isolated resource function get status() returns string {
+        return self.status;
+    }
+}
+
+public isolated distinct service class EnemyService {
+    private final string name;
+    private final int age;
+    private final boolean isMarried;
+
+    public isolated function init(string name, int age, boolean isMarried) {
+        self.name = name;
+        self.age = age;
+        self.isMarried = isMarried;
+    }
+
+    isolated resource function get name() returns string {
+        return self.name;
+    }
+
+    isolated resource function get age() returns int {
+        return self.age;
+    }
+
+    isolated resource function get isMarried() returns boolean {
+        return self.isMarried;
+    }
+}
+
+public isolated distinct service class AuthorData2 {
+    private final readonly & AuthorRow author;
+
+    isolated function init(AuthorRow author) {
+        self.author = author.cloneReadOnly();
+    }
+
+    isolated resource function get name() returns string {
+        return self.author.name;
+    }
+
+    isolated function preBooks(graphql:Context ctx) {
+        dataloader:DataLoader bookLoader = ctx.getDataLoader(BOOK_LOADER_2);
+        bookLoader.add(self.author.id);
+    }
+
+    isolated resource function get books(graphql:Context ctx) returns BookData[]|error {
+        dataloader:DataLoader bookLoader = ctx.getDataLoader(BOOK_LOADER_2);
+        BookRow[] bookrows = check bookLoader.get(self.author.id);
+        return from BookRow bookRow in bookrows
+            select new BookData(bookRow);
+    }
+}

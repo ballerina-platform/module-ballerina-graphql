@@ -68,7 +68,7 @@ public class ModuleLevelVariableDeclarationAnalysisTask extends ServiceAnalysisT
         ObjectConstructorExpressionNode graphqlServiceObjectNode = (ObjectConstructorExpressionNode) expressionNode;
         InterfaceEntityFinder interfaceEntityFinder = getInterfaceEntityFinder(context.semanticModel());
         ServiceValidator serviceObjectValidator = getServiceValidator(context, graphqlServiceObjectNode,
-                                                                      interfaceEntityFinder);
+                                                        interfaceEntityFinder, new CacheConfigContext(false));
         if (serviceObjectValidator.isErrorOccurred()) {
             return;
         }
@@ -76,6 +76,8 @@ public class ModuleLevelVariableDeclarationAnalysisTask extends ServiceAnalysisT
         Schema schema = generateSchema(context, interfaceEntityFinder, graphqlServiceObjectNode, description);
         DocumentId documentId = context.documentId();
         addToModifierContextMap(documentId, moduleVariableDeclarationNode, schema);
+        addToModifierContextMap(documentId, moduleVariableDeclarationNode,
+                serviceObjectValidator.getCacheConfigContext());
     }
 
     public static String getDescription(SemanticModel semanticModel,

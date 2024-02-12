@@ -377,3 +377,33 @@ type InputObject2 record {|
 type InputObject3 record {|
     int age = 30;
 |};
+
+type Friend record {|
+    readonly string name;
+    int age;
+    boolean isMarried;
+|};
+
+type Enemy record {|
+    readonly string name;
+    int age;
+    boolean isMarried;
+|};
+
+type EnemyInput record {|
+    readonly string name = "Enemy6";
+    int age = 12;
+|};
+
+type Associate record {|
+    readonly string name;
+    string status;
+|};
+
+public type Relationship FriendService|AssociateService;
+
+type User record {|
+    int id?;
+    string name?;
+    int age?;
+|};

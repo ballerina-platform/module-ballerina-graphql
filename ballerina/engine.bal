@@ -16,6 +16,7 @@
 
 import graphql.parser;
 
+import ballerina/cache;
 import ballerina/jballerina.java;
 import ballerina/uuid;
 
@@ -25,10 +26,13 @@ isolated class Engine {
     private final readonly & (readonly & Interceptor)[] interceptors;
     private final readonly & boolean introspection;
     private final readonly & boolean validation;
+    private final cache:Cache? cache;
+    private final readonly & ServerCacheConfig? cacheConfig;
 
     isolated function init(string schemaString, int? maxQueryDepth, Service s,
                            readonly & (readonly & Interceptor)[] interceptors, boolean introspection,
-                           boolean validation)
+                           boolean validation, ServerCacheConfig? cacheConfig = (),
+                           ServerCacheConfig? fieldCacheConfig = ())
     returns Error? {
         if maxQueryDepth is int && maxQueryDepth < 1 {
             return error Error("Max query depth value must be a positive integer");
@@ -38,6 +42,8 @@ isolated class Engine {
         self.interceptors = interceptors;
         self.introspection = introspection;
         self.validation = validation;
+        self.cacheConfig = cacheConfig;
+        self.cache = initCacheTable(cacheConfig, fieldCacheConfig);
         self.addService(s);
     }
 
@@ -51,6 +57,26 @@ isolated class Engine {
 
     isolated function getValidation() returns readonly & boolean {
         return self.validation;
+    }
+
+    isolated function getCacheConfig() returns readonly & ServerCacheConfig? {
+        return self.cacheConfig;
+    }
+
+    isolated function addToCache(string key, any value, decimal maxAge) returns any|error {
+        cache:Cache? cache = self.cache;
+        if cache is cache:Cache {
+            return cache.put(key, value, maxAge);
+        }
+        return error("Cache table not found!");
+    }
+
+    isolated function getFromCache(string key) returns any|error {
+        cache:Cache? cache = self.cache;
+        if cache is cache:Cache {
+            return cache.get(key);
+        }
+        return error("Cache table not found!");
     }
 
     isolated function validate(string documentString, string? operationName, map<json>? variables)
@@ -248,8 +274,8 @@ isolated class Engine {
 
         if executePrefetchMethod {
             service object {}? serviceObject = 'field.getServiceObject();
-            if serviceObject is service object {} { 
-                string prefetchMethodName = getPrefetchMethodName(serviceObject, 'field) 
+            if serviceObject is service object {} {
+                string prefetchMethodName = getPrefetchMethodName(serviceObject, 'field)
                     ?: getDefaultPrefetchMethodName(fieldNode.getName());
                 if self.hasPrefetchMethod(serviceObject, prefetchMethodName) {
                     return self.getResultFromPrefetchMethodExecution(context, 'field, serviceObject, prefetchMethodName);
@@ -259,7 +285,8 @@ isolated class Engine {
 
         (readonly & Interceptor)? interceptor = context.getNextInterceptor('field);
         __Type fieldType = 'field.getFieldType();
-        ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone());
+        ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone(),
+                                                   'field.getCacheConfig(), 'field.getParentArgHashes());
         do {
             if interceptor is readonly & Interceptor {
                 any|error result = self.executeInterceptor(interceptor, 'field, context);
@@ -267,12 +294,20 @@ isolated class Engine {
                 return check validateInterceptorReturnValue(fieldType, result, interceptorName);
             }
             any fieldValue;
-            if 'field.getOperationType() == parser:OPERATION_QUERY {
-                fieldValue = check self.resolveResourceMethod(context, 'field, responseGenerator);
-            } else if 'field.getOperationType() == parser:OPERATION_MUTATION {
-                fieldValue = check self.resolveRemoteMethod(context, 'field, responseGenerator);
+            if 'field.getOperationType() == parser:OPERATION_QUERY && 'field.isCacheEnabled() {
+                string cacheKey = 'field.getCacheKey();
+                any|error cachedValue = self.getFromCache(cacheKey);
+                if cachedValue is any {
+                    fieldValue = cachedValue;
+                } else {
+                    fieldValue = check self.getFieldValue(context, 'field, responseGenerator);
+                    decimal maxAge = 'field.getCacheMaxAge();
+                    if maxAge > 0d && fieldValue !is () {
+                        _ = check self.addToCache(cacheKey, fieldValue, maxAge);
+                    }
+                }
             } else {
-                fieldValue = check 'field.getFieldValue();
+                fieldValue = check self.getFieldValue(context, 'field, responseGenerator);
             }
             return responseGenerator.getResult(fieldValue, fieldNode);
         } on fail error errorValue {
@@ -349,6 +384,36 @@ isolated class Engine {
         anydata fieldValue = self.resolve(context, selectionField);
         result[fieldNode.getAlias()] = fieldValue is ErrorDetail ? () : fieldValue;
         _ = resourcePath.pop();
+    }
+
+    private isolated function getFieldValue(Context context, Field 'field, ResponseGenerator responseGenerator) returns any|error {
+        if 'field.getOperationType() == parser:OPERATION_QUERY {
+            return self.resolveResourceMethod(context, 'field, responseGenerator);
+        } else if 'field.getOperationType() == parser:OPERATION_MUTATION {
+            return self.resolveRemoteMethod(context, 'field, responseGenerator);
+        }
+        return 'field.getFieldValue();
+    }
+
+    isolated function invalidate(string path) returns error? {
+        cache:Cache? cache = self.cache;
+        if cache is cache:Cache {
+            string[] keys = cache.keys().filter(isolated function (string key) returns boolean {
+                return key.startsWith(string `${path}.`);
+            });
+            foreach string key in keys {
+                _ = check cache.invalidate(key);
+            }
+        }
+        return;
+    }
+
+    isolated function invalidateAll() returns error? {
+        cache:Cache? cache = self.cache;
+        if cache is cache:Cache {
+            return cache.invalidateAll();
+        }
+        return;
     }
 
     isolated function addService(Service s) = @java:Method {

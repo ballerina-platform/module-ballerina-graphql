@@ -55,13 +55,15 @@ public class ObjectConstructorAnalysisTask extends ServiceAnalysisTask {
         }
 
         InterfaceEntityFinder interfaceEntityFinder = getInterfaceEntityFinder(context.semanticModel());
-        ServiceValidator serviceValidator = getServiceValidator(context, node, interfaceEntityFinder);
+        ServiceValidator serviceValidator = getServiceValidator(context, node, interfaceEntityFinder,
+                                                    new CacheConfigContext(false));
         if (serviceValidator.isErrorOccurred()) {
             return;
         }
         Schema schema = generateSchema(context, interfaceEntityFinder, node, null);
         DocumentId documentId = context.documentId();
         addToModifierContextMap(documentId, node.parent(), schema);
+        addToModifierContextMap(documentId, node.parent(), serviceValidator.getCacheConfigContext());
     }
 
     public boolean isGraphQLServiceObjectDeclaration(SemanticModel semanticModel,

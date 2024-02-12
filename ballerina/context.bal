@@ -99,7 +99,7 @@ public isolated class Context {
     }
 
     # Register a given DataLoader instance for a given key in the GraphQL context.
-    # 
+    #
     # + key - The key for the DataLoader to be registered
     # + dataloader - The DataLoader instance to be registered
     public isolated function registerDataLoader(string key, dataloader:DataLoader dataloader) {
@@ -109,13 +109,36 @@ public isolated class Context {
     }
 
     # Retrieves a DataLoader instance using the given key from the GraphQL context.
-    # 
+    #
     # + key - The key corresponding to the required DataLoader instance
     # + return - The DataLoader instance if the key is present in the context otherwise panics
     public isolated function getDataLoader(string key) returns dataloader:DataLoader {
         lock {
             return self.idDataLoaderMap.get(key);
         }
+    }
+
+    # Remove cache entries related to the given path.
+    #
+    # + path - The path corresponding to the cache entries to be removed (Ex: "person.address.city")
+    # + return - The error if the cache invalidateion fails or nil otherwise
+    public isolated function invalidate(string path) returns error? {
+        Engine? engine = self.getEngine();
+        if engine is Engine {
+            return engine.invalidate(path);
+        }
+        return;
+    }
+
+    # Remove all cache entries.
+    #
+    # + return - The error if the cache invalidateion fails or nil otherwise
+    public isolated function invalidateAll() returns error? {
+        Engine? engine = self.getEngine();
+        if engine is Engine {
+            return engine.invalidateAll();
+        }
+        return;
     }
 
     isolated function addError(ErrorDetail err) {

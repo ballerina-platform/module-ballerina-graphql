@@ -42,9 +42,13 @@ import io.ballerina.compiler.syntax.tree.AnnotationNode;
 import io.ballerina.compiler.syntax.tree.BasicLiteralNode;
 import io.ballerina.compiler.syntax.tree.DefaultableParameterNode;
 import io.ballerina.compiler.syntax.tree.ExpressionNode;
+import io.ballerina.compiler.syntax.tree.IdentifierToken;
+import io.ballerina.compiler.syntax.tree.MappingConstructorExpressionNode;
+import io.ballerina.compiler.syntax.tree.MappingFieldNode;
 import io.ballerina.compiler.syntax.tree.ModuleVariableDeclarationNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
+import io.ballerina.compiler.syntax.tree.QualifiedNameReferenceNode;
 import io.ballerina.compiler.syntax.tree.RecordFieldWithDefaultValueNode;
 import io.ballerina.compiler.syntax.tree.SpecificFieldNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
@@ -65,6 +69,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static io.ballerina.stdlib.graphql.commons.utils.Utils.PACKAGE_NAME;
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.hasGraphqlListener;
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.isGraphQLServiceObjectDeclaration;
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.isGraphqlModuleSymbol;
@@ -89,6 +94,10 @@ public final class Utils {
     private static final String UUID_MODULE_NAME = "uuid";
     private static final String RESOURCE_CONFIG_ANNOTATION = "ResourceConfig";
     private static final String ENTITY_ANNOTATION = "Entity";
+
+    private static final String CACHE_CONFIG_ENABLE_FIELD = "enabled";
+    private static final String CACHE_CONFIG_MAX_SIZE_FIELD = "maxSize";
+    private static final int DEFAULT_MAX_SIZE = 120;
 
     private Utils() {
     }
@@ -385,6 +394,55 @@ public final class Utils {
         return null;
     }
 
+    public static boolean getBooleanValue(MappingConstructorExpressionNode mappingConstructorNode) {
+        if (mappingConstructorNode.fields().isEmpty()) {
+            return true;
+        }
+        for (MappingFieldNode field: mappingConstructorNode.fields()) {
+            if (field.kind() == SyntaxKind.SPECIFIC_FIELD) {
+                SpecificFieldNode specificFieldNode = (SpecificFieldNode) field;
+                Node fieldName = specificFieldNode.fieldName();
+                if (fieldName.kind() == SyntaxKind.IDENTIFIER_TOKEN) {
+                    IdentifierToken identifierToken = (IdentifierToken) fieldName;
+                    String identifierName = identifierToken.text();
+                    if (CACHE_CONFIG_ENABLE_FIELD.equals(identifierName) && specificFieldNode.valueExpr().isPresent()) {
+                        ExpressionNode valueExpression = specificFieldNode.valueExpr().get();
+                        if (valueExpression.kind() == SyntaxKind.BOOLEAN_LITERAL) {
+                            BasicLiteralNode stringLiteralNode = (BasicLiteralNode) valueExpression;
+                            return Boolean.parseBoolean(stringLiteralNode.toSourceCode().trim());
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    public static int getMaxSize(MappingConstructorExpressionNode mappingConstructorNode) {
+        if (mappingConstructorNode.fields().isEmpty()) {
+            return DEFAULT_MAX_SIZE;
+        }
+        for (MappingFieldNode field: mappingConstructorNode.fields()) {
+            if (field.kind() == SyntaxKind.SPECIFIC_FIELD) {
+                SpecificFieldNode specificFieldNode = (SpecificFieldNode) field;
+                Node fieldName = specificFieldNode.fieldName();
+                if (fieldName.kind() == SyntaxKind.IDENTIFIER_TOKEN) {
+                    IdentifierToken identifierToken = (IdentifierToken) fieldName;
+                    String identifierName = identifierToken.text();
+                    if (CACHE_CONFIG_MAX_SIZE_FIELD.equals(identifierName) &&
+                            specificFieldNode.valueExpr().isPresent()) {
+                        ExpressionNode valueExpression = specificFieldNode.valueExpr().get();
+                        if (valueExpression.kind() == SyntaxKind.NUMERIC_LITERAL) {
+                            BasicLiteralNode integerLiteralNode = (BasicLiteralNode) valueExpression;
+                            return Integer.parseInt(integerLiteralNode.toSourceCode().trim());
+                        }
+                    }
+                }
+            }
+        }
+        return DEFAULT_MAX_SIZE;
+    }
+
     public static String getStringValue(BasicLiteralNode expression) {
         String literalToken = expression.literalToken().text().trim();
         return literalToken.substring(1, literalToken.length() - 1);
@@ -433,5 +491,16 @@ public final class Utils {
             return ((RecordTypeSymbol) typeSymbol).typeInclusions();
         }
         return new ArrayList<>();
+    }
+
+    public static boolean isGraphqlServiceConfig(AnnotationNode annotationNode) {
+        if (annotationNode.annotReference().kind() != SyntaxKind.QUALIFIED_NAME_REFERENCE) {
+            return false;
+        }
+        QualifiedNameReferenceNode referenceNode = ((QualifiedNameReferenceNode) annotationNode.annotReference());
+        if (!PACKAGE_NAME.equals(referenceNode.modulePrefix().text())) {
+            return false;
+        }
+        return SERVICE_CONFIG_IDENTIFIER.equals(referenceNode.identifier().text());
     }
 }

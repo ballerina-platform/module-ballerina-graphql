@@ -16,6 +16,7 @@
 
 import graphql.parser;
 
+import ballerina/cache;
 import ballerina/jballerina.java;
 import ballerina/lang.regexp;
 
@@ -89,7 +90,9 @@ isolated function getFieldObject(parser:FieldNode fieldNode, parser:RootOperatio
     string operationTypeName = getOperationTypeNameFromOperationType(operationType);
     __Type parentType = <__Type>getTypeFromTypeArray(schema.types, operationTypeName);
     __Type fieldType = getFieldTypeFromParentType(parentType, schema.types, fieldNode);
-    return new (fieldNode, fieldType, engine.getService(), path, operationType, fieldValue = fieldValue);
+    string parentArgHashes = generateArgHash(fieldNode.getArguments());
+    return new (fieldNode, fieldType, engine.getService(), path, operationType, fieldValue = fieldValue,
+                cacheConfig = engine.getCacheConfig(), parentArgHashes = [parentArgHashes]);
 }
 
 isolated function createSchema(string schemaString) returns readonly & __Schema|Error = @java:Method {
@@ -107,7 +110,7 @@ isolated function getTypeNameFromValue(any value) returns string = @java:Method 
 # Obtains the schema representation of a federated subgraph, expressed in the SDL format.
 # + encodedSchemaString - Compile time auto generated schema
 # + return - Subgraph schema in SDL format as a string on success, or an error otherwise
-public isolated function getSdlString(string encodedSchemaString) 
+public isolated function getSdlString(string encodedSchemaString)
 returns string|error = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
 } external;
@@ -117,3 +120,17 @@ isolated function getDefaultPrefetchMethodName(string fieldName) returns string 
         return string `${DEFAULT_PREFETCH_METHOD_NAME_PREFIX}${groups[0].substring().toUpperAscii()}`;
     });
 }
+
+isolated function initCacheTable(ServerCacheConfig? operationCacheConfig, ServerCacheConfig? fieldCacheConfig) returns cache:Cache? {
+    if operationCacheConfig is ServerCacheConfig && operationCacheConfig.enabled {
+        return new ({capacity:operationCacheConfig.maxSize, evictionFactor:0.2, defaultMaxAge:operationCacheConfig.maxAge});
+    } else if fieldCacheConfig is ServerCacheConfig && fieldCacheConfig.enabled {
+        return new({capacity:fieldCacheConfig.maxSize, evictionFactor:0.2, defaultMaxAge:fieldCacheConfig.maxAge});
+    }
+    return;
+}
+
+isolated function hasRecordReturnType(service object {} serviceObject, string[] path)
+    returns boolean = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
+} external;

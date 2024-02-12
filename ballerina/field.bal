@@ -26,10 +26,16 @@ public class Field {
     private (string|int)[] path;
     private string[] resourcePath;
     private readonly & Interceptor[] fieldInterceptors;
+    private final ServerCacheConfig? cacheConfig;
+    private final readonly & string[] parentArgHashes;
+    private final boolean cacheEnabled;
+    private final decimal cacheMaxAge;
+    private boolean hasRequestedNullableFields;
 
     isolated function init(parser:FieldNode internalNode, __Type fieldType, service object {}? serviceObject = (),
                            (string|int)[] path = [], parser:RootOperationType operationType = parser:OPERATION_QUERY,
-                           string[] resourcePath = [], any|error fieldValue = ()) {
+                           string[] resourcePath = [], any|error fieldValue = (), ServerCacheConfig? cacheConfig = (),
+                           readonly & string[] parentArgHashes = []) {
         self.internalNode = internalNode;
         self.serviceObject = serviceObject;
         self.fieldType = fieldType;
@@ -40,6 +46,20 @@ public class Field {
         self.resourcePath.push(internalNode.getName());
         self.fieldInterceptors = serviceObject is service object {} ?
             getFieldInterceptors(serviceObject, operationType, internalNode.getName(), self.resourcePath) : [];
+        ServerCacheConfig? fieldCache = serviceObject is service object {} ?
+            getFieldCacheConfig(serviceObject, operationType, internalNode.getName(), self.resourcePath) : ();
+        ServerCacheConfig? updatedCacheConfig = fieldCache is ServerCacheConfig ? fieldCache : cacheConfig;
+        self.cacheConfig = updatedCacheConfig;
+        self.parentArgHashes = parentArgHashes;
+        if updatedCacheConfig is ServerCacheConfig {
+            self.cacheEnabled = updatedCacheConfig.enabled;
+            self.cacheMaxAge = updatedCacheConfig.maxAge;
+        } else {
+            self.cacheEnabled = false;
+            self.cacheMaxAge = 0d;
+        }
+        self.hasRequestedNullableFields = self.cacheEnabled && serviceObject is service object {}
+            && hasFields(getOfType(self.fieldType)) && hasRecordReturnType(serviceObject, self.resourcePath);
     }
 
     # Returns the name of the field.
@@ -129,7 +149,8 @@ public class Field {
                 foreach __Field 'field in typeFields {
                     if 'field.name == selection.getName() {
                         result.push(new Field(selection, 'field.'type, (),[...currentPath, ...unwrappedPath, 'field.name],
-                            self.operationType.clone(), self.resourcePath.clone()));
+                            self.operationType.clone(), self.resourcePath.clone(), cacheConfig = self.cacheConfig,
+                            parentArgHashes = self.parentArgHashes));
                         break;
                     }
                 }
@@ -159,5 +180,49 @@ public class Field {
 
     isolated function getFieldInterceptors() returns readonly & Interceptor[] {
         return self.fieldInterceptors;
+    }
+
+    isolated function isCacheEnabled() returns boolean {
+        return self.cacheEnabled;
+    }
+
+    isolated function getCacheConfig() returns ServerCacheConfig? {
+        return self.cacheConfig;
+    }
+
+    isolated function getCacheKey() returns string {
+        return self.generateCacheKey();
+    }
+
+    isolated function getCacheMaxAge() returns decimal {
+        return self.cacheMaxAge;
+    }
+
+    isolated function getParentArgHashes() returns readonly & string[] {
+        return self.parentArgHashes;
+    }
+
+    private isolated function generateCacheKey() returns string {
+        string[] requestedNullableFields = [];
+        if self.hasRequestedNullableFields {
+            requestedNullableFields = self.getRequestedNullableFields();
+        }
+        string resourcePath = "";
+        foreach string|int path in self.path {
+            resourcePath += string `${path}.`;
+        }
+        string hash = generateArgHash(self.internalNode.getArguments(), self.parentArgHashes, requestedNullableFields);
+        return string `${resourcePath}${hash}`;
+    }
+
+    private isolated function getRequestedNullableFields() returns string[] {
+        string[] nullableFields = getNullableFieldsFromType(self.fieldType);
+        string[] requestedNullableFields = [];
+        foreach string 'field in nullableFields {
+            if self.getSubfieldNames().indexOf('field) is int {
+                requestedNullableFields.push('field);
+            }
+        }
+        return requestedNullableFields.sort();
     }
 }

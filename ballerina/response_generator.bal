@@ -23,14 +23,19 @@ class ResponseGenerator {
     private final Context context;
     private (string|int)[] path;
     private final __Type fieldType;
+    private final readonly & ServerCacheConfig? cacheConfig;
+    private final readonly & string[] parentArgHashes;
 
     private final string functionNameGetFragmentFromService = "";
 
-    isolated function init(Engine engine, Context context, __Type fieldType, (string|int)[] path = []) {
+    isolated function init(Engine engine, Context context, __Type fieldType, (string|int)[] path = [],
+                           ServerCacheConfig? cacheConfig = (), readonly & string[] parentArgHashes = []) {
         self.engine = engine;
         self.context = context;
         self.path = path;
         self.fieldType = fieldType;
+        self.cacheConfig = cacheConfig;
+        self.parentArgHashes = parentArgHashes;
     }
 
     isolated function getResult(any|error parentValue, parser:FieldNode parentNode)
@@ -77,7 +82,8 @@ class ResponseGenerator {
             (string|int)[] clonedPath = self.path.clone();
             clonedPath.push(fieldNode.getAlias());
             __Type fieldType = getFieldTypeFromParentType(self.fieldType, self.engine.getSchema().types, fieldNode);
-            Field 'field = new (fieldNode, fieldType, parentValue, clonedPath);
+            Field 'field = new (fieldNode, fieldType, parentValue, clonedPath, cacheConfig = self.cacheConfig,
+                                parentArgHashes = self.parentArgHashes);
             self.context.resetInterceptorCount();
             return self.engine.resolve(self.context, 'field);
         }

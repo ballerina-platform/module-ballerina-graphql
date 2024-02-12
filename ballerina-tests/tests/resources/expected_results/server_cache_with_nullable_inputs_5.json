@@ -1,0 +1,10 @@
+{
+    "data": {
+        "enemies": [
+            {
+                "name": "Enemy3",
+                "isMarried": false
+            }
+        ]
+    }
+}

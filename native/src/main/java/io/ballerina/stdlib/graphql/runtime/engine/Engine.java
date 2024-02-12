@@ -21,8 +21,10 @@ package io.ballerina.stdlib.graphql.runtime.engine;
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Future;
 import io.ballerina.runtime.api.PredefinedTypes;
+import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.creators.TypeCreator;
+import io.ballerina.runtime.api.types.IntersectionType;
 import io.ballerina.runtime.api.types.MethodType;
 import io.ballerina.runtime.api.types.ObjectType;
 import io.ballerina.runtime.api.types.RemoteMethodType;
@@ -48,6 +50,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
+import static io.ballerina.stdlib.graphql.runtime.engine.ArgumentHandler.getEffectiveType;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.COLON;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GET_ACCESSOR;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.INTERCEPTOR_EXECUTE;
@@ -326,5 +329,29 @@ public class Engine {
                     .invokeMethodAsyncSequentially(service, resourceMethod.getName(), null, RESOURCE_EXECUTION_STRAND,
                                                    executionCallback, null, null, arguments);
         }
+    }
+
+    public static boolean hasRecordReturnType(BObject serviceObject, BArray path) {
+        ResourceMethodType resourceMethod = (ResourceMethodType) getResourceMethod(serviceObject, path);
+        if (resourceMethod == null) {
+            return false;
+        }
+        return isRecordReturnType(resourceMethod.getType().getReturnType());
+    }
+
+    static boolean isRecordReturnType(Type returnType) {
+        if (returnType.getTag() == TypeTags.UNION_TAG) {
+            for (Type memberType : ((UnionType) returnType).getMemberTypes()) {
+                if (isRecordReturnType(memberType)) {
+                    return true;
+                }
+            }
+        } else if (returnType.getTag() == TypeTags.INTERSECTION_TAG) {
+            Type effectiveType = TypeUtils.getReferredType(getEffectiveType((IntersectionType) returnType));
+            return isRecordReturnType(effectiveType);
+        } else if (returnType.getTag() == TypeTags.TYPE_REFERENCED_TYPE_TAG) {
+            return isRecordReturnType(TypeUtils.getReferredType(returnType));
+        }
+        return returnType.getTag() == TypeTags.RECORD_TYPE_TAG;
     }
 }

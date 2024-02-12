@@ -107,3 +107,55 @@ __Type AstronautNonNullList = {
         ofType: Astronaut
     }
 };
+
+__Type Person = {
+    kind: "OBJECT",
+    name: "Person",
+    fields: [
+        name,
+        address
+    ],
+    interfaces: []
+};
+
+__Type Address = {
+    kind: "OBJECT",
+    name: "Address",
+    fields: [
+        city
+    ],
+    interfaces: []
+};
+
+__Field person = {
+    name: "person",
+    args: [inputId],
+    'type: Person
+};
+
+__InputValue inputId = {
+    name: "id",
+    'type: NonNullScalarInt
+};
+
+__Field address = {
+    name: "address",
+    args: [includeCity],
+    'type: Address
+};
+
+__InputValue includeCity = {
+    name: "includeCity",
+    'type: NonNullScalarBoolean
+};
+
+__Type NonNullScalarBoolean = {
+    kind: "SCALAR",
+    name: "Boolean"
+};
+
+__Field city = {
+    name: "city",
+    args: [],
+    'type: ScalarString
+};

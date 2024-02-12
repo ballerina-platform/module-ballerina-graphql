@@ -53,6 +53,7 @@ import io.ballerina.compiler.syntax.tree.IdentifierToken;
 import io.ballerina.compiler.syntax.tree.ListConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.MappingConstructorExpressionNode;
 import io.ballerina.compiler.syntax.tree.MappingFieldNode;
+import io.ballerina.compiler.syntax.tree.MetadataNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.NodeList;
 import io.ballerina.compiler.syntax.tree.ObjectConstructorExpressionNode;
@@ -65,6 +66,7 @@ import io.ballerina.compiler.syntax.tree.TypeDefinitionNode;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.commons.types.TypeName;
+import io.ballerina.stdlib.graphql.compiler.CacheConfigContext;
 import io.ballerina.stdlib.graphql.compiler.FinderContext;
 import io.ballerina.stdlib.graphql.compiler.Utils;
 import io.ballerina.stdlib.graphql.compiler.diagnostics.CompilationDiagnostic;
@@ -83,11 +85,13 @@ import java.util.stream.Collectors;
 import static io.ballerina.compiler.syntax.tree.SyntaxKind.SPECIFIC_FIELD;
 import static io.ballerina.compiler.syntax.tree.SyntaxKind.SPREAD_MEMBER;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getAccessor;
+import static io.ballerina.stdlib.graphql.compiler.Utils.getBooleanValue;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getDefaultableParameterNode;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveType;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEffectiveTypes;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEntityAnnotationNode;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getEntityAnnotationSymbol;
+import static io.ballerina.stdlib.graphql.compiler.Utils.getMaxSize;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getRecordFieldWithDefaultValueNode;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getRecordTypeDefinitionNode;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getStringValue;
@@ -97,11 +101,14 @@ import static io.ballerina.stdlib.graphql.compiler.Utils.isContextParameter;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isDistinctServiceClass;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isDistinctServiceReference;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isFileUploadParameter;
+import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlServiceConfig;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isPrimitiveTypeSymbol;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isRemoteMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isResourceMethod;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isServiceClass;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isValidGraphqlParameter;
+import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.FIELD_CACHE_CONFIG_FIELD;
+import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.SCHEMA_STRING_FIELD;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.RESOURCE_FUNCTION_GET;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.RESOURCE_FUNCTION_SUBSCRIBE;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.getLocation;
@@ -127,6 +134,7 @@ public class ServiceValidator {
     private final boolean isSubgraph;
     private TypeSymbol rootInputParameterTypeSymbol;
     private final List<String> currentFieldPath;
+    private CacheConfigContext cacheConfigContext;
 
     private static final String FIELD_PATH_SEPARATOR = ".";
     private static final String PREFETCH_METHOD_PREFIX = "pre";
@@ -134,9 +142,11 @@ public class ServiceValidator {
     private static final String KEY = "key";
     private static final String INPUT_OBJECT_FIELD = "input object field";
     private static final String PARAMETER = "parameter";
+    private static final String CACHE_CONFIG = "cacheConfig";
 
     public ServiceValidator(SyntaxNodeAnalysisContext context, Node serviceNode,
-                            InterfaceEntityFinder interfaceEntityFinder, boolean isSubgraph) {
+                            InterfaceEntityFinder interfaceEntityFinder, boolean isSubgraph,
+                            CacheConfigContext cacheConfigContext) {
         this.context = context;
         this.serviceNode = serviceNode;
         this.interfaceEntityFinder = interfaceEntityFinder;
@@ -144,6 +154,7 @@ public class ServiceValidator {
         this.hasQueryType = false;
         this.currentFieldPath = new ArrayList<>();
         this.isSubgraph = isSubgraph;
+        this.cacheConfigContext = cacheConfigContext;
     }
 
     public void validate() {
@@ -219,6 +230,9 @@ public class ServiceValidator {
     private void validateServiceObject() {
         ObjectConstructorExpressionNode objectConstructorExpNode = (ObjectConstructorExpressionNode) serviceNode;
         List<Node> serviceMethodNodes = getServiceMethodNodes(objectConstructorExpNode.members());
+        if (!objectConstructorExpNode.annotations().isEmpty()) {
+            validateAnnotation(objectConstructorExpNode);
+        }
         validateRootServiceMethods(serviceMethodNodes, objectConstructorExpNode.location());
         if (!this.hasQueryType) {
             addDiagnostic(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, objectConstructorExpNode.location());
@@ -242,14 +256,60 @@ public class ServiceValidator {
         return this.errorOccurred;
     }
 
+    public CacheConfigContext getCacheConfigContext() {
+        return this.cacheConfigContext;
+    }
+
     private void validateService() {
         ServiceDeclarationNode serviceDeclarationNode = (ServiceDeclarationNode) this.context.node();
         List<Node> serviceMethodNodes = getServiceMethodNodes(serviceDeclarationNode.members());
+        if (serviceDeclarationNode.metadata().isPresent()) {
+            validateAnnotation(serviceDeclarationNode.metadata().get());
+        }
         validateRootServiceMethods(serviceMethodNodes, serviceDeclarationNode.location());
         if (!this.hasQueryType) {
             addDiagnostic(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS, serviceDeclarationNode.location());
         }
         validateEntitiesResolverReturnTypes();
+    }
+
+    private void validateAnnotation(MetadataNode metadataNode) {
+        for (AnnotationNode annotationNode : metadataNode.annotations()) {
+            if (isGraphqlServiceConfig(annotationNode)) {
+                validateServiceAnnotation(annotationNode);
+            }
+        }
+    }
+
+    private void validateAnnotation(ObjectConstructorExpressionNode node) {
+        for (AnnotationNode annotationNode : node.annotations()) {
+            if (isGraphqlServiceConfig(annotationNode)) {
+                validateServiceAnnotation(annotationNode);
+            }
+        }
+    }
+
+    private void validateServiceAnnotation(AnnotationNode annotationNode) {
+        if (annotationNode.annotValue().isPresent()) {
+            for (MappingFieldNode field : annotationNode.annotValue().get().fields()) {
+                validateServiceAnnotationField(field);
+            }
+        }
+    }
+
+    private void validateServiceAnnotationField(MappingFieldNode field) {
+        if (field.kind() == SPECIFIC_FIELD) {
+            SpecificFieldNode specificFieldNode = (SpecificFieldNode) field;
+            Node fieldName = specificFieldNode.fieldName();
+            if (fieldName.kind() == SyntaxKind.IDENTIFIER_TOKEN) {
+                IdentifierToken identifierToken = (IdentifierToken) fieldName;
+                String identifierName = identifierToken.text();
+                if (SCHEMA_STRING_FIELD.equals(identifierName) || FIELD_CACHE_CONFIG_FIELD.equals(identifierName)) {
+                    addDiagnostic(CompilationDiagnostic.INVALID_MODIFICATION_OF_SERVICE_CONFIG_FIELD,
+                            serviceNode.location(), identifierName);
+                }
+            }
+        }
     }
 
     private List<Node> getServiceMethodNodes(NodeList<Node> serviceMembers) {
@@ -354,6 +414,31 @@ public class ServiceValidator {
         return null;
     }
 
+    private void updateCacheConfigContextFromAnnot(AnnotationNode annotation) {
+        // noinspection OptionalGetWithoutIsPresent
+        MappingConstructorExpressionNode mappingConstructorExpressionNode = annotation.annotValue().get();
+        for (MappingFieldNode field : mappingConstructorExpressionNode.fields()) {
+            if (field.kind() == SPECIFIC_FIELD) {
+                SpecificFieldNode specificFieldNode = (SpecificFieldNode) field;
+                Node fieldName = specificFieldNode.fieldName();
+                if (fieldName.kind() == SyntaxKind.IDENTIFIER_TOKEN) {
+                    IdentifierToken identifierToken = (IdentifierToken) fieldName;
+                    String identifierName = identifierToken.text();
+                    if (CACHE_CONFIG.equals(identifierName) && specificFieldNode.valueExpr().isPresent()) {
+                        boolean enabled =
+                                getBooleanValue((MappingConstructorExpressionNode) specificFieldNode.valueExpr().get());
+                        if (enabled) {
+                            int maxSize =
+                                    getMaxSize((MappingConstructorExpressionNode) specificFieldNode.valueExpr().get());
+                            this.cacheConfigContext.setEnabled(enabled);
+                            this.cacheConfigContext.setMaxSize(maxSize);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private boolean hasPrefetchMethodNameConfig(AnnotationNode annotation) {
         if (annotation.annotValue().isEmpty()) {
             return false;
@@ -367,6 +452,27 @@ public class ServiceValidator {
                     IdentifierToken identifierToken = (IdentifierToken) fieldName;
                     String identifierName = identifierToken.text();
                     return PREFETCH_METHOD_NAME_CONFIG.equals(identifierName);
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean hasCacheConfig(AnnotationNode annotation) {
+        if (annotation.annotValue().isEmpty()) {
+            return false;
+        }
+        MappingConstructorExpressionNode mappingConstructorExpressionNode = annotation.annotValue().get();
+        for (MappingFieldNode field : mappingConstructorExpressionNode.fields()) {
+            if (field.kind() == SPECIFIC_FIELD) {
+                SpecificFieldNode specificFieldNode = (SpecificFieldNode) field;
+                Node fieldName = specificFieldNode.fieldName();
+                if (fieldName.kind() == SyntaxKind.IDENTIFIER_TOKEN) {
+                    IdentifierToken identifierToken = (IdentifierToken) fieldName;
+                    String identifierName = identifierToken.text();
+                    if (CACHE_CONFIG.equals(identifierName)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -447,7 +553,20 @@ public class ServiceValidator {
         this.currentFieldPath.add(path);
         validateResourcePath(methodSymbol, location);
         validateMethod(methodSymbol, location);
+        updateCacheConfigContext(methodSymbol);
         this.currentFieldPath.remove(path);
+    }
+
+    private void updateCacheConfigContext(MethodSymbol methodSymbol) {
+        if (hasResourceConfigAnnotation(methodSymbol)) {
+            FinderContext finderContext = new FinderContext(this.context);
+            ResourceConfigAnnotationFinder resourceConfigAnnotationFinder = new ResourceConfigAnnotationFinder(
+                    finderContext, methodSymbol);
+            Optional<AnnotationNode> annotation = resourceConfigAnnotationFinder.find();
+            if (annotation.isPresent() && hasCacheConfig(annotation.get())) {
+                updateCacheConfigContextFromAnnot(annotation.get());
+            }
+        }
     }
 
     private void validateSubscribeResource(ResourceMethodSymbol methodSymbol, Location location) {

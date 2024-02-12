@@ -294,7 +294,7 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_FUNCTION, "Interceptor", "execute");
-        assertErrorMessage(diagnostic, message, 80, 5);
+        assertErrorMessage(diagnostic, message, 91, 5);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS);
@@ -1414,6 +1414,41 @@ public class ServiceValidationTest {
                 CompilationDiagnostic.UNABLE_TO_VALIDATE_DEFAULT_VALUES_OF_INPUT_OBJECT_AT_COMPILE_TIME,
                 "InputObject3");
         assertWarningMessage(diagnostic, message, 36, 45);
+    }
+
+    @Test(groups = "valid")
+    public void testValidServerSideCacheConfigurations() {
+        String packagePath = "85_valid_server_side_cache_configurations";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
+    @Test(groups = "invalid")
+    public void testInvalidServiceConfigModification() {
+        String packagePath = "86_invalid_service_config_modification";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 4);
+        Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
+
+        Diagnostic diagnostic = diagnosticIterator.next();
+        String message =
+                getErrorMessage(CompilationDiagnostic.INVALID_MODIFICATION_OF_SERVICE_CONFIG_FIELD, "schemaString");
+        assertErrorMessage(diagnostic, message, 20, 1);
+
+        diagnostic = diagnosticIterator.next();
+        message =
+                getErrorMessage(CompilationDiagnostic.INVALID_MODIFICATION_OF_SERVICE_CONFIG_FIELD, "fieldCacheConfig");
+        assertErrorMessage(diagnostic, message, 20, 1);
+
+        diagnostic = diagnosticIterator.next();
+        message =
+                getErrorMessage(CompilationDiagnostic.INVALID_MODIFICATION_OF_SERVICE_CONFIG_FIELD, "schemaString");
+        assertErrorMessage(diagnostic, message, 51, 44);
+
+        diagnostic = diagnosticIterator.next();
+        message =
+                getErrorMessage(CompilationDiagnostic.INVALID_MODIFICATION_OF_SERVICE_CONFIG_FIELD, "fieldCacheConfig");
+        assertErrorMessage(diagnostic, message, 51, 44);
     }
 
     private DiagnosticResult getDiagnosticResult(String packagePath) {

@@ -1,0 +1,8 @@
+{
+    cities(
+        addresses: [
+            { name: "Gus Fring", status: "dead" },
+            { name: "Saul Goodman", status: "alive" }
+        ]
+    )
+}

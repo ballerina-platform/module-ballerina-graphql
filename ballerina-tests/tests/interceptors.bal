@@ -847,7 +847,7 @@ readonly service class ServiceLevelInterceptor {
     }
 
     isolated function grantAccess(string fieldName) returns boolean {
-        string[] grantedFields = ["profile", "books", "setName", "person", "setAge", "customer", "newBooks"];
+        string[] grantedFields = ["profile", "books", "setName", "person", "setAge", "customer", "newBooks", "updatePerson", "person"];
         if grantedFields.indexOf(fieldName) is int {
             return true;
         }

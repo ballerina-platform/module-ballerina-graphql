@@ -127,6 +127,31 @@ isolated function getInterceptorConfig(readonly & Interceptor interceptor) retur
     return classType.@InterceptorConfig;
 }
 
+isolated function getCacheConfig(GraphqlServiceConfig? serviceConfig) returns ServerCacheConfig? {
+    if serviceConfig is GraphqlServiceConfig {
+        if serviceConfig.cacheConfig is ServerCacheConfig {
+            return serviceConfig.cacheConfig;
+        }
+    }
+    return;
+}
+
+isolated function getFieldCacheConfigFromServiceConfig(GraphqlServiceConfig? serviceConfig) returns ServerCacheConfig? {
+    if serviceConfig is GraphqlServiceConfig {
+        return serviceConfig.fieldCacheConfig;
+    }
+    return;
+}
+
+isolated function getFieldCacheConfig(service object {} serviceObj, parser:RootOperationType operationType,
+        string fieldName, string[] resourcePath) returns ServerCacheConfig? {
+    GraphqlResourceConfig? resourceConfig = getResourceAnnotation(serviceObj, operationType, resourcePath, fieldName);
+    if resourceConfig is GraphqlResourceConfig {
+        return resourceConfig.cacheConfig;
+    }
+    return;
+}
+
 isolated function getResourceAnnotation(service object {} serviceObject, parser:RootOperationType operationType,
         string[] path, string methodName) returns GraphqlResourceConfig? = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"

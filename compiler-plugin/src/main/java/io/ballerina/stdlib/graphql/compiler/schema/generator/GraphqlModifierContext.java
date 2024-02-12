@@ -20,6 +20,7 @@ package io.ballerina.stdlib.graphql.compiler.schema.generator;
 
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
+import io.ballerina.stdlib.graphql.compiler.CacheConfigContext;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,16 +31,26 @@ import java.util.Map;
  */
 public class GraphqlModifierContext {
     private final Map<Node, Schema> nodeSchemaMap;
+    private final Map<Node, CacheConfigContext> nodeCacheConfigMap;
 
     public GraphqlModifierContext() {
         this.nodeSchemaMap = new HashMap<>();
+        this.nodeCacheConfigMap = new HashMap<>();
     }
 
     public void add(Node node, Schema schema) {
         this.nodeSchemaMap.put(node, schema);
     }
 
+    public void add(Node node, CacheConfigContext cacheConfig) {
+        this.nodeCacheConfigMap.put(node, cacheConfig);
+    }
+
     public Map<Node, Schema> getNodeSchemaMap() {
         return this.nodeSchemaMap;
+    }
+
+    public Map<Node, CacheConfigContext> getNodeCacheConfigMap() {
+        return this.nodeCacheConfigMap;
     }
 }

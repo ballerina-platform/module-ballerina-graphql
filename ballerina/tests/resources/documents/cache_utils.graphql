@@ -1,0 +1,8 @@
+query {
+    person(id: "1") {
+        name
+        address(includeCity: true) {
+            city
+        }
+    }
+}

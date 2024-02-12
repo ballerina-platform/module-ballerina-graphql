@@ -14,7 +14,14 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/graphql;
+
 service /custom_prefix on graphqlListener {
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            enabled: true
+        }
+    }
     resource function get greeting() returns string {
         return "Hello, world";
     }

@@ -1,0 +1,10 @@
+{
+    "data": {
+        "getServices": [
+            {
+                "name": "Jesse Pinkman",
+                "age": 30
+            }
+        ]
+    }
+}

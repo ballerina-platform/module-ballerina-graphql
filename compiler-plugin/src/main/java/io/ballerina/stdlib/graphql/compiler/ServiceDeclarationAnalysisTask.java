@@ -52,7 +52,8 @@ public class ServiceDeclarationAnalysisTask extends ServiceAnalysisTask {
         }
         ServiceDeclarationNode node = (ServiceDeclarationNode) context.node();
         InterfaceEntityFinder interfaceEntityFinder = getInterfaceEntityFinder(context.semanticModel());
-        ServiceValidator serviceValidator = getServiceValidator(context, node, interfaceEntityFinder);
+        ServiceValidator serviceValidator = getServiceValidator(context, node, interfaceEntityFinder,
+                                                        new CacheConfigContext(false));
         if (serviceValidator.isErrorOccurred()) {
             return;
         }
@@ -64,5 +65,6 @@ public class ServiceDeclarationAnalysisTask extends ServiceAnalysisTask {
         Schema schema = generateSchema(context, interfaceEntityFinder, node, description);
         DocumentId documentId = context.documentId();
         addToModifierContextMap(documentId, node, schema);
+        addToModifierContextMap(documentId, node, serviceValidator.getCacheConfigContext());
     }
 }

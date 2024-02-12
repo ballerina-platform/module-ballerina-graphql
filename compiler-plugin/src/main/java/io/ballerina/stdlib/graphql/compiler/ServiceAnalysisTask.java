@@ -57,10 +57,12 @@ public abstract class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnal
     }
 
     public ServiceValidator getServiceValidator(SyntaxNodeAnalysisContext context, Node node,
-                                                InterfaceEntityFinder interfaceEntityFinder) {
+                                                InterfaceEntityFinder interfaceEntityFinder,
+                                                CacheConfigContext cacheConfigContext) {
         boolean isSubgraph = isSubgraphService(node, context);
         nodeSubgraphMap.put(node, isSubgraph);
-        ServiceValidator serviceValidator = new ServiceValidator(context, node, interfaceEntityFinder, isSubgraph);
+        ServiceValidator serviceValidator =
+                new ServiceValidator(context, node, interfaceEntityFinder, isSubgraph, cacheConfigContext);
         serviceValidator.validate();
         return serviceValidator;
     }
@@ -89,6 +91,17 @@ public abstract class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnal
         } else {
             GraphqlModifierContext modifierContext = new GraphqlModifierContext();
             modifierContext.add(node, schema);
+            this.modifierContextMap.put(documentId, modifierContext);
+        }
+    }
+
+    public void addToModifierContextMap(DocumentId documentId, Node node, CacheConfigContext cacheConfigContext) {
+        if (this.modifierContextMap.containsKey(documentId)) {
+            GraphqlModifierContext modifierContext = this.modifierContextMap.get(documentId);
+            modifierContext.add(node, cacheConfigContext);
+        } else {
+            GraphqlModifierContext modifierContext = new GraphqlModifierContext();
+            modifierContext.add(node, cacheConfigContext);
             this.modifierContextMap.put(documentId, modifierContext);
         }
     }
