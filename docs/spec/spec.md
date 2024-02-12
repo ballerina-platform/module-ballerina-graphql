@@ -153,7 +153,7 @@ The conforming implementation of the specification is released and included in t
             * 10.1.1.3 [Remove Attribute from Context](#10113-remove-attribute-from-context)
             * 10.1.1.4 [Register DataLoader in Context](#10114-register-dataloader-in-context)
             * 10.1.1.5 [Get DataLoader from Context](#10115-get-dataloader-from-context)
-            * 10.1.1.6 [Evict Cache from Context](#10116-evict-cache-from-context)
+            * 10.1.1.6 [Invalidate Cache from Context](#10116-invalidate-cache-from-context)
             * 10.1.1.7 [Invalidate All Caches from Context](#10117-invalidate-all-caches-from-context)
         * 10.1.2 [Accessing the Context](#1012-accessing-the-context-object)
         * 10.1.3 [Resolving Field Value](#1013-resolving-field-value)
@@ -204,7 +204,7 @@ The conforming implementation of the specification is released and included in t
         * 10.7.1 [Server-side Caching](#1071-server-side-caching)
             * 10.7.1.1 [Operation-level Caching](#10711-operation-level-caching)
             * 10.7.1.2 [Field-level Caching](#10712-field-level-caching)
-            * 10.7.1.3 [Cache Eviction](#10713-cache-eviction)
+            * 10.7.1.3 [Cache Invalidation](#10713-cache-invalidation)
                 * 10.7.1.3.1 [The `invalidate` Method](#107131-the-invalidate-method)
                 * 10.7.1.3.2 [The `invalidateAll` Method](#107132-the-invalidateall-method)
 
@@ -1794,7 +1794,7 @@ service on new graphql:Listener(9090) {
 ```ballerina
 @graphql:ServiceConfig {
     cacheConfig: {
-        enabled: false
+        enabled: true
         maxAge: 100,
         maxSize: 150
     }
@@ -2776,15 +2776,15 @@ If the specified key does not exist in the context, the `getDataLoader()` method
 dataloader:DataLoader authorLoader = context.getDataLoader("authorLoader");
 ```
 
-##### 10.1.1.6 Evict Cache from Context
+##### 10.1.1.6 Invalidate Cache from Context
 
-To evict a cache entry from the server-side caching, the `invalidate` method can be used. It requires one parameter:
+The `invalidate()` method can be used to invalidate cache entries from the cache that are related to a particular field. It requires one parameter:
 
-- `path` - The path of the field that needs to be evicted from the cache. The path should be specified as path segments combined with periods.
+- `path` - The path of the field that needs to be invalidated from the cache. The path should be specified as path segments combined with periods.
 
 If the provided path does not match any existing cache entries, an error will be returned.
 
-###### Example: Evict Cache from Context
+###### Example: Invalidate Cache from Context
 
 ```ballerina
 check context.invalidate("profile.address.city");
@@ -3766,7 +3766,7 @@ Operation-level caching can be used to cache the entire operation, and this can 
 
 The GraphQL field-level caching can be enabled only for a specific field. This can be done by providing the [field cache configurations](#723-field-level-cache-configuration). Once the field-level caching is enabled for a field, it will be applied to the sub-fields of that field. The field-level cache configuration can be used to override the operation-level cache configurations.
 
-#### 10.7.1.3 Cache Eviction
+#### 10.7.1.3 Cache Invalidation
 
 Since server-side caching is implemented using the Ballerina cache module, the default eviction policy will utilize the `Least Recently Used (LRU)` mechanism. In addition to LRU cache eviction, the GraphQL module provides APIs for manual cache eviction. Currently, it provides `invalidate` and `invalidateAll` APIs for manual cache eviction. These APIs can be accessed through the [graphql:Context](#101-context-object) object.
 
@@ -3786,7 +3786,7 @@ The `invalidateAll` method can be used to clear the entire cache table. This met
 public isolated function invalidateAll() returns error? {}
 ```
 
-###### Example: Operation-level Cache Enabling and Eviction
+###### Example: Operation-level Cache Enabling and Invalidation
 
 ```ballerina
 import ballerina/graphql;
@@ -3817,9 +3817,9 @@ service /graphql on new graphql:Listener(9090) {
 }
 ```
 
-In this example, caching is enabled at the operation level. Therefore, the field `name` and `type` will be cached. When updating the name with a mutation, the cached values become invalid. Hence, the `invalidate` function can be used to evict the existing cache values.
+In this example, caching is enabled at the operation level. Therefore, the field `name` and `type` will be cached. When updating the name with a mutation, the cached values become invalid. Hence, the `invalidate` function can be used to invalidate the existing cache values.
 
-###### Example: Field-level Cache Enabling and Eviction
+###### Example: Field-level Cache Enabling and Invalidation
 
 ```ballerina
 import ballerina/graphql;
@@ -3934,4 +3934,4 @@ service /graphql on new graphql:Listener(9090) {
 }
 ```
 
-In this example, caching is enabled at the operation level. Therefore, the field `name` and `type` will be cached. Since the field-level cache configuration overrides the parent cache configurations, the field `version` will not be cached. When updating the name with a mutation, the cached values become invalid. Hence, the `invalidate` function can be used to evict the existing cache values.
+In this example, caching is enabled at the operation level. Therefore, the field `name` and `type` will be cached. Since the field-level cache configuration overrides the parent cache configurations, the field `version` will not be cached. When updating the name with a mutation, the cached values become invalid. Hence, the `invalidate` function can be used to ivalidate the existing cache values.
