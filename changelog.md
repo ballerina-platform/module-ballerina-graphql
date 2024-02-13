@@ -7,8 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 ### Added
--[[#1586] Add Compile Time Schema Generation for Default Parameters](https://github.com/ballerina-platform/module-ballerina-graphql/pull/1586)
--[[#3317] Add Support to Generate GraphQL Schema for Local Service Variable Declaration](https://github.com/ballerina-platform/ballerina-library/issues/3317)
+- [[#1586] Add Compile Time Schema Generation for Default Parameters](https://github.com/ballerina-platform/module-ballerina-graphql/pull/1586)
+- [[#3317] Add Support to Generate GraphQL Schema for Local Service Variable Declaration](https://github.com/ballerina-platform/ballerina-library/issues/3317)
+- [[#3621] Add Support to GraphQL Server Side Caching](https://github.com/ballerina-platform/ballerina-library/issues/3621)
 
 ### Changed
 - [[#4634] Use Aliases in GraphQL Error Path](https://github.com/ballerina-platform/ballerina-standard-library/issues/4634)
