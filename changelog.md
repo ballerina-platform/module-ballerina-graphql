@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Fixed
+- [[#6067] Fix Returning Error while Accessing the Sevice via GraphiQL Client in Windows](https://github.com/ballerina-platform/ballerina-library/issues/6067)
+
+## [1.10.0] - 2023-09-18
+
 ### Added
 - [[#2998] Add `@deprecated` Directive Support for Output Object Defined using Record Types](https://github.com/ballerina-platform/ballerina-standard-library/issues/2998)
 - [[#4586] Add Support for Printing GraphiQL Url to Stdout](https://github.com/ballerina-platform/ballerina-standard-library/issues/4586)
