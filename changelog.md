@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.10.1] - 2024-02-15
+
 ### Fixed
 - [[#6067] Fix Returning Error while Accessing the Service via GraphiQL Client in Windows](https://github.com/ballerina-platform/ballerina-library/issues/6067)
 
