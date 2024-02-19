@@ -1,0 +1,9 @@
+{
+    "data": {
+        "updateUser": {
+            "id": 1,
+            "name": "Shane",
+            "age": 30
+        }
+    }
+}

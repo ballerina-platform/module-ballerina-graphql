@@ -126,7 +126,7 @@ function dataProviderServerCacheOperationalLevel() returns map<[string, string[]
         "9": ["server_cache_with_unions_operational_level", ["server_cache_with_unions_1", "server_cache_with_unions_2", "server_cache_with_unions_1"], (), ["A", "B", "A"]],
         "10": ["server_cache_with_unions_operational_level", ["server_cache_with_unions_1", "server_cache_with_unions_2", "server_cache_with_unions_3"], (), ["A", "C", "A"]],
         "11": ["server_cache_eviction", ["server_cache_2", "server_cache_4", "server_cache_5", "server_cache_4"], (), ["B", "A", "C", "A"]],
-        "12": ["server_cache_with_inputs", ["server_cache_with_nullable_inputs_7", "server_cache_with_nullable_inputs_7"], (), ["B", "C"]],
+        "12": ["server_cache_with_inputs", ["server_cache_with_nullable_inputs_7", "server_cache_with_nullable_inputs_8"], (), ["B", "C"]],
         "13": ["server_cache_with_inputs", ["server_cache_with_empty_input_1", "server_cache_with_empty_input_2"], (), ["B", "D"]],
         "14": ["server_cache_with_partial_responses", ["server_cache_with_partial_reponses_1", "server_cache_with_partial_reponses_2", "server_cache_with_partial_reponses_1"], (), ["A", "B", "A"]],
         "15": ["server_cache_with_partial_responses", ["server_cache_with_partial_reponses_1", "server_cache_with_partial_reponses_2", "server_cache_with_partial_reponses_3"], (), ["A", "C", "A"]],
@@ -245,6 +245,30 @@ function dataProviderServerSideCacheWithDynamicResponse() returns map<[string, s
         "3": ["server_cache_with_dynamic_responses", ["server_cache_with_dynamic_responses_3", "server_cache_with_dynamic_responses_4", "server_cache_with_dynamic_responses_3"], (), ["C", "D", "C"]],
         "4": ["server_cache_with_dynamic_responses", ["server_cache_with_dynamic_responses_3", "server_cache_with_dynamic_responses_4", "server_cache_with_dynamic_responses_5"], (), ["C", "E", "C"]],
         "5": ["server_cache_with_dynamic_responses", ["server_cache_with_dynamic_responses_6", "server_cache_with_dynamic_responses_7", "server_cache_with_dynamic_responses_8"], (), ["B", "F", "B"]]
+    };
+    return dataSet;
+}
+
+@test:Config {
+    groups: ["server_cache"],
+    dataProvider: dataProviderServerCacheWithListInput
+}
+isolated function testServerCacheWithListInput(string documentFile, string[] resourceFileNames, json variables = (), string[] operationNames = []) returns error? {
+    string url = "http://localhost:9091/cache_with_list_input";
+    string document = check getGraphqlDocumentFromFile("server_cache_with_list_input");
+
+    foreach int i in 0..< resourceFileNames.length() {
+        json actualPayload = check getJsonPayloadFromService(url, document, variables, operationNames[i]);
+        json expectedPayload = check getJsonContentFromFile(resourceFileNames[i]);
+        assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    }
+}
+
+function dataProviderServerCacheWithListInput() returns map<[string, string[], json, string[]]> {
+    map<[string, string[], json, string[]]> dataSet = {
+        "1": ["server_cache_with_list_input", ["server_cache_with_list_input_1", "server_cache_with_list_input_2", "server_cache_with_list_input_3", "server_cache_with_list_input_1"], (), ["A", "B", "G", "A"]],
+        "2": ["server_cache_with_list_input", ["server_cache_with_list_input_4", "server_cache_with_list_input_5", "server_cache_with_list_input_6", "server_cache_with_list_input_4"], (), ["D", "H", "E", "D"]],
+        "3": ["server_cache_with_list_input", ["server_cache_with_list_input_7", "server_cache_with_list_input_8", "server_cache_with_list_input_7"], (), ["F", "I", "F"]]
     };
     return dataSet;
 }
