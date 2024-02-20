@@ -519,9 +519,36 @@ public isolated function __addError(Context context, ErrorDetail errorDetail) {
 isolated function generateArgHash(parser:ArgumentNode[] arguments, string[] parentArgHashes = [],
                                   string[] optionalFields = []) returns string {
     any[] argValues = [...parentArgHashes, ...optionalFields];
-    argValues.push(...arguments.'map((arg) => arg.getValue()));
+    argValues.push(...arguments.'map((arg) => getValueArrayFromArgumentNode(arg)));
     byte[] hash = crypto:hashMd5(argValues.toString().toBytes());
     return hash.toBase64();
+}
+
+isolated function getValueArrayFromArgumentNode(parser:ArgumentNode argumentNode) returns anydata[] {
+    anydata[] valueArray = [];
+    if argumentNode.isVariableDefinition() {
+        valueArray.push(argumentNode.getVariableValue());
+    } else {
+        parser:ArgumentValue|parser:ArgumentValue[] argValue = argumentNode.getValue();
+        if argValue is parser:ArgumentValue[] {
+            foreach parser:ArgumentValue argField in argValue {
+                parser:ArgumentNode|Scalar? argFieldNode = argField;
+                if argFieldNode is parser:ArgumentNode {
+                    valueArray.push(getValueArrayFromArgumentNode(argFieldNode));
+                } else {
+                    valueArray.push(argFieldNode);
+                }
+            }
+        } else {
+            parser:ArgumentNode|Scalar? argFieldNode = argValue;
+            if argFieldNode is parser:ArgumentNode {
+                valueArray.push(getValueArrayFromArgumentNode(argFieldNode));
+            } else {
+                valueArray.push(argFieldNode);
+            }
+        }
+    }
+    return valueArray;
 }
 
 isolated function getNullableFieldsFromType(__Type fieldType) returns string[] {

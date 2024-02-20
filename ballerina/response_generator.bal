@@ -153,7 +153,8 @@ class ResponseGenerator {
         __Type fieldType = getFieldTypeFromParentType(self.fieldType, self.engine.getSchema().types, fieldNode);
         (string|int)[] clonedPath = self.path.clone();
         clonedPath.push(fieldNode.getAlias());
-        Field 'field = new (fieldNode, fieldType, path = clonedPath, fieldValue = fieldValue);
+        Field 'field = new (fieldNode, fieldType, path = clonedPath, fieldValue = fieldValue,
+                            cacheConfig = self.cacheConfig, parentArgHashes = self.parentArgHashes);
         self.context.resetInterceptorCount();
         return self.engine.resolve(self.context, 'field);
     }
