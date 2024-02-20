@@ -26,7 +26,7 @@ function testCacheUtils() returns error? {
     Field 'field = getField(fields[0], Person, ["person"], {maxAge: 10});
     test:assertTrue('field.isCacheEnabled());
     test:assertEquals('field.getCacheMaxAge(), 10d);
-    test:assertEquals('field.getCacheKey(), "person.TYoV48w1dQ8BbOFaQ5N2IA==");
+    test:assertEquals('field.getCacheKey(), "person.Jq9sXPlesvC6Q7cU5RPkZA==");
 }
 
 @test:Config {
@@ -38,7 +38,7 @@ function testCacheConfigInferring() returns error? {
     Field 'field = getField(fields[0], Person, ["person"], {maxAge: 10});
     test:assertTrue('field.getSubfields() is Field[]);
     Field[] subfields = <Field[]>'field.getSubfields();
-    string[] expectedCacheKey = ["person.name.11FxOYiYfpMxmANj4kGJzg==", "person.address.t1JP49rdVkuozxi8sSh+bg=="];
+    string[] expectedCacheKey = ["person.name.11FxOYiYfpMxmANj4kGJzg==", "person.address.nj4v+q6cUjv3W/MbZdNQXg=="];
     foreach int i in 0..<subfields.length() {
         test:assertTrue(subfields[i].isCacheEnabled());
         test:assertEquals(subfields[i].getCacheMaxAge(), 10d);

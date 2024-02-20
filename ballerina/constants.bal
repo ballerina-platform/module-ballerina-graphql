@@ -82,6 +82,5 @@ const PATH = "path";
 // Constants related to the DataLoader
 const DEFAULT_PREFETCH_METHOD_NAME_PREFIX = "pre";
 
-
 // Localhost
 const LOCALHOST = "localhost";

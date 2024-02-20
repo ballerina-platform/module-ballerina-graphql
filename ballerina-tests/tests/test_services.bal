@@ -3000,3 +3000,47 @@ service /dynamic_response on basicListener {
         return self.user;
     }
 }
+
+@graphql:ServiceConfig {
+    cacheConfig: {
+        maxAge: 600
+    }
+}
+service /cache_with_list_input on basicListener {
+    private User user1 = {id: 1, name: "John", age: 25};
+    private User user2 = {id: 2, name: "Jessie", age: 17};
+    private Address[] addresses = [];
+
+    resource function get users1(int[] ids) returns User[] {
+        if ids.length() == 1 && ids[0] == 1 {
+            return [self.user1];
+        } else if ids.length() == 1 && ids[0] == 2 {
+            return [self.user2];
+        }
+        return [self.user1, self.user2];
+    }
+
+    resource function get users2(int[][] ids) returns User[] {
+        if ids.length() == 3 && ids[0][0] == 1 {
+            return [self.user1];
+        } else if ids.length() == 3 && ids[0][0] == 2 || ids[0][0] == 3 {
+            return [self.user2];
+        }
+        return [self.user1, self.user2];
+    }
+
+    resource function get cities(Address[] addresses) returns string[] {
+        self.addresses.push(...addresses);
+        return self.addresses.map(address => address.city);
+    }
+
+    remote function updateUser(int id, string name, int age) returns User|error {
+        self.user1 = {id:id, name:name, age:age};
+        return self.user1;
+    }
+
+    remote function updateAddress(Address address) returns Address {
+        self.addresses.push(address);
+        return address;
+    }
+}
