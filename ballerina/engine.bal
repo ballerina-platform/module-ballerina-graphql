@@ -68,7 +68,7 @@ isolated class Engine {
         if cache is cache:Cache {
             return cache.put(key, value, maxAge);
         }
-        return error("Cache table not found!");
+        return error("Cache table not found. Caching functionality requires Ballerina version 2201.8.5 or newer.");
     }
 
     isolated function getFromCache(string key) returns any|error {
@@ -76,7 +76,7 @@ isolated class Engine {
         if cache is cache:Cache {
             return cache.get(key);
         }
-        return error("Cache table not found!");
+        return error("Cache table not found. Caching functionality requires Ballerina version 2201.8.5 or newer.");
     }
 
     isolated function validate(string documentString, string? operationName, map<json>? variables)
