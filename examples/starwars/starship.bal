@@ -17,35 +17,35 @@
 import starwars.datasource as ds;
 
 # A ship from the Star Wars universe
-public distinct isolated service class Starship {
+distinct service class Starship {
 
     private final readonly & ds:StarshipRecord starship;
 
-    isolated function init(ds:StarshipRecord starship) {
+    function init(ds:StarshipRecord starship) {
         self.starship = starship.cloneReadOnly();
     }
 
     # The unique identifier of the starship
     # + return - The id
-    isolated resource function get id() returns string {
+    resource function get id() returns string {
         return self.starship.id;
     }
 
     # The name of the starship
     # + return - The name
-    isolated resource function get name() returns string {
+    resource function get name() returns string {
         return self.starship.name;
     }
 
     # The length of the starship, or null if unknown
     # + return - The length
-    isolated resource function get length() returns float? {
+    resource function get length() returns float? {
         return self.starship?.length;
     }
 
     # Cordinates of the starship, or null if unknown
     # + return - The cordinates
-    isolated resource function get cordinates() returns float[][]? {
+    resource function get cordinates() returns float[][]? {
         return self.starship?.cordinates;
     }
 }
