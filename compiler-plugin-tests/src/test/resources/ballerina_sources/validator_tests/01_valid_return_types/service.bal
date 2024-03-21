@@ -20,6 +20,8 @@ type Person record {
     string name;
 };
 
+type Error distinct error;
+
 service graphql:Service on new graphql:Listener(4000) {
     resource function get greeting() returns string {
         return "Hello";
@@ -70,6 +72,12 @@ service graphql:Service on new graphql:Listener(4000) {
 
 service graphql:Service on new graphql:Listener(4000) {
     resource function get profile() returns Person {
+        return {name: "John"};
+    }
+}
+
+service graphql:Service on new graphql:Listener(4000) {
+    resource function get profile() returns Person|Error {
         return {name: "John"};
     }
 }
