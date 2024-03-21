@@ -75,3 +75,7 @@ query getOwnerName {
     }
   )
 }
+
+query getOwnerNameWithVariable($pet: Pet!) {
+  ownerName(pet: $pet)
+}

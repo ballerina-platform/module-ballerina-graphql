@@ -39,6 +39,20 @@ function dataProviderIntersectionType() returns map<[string, string, json]> {
         }
     };
 
+    json variableGetOwnerName = {
+        pet: {
+            name: "Dingi",
+            ownerName: "Ruwangi",
+            animal: {
+                commonName: "Common House Cat",
+                species: {
+                    genus: "Felis",
+                    specificName: "catus"
+                }
+            }
+        }
+    };
+
     map<[string, string, json]> dataSet = {
         "1": ["input_with_intersection_parameter", "getName", ()],
         "2": ["input_with_intersection_parameter_reference", "getCity", ()],
@@ -49,7 +63,8 @@ function dataProviderIntersectionType() returns map<[string, string, json]> {
         "7": ["output_with_intersection_parameter_array", "getProfiles", ()],
         "8": ["output_with_intersection_parameter_reference_array", "getBooks", ()],
         "9": ["input_with_intersection_referring_non_intersection_type", "getCommonName", variableGetCommonName],
-        "10": ["input_with_non_intersection_type_referring_intersection_type", "getOwnerName", ()]
+        "10": ["input_with_non_intersection_type_referring_intersection_type", "getOwnerName", ()],
+        "11": ["input_with_non_intersection_type_referring_intersection_type_as_a_variable", "getOwnerNameWithVariable", variableGetOwnerName]
     };
     return dataSet;
 }
