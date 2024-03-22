@@ -132,7 +132,13 @@ public final class Utils {
     }
 
     public static boolean isIgnoreType(TypeSymbol typeSymbol) {
-        return typeSymbol.typeKind() == TypeDescKind.NIL || typeSymbol.typeKind() == TypeDescKind.ERROR;
+        if (typeSymbol.typeKind() == TypeDescKind.NIL || typeSymbol.typeKind() == TypeDescKind.ERROR) {
+            return true;
+        }
+        if (typeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+            return isIgnoreType(((TypeReferenceTypeSymbol) typeSymbol).typeDescriptor());
+        }
+        return false;
     }
 
     public static List<TypeSymbol> getEffectiveTypes(UnionTypeSymbol unionTypeSymbol) {

@@ -356,7 +356,7 @@ public class ArgumentHandler {
         BMap<BString, Object> recordValue = recordType.getZeroValue();
         if (argumentNode.getBooleanValue(VARIABLE_DEFINITION)) {
             BMap<BString, Object> variablesMap = argumentNode.getMapValue(VARIABLE_VALUE_FIELD);
-            return JsonUtils.convertJSONToRecord(variablesMap, recordType);
+            return ValueCreator.createRecordValue(recordType.getPackage(), recordType.getName(), variablesMap);
         }
         BArray inputObjectFields = argumentNode.getArrayValue(VALUE_FIELD);
         for (int i = 0; i < inputObjectFields.size(); i++) {
