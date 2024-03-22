@@ -83,6 +83,12 @@ service graphql:Service on new graphql:Listener(4000) {
 }
 
 service graphql:Service on new graphql:Listener(4000) {
+    resource function get profile() returns Person|graphql:Error {
+        return {name: "John"};
+    }
+}
+
+service graphql:Service on new graphql:Listener(4000) {
     resource function get greet() returns GeneralGreeting {
         return new;
     }
