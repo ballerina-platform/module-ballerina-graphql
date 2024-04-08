@@ -20,6 +20,7 @@ package io.ballerina.stdlib.graphql.compiler;
 
 import io.ballerina.projects.plugins.CompilerPlugin;
 import io.ballerina.projects.plugins.CompilerPluginContext;
+import io.ballerina.stdlib.graphql.compiler.analyzer.GraphqlCodeAnalyzer;
 
 /**
  * This is the compiler plugin for Ballerina GraphQL package.
@@ -27,6 +28,7 @@ import io.ballerina.projects.plugins.CompilerPluginContext;
 public class GraphqlCompilerPlugin extends CompilerPlugin {
     @Override
     public void init(CompilerPluginContext compilerPluginContext) {
-        compilerPluginContext.addCodeModifier(new GraphqlCodeModifier());
+        compilerPluginContext.addCodeModifier(new GraphqlCodeModifier(compilerPluginContext.userData()));
+        compilerPluginContext.addCodeAnalyzer(new GraphqlCodeAnalyzer(compilerPluginContext.userData()));
     }
 }

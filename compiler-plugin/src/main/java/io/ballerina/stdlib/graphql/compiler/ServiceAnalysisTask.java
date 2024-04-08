@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static io.ballerina.stdlib.graphql.compiler.Utils.MODIFIER_CONTEXT_MAP;
 import static io.ballerina.stdlib.graphql.compiler.Utils.hasSubgraphAnnotation;
 
 /**
@@ -51,8 +52,9 @@ public abstract class ServiceAnalysisTask implements AnalysisTask<SyntaxNodeAnal
     private final Map<DocumentId, GraphqlModifierContext> modifierContextMap;
     private final Map<Node, Boolean> nodeSubgraphMap;
 
-    public ServiceAnalysisTask(Map<DocumentId, GraphqlModifierContext> nodeMap) {
-        this.modifierContextMap = nodeMap;
+    @SuppressWarnings("unchecked")
+    public ServiceAnalysisTask(Map<String, Object> userdata) {
+        this.modifierContextMap = (Map<DocumentId, GraphqlModifierContext>) userdata.get(MODIFIER_CONTEXT_MAP);
         this.nodeSubgraphMap = new HashMap<>();
     }
 
