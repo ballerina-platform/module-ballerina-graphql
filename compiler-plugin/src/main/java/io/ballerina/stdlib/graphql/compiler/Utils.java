@@ -99,6 +99,10 @@ public final class Utils {
     private static final String CACHE_CONFIG_MAX_SIZE_FIELD = "maxSize";
     private static final int DEFAULT_MAX_SIZE = 120;
 
+    // User data map keys
+    public static final String IS_ANALYSIS_COMPLETED = "isAnalysisCompleted";
+    public static final String MODIFIER_CONTEXT_MAP = "modifierContextMap";
+
     private Utils() {
     }
 

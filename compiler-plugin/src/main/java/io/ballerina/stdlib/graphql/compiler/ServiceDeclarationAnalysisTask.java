@@ -23,7 +23,6 @@ import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
-import io.ballerina.stdlib.graphql.compiler.schema.generator.GraphqlModifierContext;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceEntityFinder;
 import io.ballerina.stdlib.graphql.compiler.service.validator.ServiceValidator;
 
@@ -38,7 +37,7 @@ import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUti
  */
 public class ServiceDeclarationAnalysisTask extends ServiceAnalysisTask {
 
-    public ServiceDeclarationAnalysisTask(Map<DocumentId, GraphqlModifierContext> nodeMap) {
+    public ServiceDeclarationAnalysisTask(Map<String, Object> nodeMap) {
         super(nodeMap);
     }
 
