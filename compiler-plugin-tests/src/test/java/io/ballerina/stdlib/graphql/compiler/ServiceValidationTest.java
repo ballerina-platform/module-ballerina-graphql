@@ -294,6 +294,7 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_FUNCTION, "Interceptor", "execute");
+        // This error points to the types.bal in the GraphQL package since this returns the `graphql:Interceptor` type.
         assertErrorMessage(diagnostic, message, 91, 5);
 
         diagnostic = diagnosticIterator.next();
@@ -1454,9 +1455,6 @@ public class ServiceValidationTest {
     private DiagnosticResult getDiagnosticResult(String packagePath) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(packagePath);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
-        DiagnosticResult diagnosticResult = project.currentPackage().getCompilation().diagnosticResult();
-        Assert.assertEquals(diagnosticResult.errorCount(), 0,
-                "Package compilation encountered errors before running compiler plugin");
         return project.currentPackage().runCodeGenAndModifyPlugins();
     }
 

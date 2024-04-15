@@ -45,14 +45,12 @@ public class GraphqlCodeAnalyzer extends CodeAnalyzer {
         if (this.userData == null) {
             return;
         }
-        if (this.userData.isEmpty()) {
-            this.analyze(codeAnalysisContext);
-        } else if (this.userData.containsKey(IS_ANALYSIS_COMPLETED)) {
-            boolean isAnalysisCompleted = (boolean) this.userData.get(IS_ANALYSIS_COMPLETED);
-            if (!isAnalysisCompleted) {
-                this.analyze(codeAnalysisContext);
+        if (this.userData.containsKey(IS_ANALYSIS_COMPLETED)) {
+            if ((boolean) this.userData.get(IS_ANALYSIS_COMPLETED)) {
+                return;
             }
         }
+        this.analyze(codeAnalysisContext);
     }
 
     private void analyze(CodeAnalysisContext codeAnalysisContext) {
