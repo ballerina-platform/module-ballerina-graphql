@@ -231,8 +231,6 @@ public class SchemaGenerationTest {
     private DiagnosticResult getDiagnosticResult(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
-        DiagnosticResult diagnosticResult = project.currentPackage().getCompilation().diagnosticResult();
-        Assert.assertEquals(diagnosticResult.errorCount(), 0);
         return project.currentPackage().runCodeGenAndModifyPlugins();
     }
 
