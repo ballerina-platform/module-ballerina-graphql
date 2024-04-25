@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 - [[#4848] Fix Resolvers not Able to Return Error Reference Types](https://github.com/ballerina-platform/ballerina-library/issues/4848)
 - [[#4859] Fix Service Crashing when Intersection Types are Used as Input Objects](https://github.com/ballerina-platform/ballerina-library/issues/4859)
+- [[#6418] Fix Code Coverage Showing Invalid Entries with GraphQL](https://github.com/ballerina-platform/ballerina-library/issues/6418)
+- [[#6310] Fix Incorrect Error Message in Compiler Plugin](https://github.com/ballerina-platform/ballerina-library/issues/6310)
 
 ## [1.11.0] - 2023-02-21
 

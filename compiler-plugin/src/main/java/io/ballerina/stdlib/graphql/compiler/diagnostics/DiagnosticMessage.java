@@ -46,10 +46,10 @@ public enum DiagnosticMessage {
     ERROR_113("a GraphQL service must include at least one resource method with the accessor '''"
                       + RESOURCE_FUNCTION_GET + "''' that does not have the @dataloader:Loader annotation attached"
                       + " to it"),
-    ERROR_114("the GraphQL field ''{0}'' use input type ''{1}'' as an output type. A GraphQL field cannot use an input "
-                      + "type as an output type"),
-    ERROR_115("the GraphQL field ''{0}'' use output type ''{1}'' as an input type. A GraphQL field cannot use an output"
-                      + " type as an input type"),
+    ERROR_114("the GraphQL field ''{0}'' uses input type ''{1}'' as an output type. A GraphQL field cannot use an " +
+            "input type as an output type"),
+    ERROR_115("the GraphQL field ''{0}'' uses output type ''{1}'' as an input type. A GraphQL field cannot use an " +
+            "output type as an input type"),
     ERROR_116("non-distinct service class ''{0}'' is used as a GraphQL interface"),
     ERROR_117("found path parameters ''{0}'' in GraphQL resource. Path parameters are not allowed in GraphQL "
                       + "resources"),
