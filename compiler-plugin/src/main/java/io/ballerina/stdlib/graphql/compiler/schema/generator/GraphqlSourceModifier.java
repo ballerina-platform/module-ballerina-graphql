@@ -443,13 +443,16 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
         List<Node> fields = new ArrayList<>();
         SeparatedNodeList<MappingFieldNode> existingFields = annotationValue.fields();
         Token separator = NodeFactory.createToken(SyntaxKind.COMMA_TOKEN);
-        for (int i = 0; i < existingFields.size(); i++) {
+        int fieldCount = existingFields.size();
+        for (int i = 0; i < fieldCount; i++) {
             fields.add(existingFields.get(i));
-            if (i < existingFields.size() - 1) {
+            if (fieldCount > 1 && i < fieldCount - 1) {
                 fields.add(existingFields.getSeparator(i));
             }
         }
-        fields.add(separator);
+        if (fieldCount > 0) {
+            fields.add(separator);
+        }
         fields.add(getSchemaStringFieldNode(schemaString));
         fields.add(separator);
         fields.add(getFieldCacheConfigNode(cacheConfigContext));
