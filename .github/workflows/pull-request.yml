@@ -10,5 +10,5 @@ jobs:
     call_workflow:
         name: Run PR Build Workflow
         if: ${{ github.repository_owner == 'ballerina-platform' }}
-        uses: ballerina-platform/ballerina-standard-library/.github/workflows/pull-request-build-template.yml@main
+        uses: ballerina-platform/ballerina-library/.github/workflows/pull-request-build-template.yml@main
         secrets: inherit
