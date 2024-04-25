@@ -5,7 +5,7 @@
 
 [ballerina]
 dependencies-toml-version = "2"
-distribution-version = "2201.9.0-20240419-152500-bd530dd2"
+distribution-version = "2201.9.0-20240410-095500-2653a74d"
 
 [[package]]
 org = "ballerina"
