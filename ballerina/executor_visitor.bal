@@ -112,6 +112,7 @@ isolated class ExecutorVisitor {
             context = self.context;
         }
         Field 'field = getFieldObject(fieldNode, operationType, schema, engine, result);
+        'field.setMainService(true);
         context.resetInterceptorCount();
         anydata resolvedResult = engine.resolve(context, 'field);
         lock {

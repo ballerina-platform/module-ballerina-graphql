@@ -31,6 +31,7 @@ public class Field {
     private final boolean cacheEnabled;
     private final decimal cacheMaxAge;
     private boolean hasRequestedNullableFields;
+    private boolean isMainServiceObject;
 
     isolated function init(parser:FieldNode internalNode, __Type fieldType, service object {}? serviceObject = (),
                            (string|int)[] path = [], parser:RootOperationType operationType = parser:OPERATION_QUERY,
@@ -60,6 +61,7 @@ public class Field {
         }
         self.hasRequestedNullableFields = self.cacheEnabled && serviceObject is service object {}
             && hasFields(getOfType(self.fieldType)) && hasRecordReturnType(serviceObject, self.resourcePath);
+        self.isMainServiceObject = false;
     }
 
     # Returns the name of the field.
@@ -107,6 +109,12 @@ public class Field {
     # + return - The location of the field
     public isolated function getLocation() returns Location {
         return self.internalNode.getLocation();
+    }
+
+    # Returns whether the service is the main service.
+    # + return - boolean indicating whether the service is the main service
+    public isolated function isMainService() returns boolean {
+        return self.isMainServiceObject;
     }
 
     isolated function getInternalNode() returns parser:FieldNode {
@@ -225,4 +233,9 @@ public class Field {
         }
         return requestedNullableFields.sort();
     }
+
+    public isolated function setMainService(boolean value) {
+        self.isMainServiceObject = value;
+    }
+
 }

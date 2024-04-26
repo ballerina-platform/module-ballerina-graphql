@@ -26,6 +26,13 @@ import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTypedesc;
+import io.ballerina.runtime.observability.ObservabilityConstants;
+import io.ballerina.runtime.observability.ObserveUtils;
+import io.ballerina.runtime.observability.ObserverContext;
+
+import java.util.Map;
+
+import static io.ballerina.stdlib.graphql.runtime.engine.Engine.getPropertiesToPropagate;
 
 /**
  * This class is used to execute a GraphQL document using the Ballerina GraphQL client.
@@ -72,15 +79,17 @@ public final class QueryExecutor {
     private static Object invokeClientMethod(Environment env, BObject client, String methodName, Object[] paramFeed) {
         Future balFuture = env.markAsync();
 
+        Map<String, Object> properties = getPropertiesToPropagate(env);
+
         ObjectType clientType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(client));
         if (clientType.isIsolated() && clientType.isIsolated(methodName)) {
             env.getRuntime()
                     .invokeMethodAsyncConcurrently(client, methodName, null, null, new QueryExecutorCallback(balFuture),
-                            null, PredefinedTypes.TYPE_NULL, paramFeed);
+                            properties, PredefinedTypes.TYPE_NULL, paramFeed);
         } else {
             env.getRuntime()
                     .invokeMethodAsyncSequentially(client, methodName, null, null, new QueryExecutorCallback(balFuture),
-                            null, PredefinedTypes.TYPE_NULL, paramFeed);
+                            properties, PredefinedTypes.TYPE_NULL, paramFeed);
         }
         return null;
     }
