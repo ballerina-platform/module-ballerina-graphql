@@ -26,9 +26,6 @@ import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTypedesc;
-import io.ballerina.runtime.observability.ObservabilityConstants;
-import io.ballerina.runtime.observability.ObserveUtils;
-import io.ballerina.runtime.observability.ObserverContext;
 
 import java.util.Map;
 
