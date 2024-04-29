@@ -188,7 +188,9 @@ public class Engine {
 
         Map<String, Object> properties = null;
         if (ObserveUtils.isObservabilityEnabled()) {
-            if ((getPropertiesToPropagate(environment).get(KEY_INTERCEPTOR) == null || !((boolean) getPropertiesToPropagate(environment).get(KEY_INTERCEPTOR))) && fieldObject.getBooleanValue(StringUtils.fromString(GraphqlObservabilityConstants.IS_MAIN_SERVICE))) {
+            if ((getPropertiesToPropagate(environment).get(KEY_INTERCEPTOR) == null ||
+                    !((boolean) getPropertiesToPropagate(environment).get(KEY_INTERCEPTOR))) &&
+                    fieldObject.getBooleanValue(StringUtils.fromString(IS_MAIN_SERVICE))) {
                 properties = new HashMap<>();
                 GraphqlObserverContext observerContext = new GraphqlObserverContext(QUERY_OPERATION);
                 environment.setStrandLocal(KEY_OBSERVER_CONTEXT, observerContext);
@@ -230,7 +232,7 @@ public class Engine {
 
                 Map<String, Object> properties = null;
                 if (ObserveUtils.isObservabilityEnabled()) {
-                    if (fieldObject.getBooleanValue(StringUtils.fromString(GraphqlObservabilityConstants.IS_MAIN_SERVICE))) {
+                    if (fieldObject.getBooleanValue(StringUtils.fromString(IS_MAIN_SERVICE))) {
                         properties = new HashMap<>();
                         GraphqlObserverContext observerContext = new GraphqlObserverContext(MUTATION_OPERATION);
                         environment.setStrandLocal(KEY_OBSERVER_CONTEXT, observerContext);
@@ -269,7 +271,7 @@ public class Engine {
 
         Map<String, Object> properties = null;
         if (ObserveUtils.isObservabilityEnabled()) {
-            if (field.getBooleanValue(StringUtils.fromString(GraphqlObservabilityConstants.IS_MAIN_SERVICE))) {
+            if (field.getBooleanValue(StringUtils.fromString(IS_MAIN_SERVICE))) {
                 properties = new HashMap<>();
                 GraphqlObserverContext observerContext = new GraphqlObserverContext();
                 environment.setStrandLocal(KEY_OBSERVER_CONTEXT, observerContext);
