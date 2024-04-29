@@ -103,8 +103,8 @@ function testInvalidMaxQueryDepth() returns error? {
 }
 isolated function testGraphiqlPathLog(int|http:Listener listenTo, ListenerConfiguration config, string httpPath,
         string websocketPath) returns error? {
-    [string, string] [exectedHttpPath, expectedWebsocketPath] = getEndpoints(listenTo, config);
-    test:assertEquals(exectedHttpPath, httpPath);
+    [string, string] [expectedHttpPath, expectedWebsocketPath] = getEndpoints(listenTo, config);
+    test:assertEquals(expectedHttpPath, httpPath);
     test:assertEquals(expectedWebsocketPath, websocketPath);
 }
 

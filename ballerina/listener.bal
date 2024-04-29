@@ -46,9 +46,9 @@ public class Listener {
         }
         self.wsListener = ();
         self.graphiql = {};
-        [string, string][httpEndpoint, websocketEndpint] = getEndpoints(listenTo, configuration);
+        [string, string][httpEndpoint, websocketEndpoint] = getEndpoints(listenTo, configuration);
         self.httpEndpoint = httpEndpoint;
-        self.websocketEndpoint = websocketEndpint;
+        self.websocketEndpoint = websocketEndpoint;
     }
 
     # Attaches the provided service to the Listener.
