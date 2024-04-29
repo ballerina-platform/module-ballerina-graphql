@@ -387,7 +387,7 @@ public class Engine {
 
         Map<String, Object> properties = null;
         if (ObserveUtils.isObservabilityEnabled()) {
-            if (fieldObject.getBooleanValue(StringUtils.fromString(GraphqlObservabilityConstants.IS_MAIN_SERVICE))) {
+            if (fieldObject.getBooleanValue(StringUtils.fromString(IS_MAIN_SERVICE))) {
                 properties = new HashMap<>();
                 GraphqlObserverContext observerContext = new GraphqlObserverContext();
                 environment.setStrandLocal(KEY_OBSERVER_CONTEXT, observerContext);
