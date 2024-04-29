@@ -46,14 +46,9 @@ public class Listener {
         }
         self.wsListener = ();
         self.graphiql = {};
-        int port = self.httpListener.getPort();
-        if configuration.secureSocket is () {
-            self.httpEndpoint = string `http://${LOCALHOST}:${port}`;
-            self.websocketEndpoint = string `ws://${LOCALHOST}:${port}`;
-        } else {
-            self.httpEndpoint = string `https://${LOCALHOST}:${port}`;
-            self.websocketEndpoint = string `wss://${LOCALHOST}:${port}`;
-        }
+        [string, string][httpEndpoint, websocketEndpoint] = getEndpoints(listenTo, configuration);
+        self.httpEndpoint = httpEndpoint;
+        self.websocketEndpoint = websocketEndpoint;
     }
 
     # Attaches the provided service to the Listener.

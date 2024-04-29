@@ -14,13 +14,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import graphql.parser;
+
 import ballerina/http;
 import ballerina/io;
 import ballerina/jballerina.java;
 import ballerina/mime;
 import ballerina/websocket;
-
-import graphql.parser;
 
 isolated function handleGetRequests(Engine engine, Context context, http:Request request) returns http:Response {
     string? query = request.getQueryParamValue(PARAM_QUERY);
@@ -51,7 +51,7 @@ isolated function handlePostRequests(Engine engine, Context context, http:Reques
 }
 
 isolated function getResponseFromJsonPayload(Engine engine, Context context, http:Request request,
-                                             map<Upload|Upload[]> fileInfo = {}) returns http:Response {
+        map<Upload|Upload[]> fileInfo = {}) returns http:Response {
     json|http:ClientError payload = request.getJsonPayload();
     if payload is http:ClientError {
         return createResponse("Invalid request body", http:STATUS_BAD_REQUEST);
@@ -69,7 +69,7 @@ isolated function getResponseFromJsonPayload(Engine engine, Context context, htt
 }
 
 isolated function getResponseFromQuery(Engine engine, string document, string? operationName, map<json>? variables,
-                                       Context context, map<Upload|Upload[]> fileInfo = {}) returns http:Response {
+        Context context, map<Upload|Upload[]> fileInfo = {}) returns http:Response {
     parser:OperationNode|OutputObject validationResult = engine.validate(document, operationName, variables);
     if validationResult is parser:OperationNode {
         context.setFileInfo(fileInfo);
@@ -132,7 +132,7 @@ isolated function getResponseFromMultipartPayload(Engine engine, Context context
                         pathMap = paths;
                     } else {
                         return createResponse("Invalid type for multipart request field ‘map’",
-                            http:STATUS_BAD_REQUEST);
+                                http:STATUS_BAD_REQUEST);
                     }
                 } else {
                     return createResponse(paths.message(), http:STATUS_BAD_REQUEST);
@@ -197,7 +197,7 @@ isolated function getUploadValues(map<Upload> fileInfo, map<json> pathMap, map<j
 }
 
 isolated function validateRequestPathArray(map<Upload> fileInfo, map<json> variables, map<Upload> files,
-                                           json[] paths, string key) returns http:Response? {
+        json[] paths, string key) returns http:Response? {
     if paths.length() == 0 {
         return createResponse("Missing file path in multipart request ‘map’", http:STATUS_BAD_REQUEST);
     }
@@ -208,7 +208,7 @@ isolated function validateRequestPathArray(map<Upload> fileInfo, map<json> varia
         if path is string {
             http:Response|string validateVariablePathResult = validateVariablePath(variables, path);
             if validateVariablePathResult is string {
-                files[validateVariablePathResult] = <Upload> fileInfo[key];
+                files[validateVariablePathResult] = <Upload>fileInfo[key];
                 continue;
             }
             return validateVariablePathResult;
@@ -224,11 +224,11 @@ isolated function validateVariablePath(map<json> variables, string receivedPath)
     if path.includes(PARAM_VARIABLES) && path.includes(".") {
         path = path.substring((<int>path.indexOf(".")) + 1);
         if path.includes(".") {
-            string varName = path.substring(0, <int> path.indexOf("."));
-            string indexPart = path.substring((<int> path.indexOf(".") + 1));
+            string varName = path.substring(0, <int>path.indexOf("."));
+            string indexPart = path.substring((<int>path.indexOf(".") + 1));
             int|error index = 'int:fromString(indexPart);
             if variables.hasKey(varName) && variables.get(varName) is json[] && index is int {
-                json[] arrayValue = <json[]> variables.get(varName);
+                json[] arrayValue = <json[]>variables.get(varName);
                 if index < arrayValue.length() {
                     if arrayValue[index] == null {
                         arrayValue[index] = path;
@@ -258,7 +258,7 @@ isolated function createUploadInfoMap(map<Upload> files, map<json> variables)
             Upload[] fileArray = [];
             foreach json filePath in value {
                 if filePath is string {
-                    fileArray.push(<Upload> files[filePath]);
+                    fileArray.push(<Upload>files[filePath]);
                 } else {
                     return createResponse("File content is missing in multipart request", http:STATUS_BAD_REQUEST);
                 }
@@ -272,7 +272,7 @@ isolated function createUploadInfoMap(map<Upload> files, map<json> variables)
 }
 
 isolated function forwardMultipartRequestToExecution(map<Upload|Upload[]> fileInfo, Engine engine,
-                                                     Context context, json payload) returns http:Response {
+        Context context, json payload) returns http:Response {
     if payload != () {
         http:Request request = new;
         request.setJsonPayload(payload);
@@ -298,7 +298,7 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
         private final ContextInit contextInit = contextInitFunction;
 
         isolated resource function get .(http:RequestContext requestContext,
-                                         http:Request request) returns http:Response {
+                http:Request request) returns http:Response {
             Context|http:Response context = self.initContext(requestContext, request);
             if context is http:Response {
                 return context;
@@ -314,7 +314,7 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
         }
 
         isolated resource function post .(http:RequestContext requestContext,
-                                          http:Request request) returns http:Response {
+                http:Request request) returns http:Response {
             Context|http:Response context = self.initContext(requestContext, request);
             if context is http:Response {
                 return context;
@@ -330,7 +330,7 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
         }
 
         isolated function initContext(http:RequestContext requestContext,
-                                      http:Request request) returns Context|http:Response {
+                http:Request request) returns Context|http:Response {
             Context|error context = self.contextInit(requestContext, request);
             if context is error {
                 json payload = {errors: [{message: context.message()}]};
@@ -352,12 +352,12 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
 }
 
 isolated function getWebsocketService(Engine gqlEngine, readonly & __Schema schema,
-                                      GraphqlServiceConfig? serviceConfig) returns UpgradeService {
+        GraphqlServiceConfig? serviceConfig) returns UpgradeService {
     final ContextInit contextInitFunction = getContextInit(serviceConfig);
     UpgradeService websocketUpgradeService = @websocket:ServiceConfig {
         subProtocols: [GRAPHQL_TRANSPORT_WS]
     } isolated service object {
-        isolated resource function get .(http:Request request) 
+        isolated resource function get .(http:Request request)
         returns websocket:Service|websocket:UpgradeError|http:HeaderNotFoundError {
             _ = check request.getHeader(WS_SUB_PROTOCOL);
             Context context = check initContext(gqlEngine, contextInitFunction, request);
@@ -383,9 +383,8 @@ isolated function initContext(Engine engine, ContextInit contextInit, http:Reque
     }
 }
 
-
 isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string graphqlUrl,
-                                     string? subscriptionUrl = ()) returns HttpService {
+        string? subscriptionUrl = ()) returns HttpService {
     final readonly & ListenerAuthConfig[]? authConfigurations = getListenerAuthConfig(serviceConfig).cloneReadOnly();
     final CorsConfig corsConfig = getCorsConfig(serviceConfig);
 
@@ -396,8 +395,8 @@ isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string
 
         isolated resource function get .() returns http:Response|http:InternalServerError {
             string|error htmlAsString = subscriptionUrl is string
-                                        ? getHtmlContentFromResources(graphqlUrl, subscriptionUrl)
-                                        : getHtmlContentFromResources(graphqlUrl);
+                ? getHtmlContentFromResources(graphqlUrl, subscriptionUrl)
+                : getHtmlContentFromResources(graphqlUrl);
             if htmlAsString is error {
                 return {
                     body: htmlAsString.message()
@@ -409,6 +408,24 @@ isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string
         }
     };
     return graphiqlService;
+}
+
+isolated function getEndpoints(int|http:Listener listenTo, *ListenerConfiguration configuration)
+returns [string, string] {
+    ListenerSecureSocket? secureSocket = ();
+    int port;
+    if listenTo is int {
+        port = listenTo;
+        secureSocket = configuration.secureSocket;
+    } else {
+        port = listenTo.getPort();
+        secureSocket = listenTo.getConfig().secureSocket;
+    }
+
+    if secureSocket is () {
+        return [string `http://${LOCALHOST}:${port}`, string `ws://${LOCALHOST}:${port}`];
+    }
+    return [string `https://${LOCALHOST}:${port}`, string `wss://${LOCALHOST}:${port}`];
 }
 
 isolated function attachHttpServiceToGraphqlService(Service s, HttpService httpService) = @java:Method {

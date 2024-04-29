@@ -14,8 +14,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/test;
 import graphql.parser;
+
+import ballerina/http;
+import ballerina/test;
 
 @test:Config {
     groups: ["configs", "validation"],
@@ -78,7 +80,6 @@ function testGraphiQLPath(string path) returns error? {
     test:assertEquals(err.message(), "Invalid path provided for GraphiQL client");
 }
 
-
 function dataProviderGraphiQLPath() returns (string[][]) {
     return [
         ["/ballerina graphql"],
@@ -94,4 +95,34 @@ function testInvalidMaxQueryDepth() returns error? {
     test:assertTrue(engine is Error);
     Error err = <Error>engine;
     test:assertEquals(err.message(), "Max query depth value must be a positive integer");
+}
+
+@test:Config {
+    groups: ["listener", "configs", "graphiql"],
+    dataProvider: dataProviderGraphiqlPathLog
+}
+isolated function testGraphiqlPathLog(int|http:Listener listenTo, ListenerConfiguration config, string httpPath,
+        string websocketPath) returns error? {
+    [string, string] [expectedHttpPath, expectedWebsocketPath] = getEndpoints(listenTo, config);
+    test:assertEquals(expectedHttpPath, httpPath);
+    test:assertEquals(expectedWebsocketPath, websocketPath);
+}
+
+ListenerSecureSocket secureSocket = {
+    key: {
+        path: "./tests/resources/certs/ballerinaKeystore.p12",
+        password: "ballerina"
+    }
+};
+
+listener http:Listener testListener1 = new (9090);
+listener http:Listener testListener2 = new (9091, {secureSocket});
+
+function dataProviderGraphiqlPathLog() returns map<[(int|http:Listener), ListenerConfiguration, string, string]>|error {
+    return {
+        "1": [testListener1, {}, "http://localhost:9090", "ws://localhost:9090"],
+        "2": [testListener2, {}, "https://localhost:9091", "wss://localhost:9091"],
+        "3": [9092, {}, "http://localhost:9092", "ws://localhost:9092"],
+        "4": [9093, {secureSocket}, "https://localhost:9093", "wss://localhost:9093"]
+    };
 }
