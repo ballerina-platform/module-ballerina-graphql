@@ -14,6 +14,4 @@ public class GraphqlObservabilityConstants {
     // Runtime related tags
     public static final String TAG_LISTENER_NAME = "listener.name";
     public static final String TAG_KEY_OPERATION_TYPE = "graphql.operation.type";
-
-
 }

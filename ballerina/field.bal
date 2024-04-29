@@ -111,12 +111,6 @@ public class Field {
         return self.internalNode.getLocation();
     }
 
-    # Returns whether the service is the main service.
-    # + return - boolean indicating whether the service is the main service
-    public isolated function isMainService() returns boolean {
-        return self.isMainServiceObject;
-    }
-
     isolated function getInternalNode() returns parser:FieldNode {
         return self.internalNode;
     }
@@ -237,5 +231,4 @@ public class Field {
     public isolated function setMainService(boolean value) {
         self.isMainServiceObject = value;
     }
-
 }
