@@ -200,14 +200,12 @@ public class Engine {
             }
         }
 
-        if ((serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName()) || properties != null)) {
+        if (serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName())) {
             environment.getRuntime().invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
-                    RESOURCE_EXECUTION_STRAND, executionCallback,
-                    properties, returnType, arguments);
+                    RESOURCE_EXECUTION_STRAND, executionCallback, properties, returnType, arguments);
         } else {
             environment.getRuntime().invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
-                    RESOURCE_EXECUTION_STRAND, executionCallback,
-                    properties, returnType, arguments);
+                    RESOURCE_EXECUTION_STRAND, executionCallback, properties, returnType, arguments);
         }
         return null;
     }
