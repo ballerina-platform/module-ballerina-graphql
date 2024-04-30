@@ -15,8 +15,12 @@
 // under the License.
 
 import ballerina/jballerina.java;
+import ballerina/observe;
+
+final boolean observabilityEnabled;
 
 isolated function init() {
+    observabilityEnabled = observe:isObservabilityEnabled();
     setModule();
 }
 

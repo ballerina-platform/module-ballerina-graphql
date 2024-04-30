@@ -30,9 +30,9 @@ isolated class Engine {
     private final readonly & ServerCacheConfig? cacheConfig;
 
     isolated function init(string schemaString, int? maxQueryDepth, Service s,
-                           readonly & (readonly & Interceptor)[] interceptors, boolean introspection,
-                           boolean validation, ServerCacheConfig? cacheConfig = (),
-                           ServerCacheConfig? fieldCacheConfig = ())
+            readonly & (readonly & Interceptor)[] interceptors, boolean introspection,
+            boolean validation, ServerCacheConfig? cacheConfig = (),
+            ServerCacheConfig? fieldCacheConfig = ())
     returns Error? {
         if maxQueryDepth is int && maxQueryDepth < 1 {
             return error Error("Max query depth value must be a positive integer");
@@ -82,18 +82,23 @@ isolated class Engine {
     isolated function validate(string documentString, string? operationName, map<json>? variables)
         returns parser:OperationNode|OutputObject {
 
+        addObservabilityTags(GRAPHQL_OPERATION_NAME, operationName ?: GRPAHQL_ANONYMOUS_OPERATION);
         ParseResult|OutputObject result = self.parse(documentString);
         if result is OutputObject {
+            addObservabilityTags(GRAPHQL_ERRORS, GRAPHQL_PARSING_ERROR);
             return result;
         }
 
         OutputObject|parser:DocumentNode validationResult = self.validateDocument(result, operationName, variables);
         if validationResult is OutputObject {
+            addObservabilityTags(GRAPHQL_ERRORS, GRAPHQL_VALIDATION_ERROR);
             return validationResult;
         }
         // Since unused operation nodes are removed from the Document node, it includes only the operation node
         // related to the currently executing operation. Hence directly access that node from here.
-        return validationResult.getOperations()[0];
+        parser:OperationNode operationNode = validationResult.getOperations()[0];
+        addObservabilityTags(GRAPHQL_OPERATION_TYPE, operationNode.getKind());
+        return operationNode;
     }
 
     isolated function getResult(parser:OperationNode operationNode, Context context, any|error result = ())
@@ -206,7 +211,7 @@ isolated class Engine {
 
         worker fieldAndVariableValidatorWorker returns ErrorDetail[] {
             ErrorDetail[] errors = [];
-             ValidatorVisitor[] validatorVisitors = [
+            ValidatorVisitor[] validatorVisitors = [
                 new VariableValidatorVisitor(schema, vars, nodeModifierContext),
                 new FieldValidatorVisitor(schema, nodeModifierContext)
             ];
@@ -271,6 +276,7 @@ isolated class Engine {
 
     isolated function resolve(Context context, Field 'field, boolean executePrefetchMethod = true) returns anydata {
         parser:FieldNode fieldNode = 'field.getInternalNode();
+        addObservabilityTags(GRAPHQL_FIELD_NAME, fieldNode.getName());
 
         if executePrefetchMethod {
             service object {}? serviceObject = 'field.getServiceObject();
@@ -286,7 +292,8 @@ isolated class Engine {
         (readonly & Interceptor)? interceptor = context.getNextInterceptor('field);
         __Type fieldType = 'field.getFieldType();
         ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone(),
-                                                   'field.getCacheConfig(), 'field.getParentArgHashes());
+            'field.getCacheConfig(), 'field.getParentArgHashes()
+        );
         do {
             if interceptor is readonly & Interceptor {
                 any|error result = self.executeInterceptor(interceptor, 'field, context);
@@ -316,7 +323,7 @@ isolated class Engine {
     }
 
     private isolated function getResultFromPrefetchMethodExecution(Context context, Field 'field,
-        service object {} serviceObject, string prefetchMethodName) returns PlaceholderNode? {
+            service object {} serviceObject, string prefetchMethodName) returns PlaceholderNode? {
         handle? prefetchMethodHandle = self.getMethod(serviceObject, prefetchMethodName);
         if prefetchMethodHandle is () {
             return ();
@@ -343,7 +350,7 @@ isolated class Engine {
     isolated function resolveRemoteMethod(Context context, Field 'field, ResponseGenerator responseGenerator) returns any|error {
         service object {}? serviceObject = 'field.getServiceObject();
         if serviceObject is service object {} {
-           return self.executeMutationMethod(context, serviceObject, 'field, responseGenerator, self.validation);
+            return self.executeMutationMethod(context, serviceObject, 'field, responseGenerator, self.validation);
         }
         return 'field.getFieldValue();
     }
@@ -364,7 +371,7 @@ isolated class Engine {
     }
 
     isolated function resolveHierarchicalResourceFromFragment(Context context, Field 'field,
-                                                              parser:FragmentNode fragmentNode, map<anydata> result) {
+            parser:FragmentNode fragmentNode, map<anydata> result) {
         foreach parser:SelectionNode selection in fragmentNode.getSelections() {
             if selection is parser:FieldNode {
                 self.getHierarchicalResult(context, 'field, selection, result);
@@ -398,7 +405,7 @@ isolated class Engine {
     isolated function invalidate(string path) returns error? {
         cache:Cache? cache = self.cache;
         if cache is cache:Cache {
-            string[] keys = cache.keys().filter(isolated function (string key) returns boolean {
+            string[] keys = cache.keys().filter(isolated function(string key) returns boolean {
                 return key.startsWith(string `${path}.`);
             });
             foreach string key in keys {
@@ -435,18 +442,18 @@ isolated class Engine {
     } external;
 
     isolated function executeQueryResource(Context context, service object {} serviceObject, handle resourceMethod,
-                                           Field 'field, ResponseGenerator responseGenerator, boolean validation)
+            Field 'field, ResponseGenerator responseGenerator, boolean validation)
     returns any|error = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 
     isolated function executeMutationMethod(Context context, service object {} serviceObject,
-                                            Field 'field, ResponseGenerator responseGenerator, boolean validation) returns any|error = @java:Method {
+            Field 'field, ResponseGenerator responseGenerator, boolean validation) returns any|error = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 
     isolated function executeSubscriptionResource(Context context, service object {} serviceObject,
-                                                  Field 'field, ResponseGenerator responseGenerator, boolean validation) returns any|error = @java:Method {
+            Field 'field, ResponseGenerator responseGenerator, boolean validation) returns any|error = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 
@@ -465,7 +472,7 @@ isolated class Engine {
     } external;
 
     isolated function executePrefetchMethod(Context context, service object {} serviceObject,
-        handle prefetchMethodHandle, Field 'field) = @java:Method {
+            handle prefetchMethodHandle, Field 'field) = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
     } external;
 }

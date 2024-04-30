@@ -357,7 +357,7 @@ isolated function getWebsocketService(Engine gqlEngine, readonly & __Schema sche
     UpgradeService websocketUpgradeService = @websocket:ServiceConfig {
         subProtocols: [GRAPHQL_TRANSPORT_WS]
     } isolated service object {
-        isolated resource function get .(http:Request request) 
+        isolated resource function get .(http:Request request)
         returns websocket:Service|websocket:UpgradeError|http:HeaderNotFoundError {
             _ = check request.getHeader(WS_SUB_PROTOCOL);
             Context context = check initContext(gqlEngine, contextInitFunction, request);
