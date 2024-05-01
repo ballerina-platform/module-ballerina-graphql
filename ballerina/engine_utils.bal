@@ -133,7 +133,7 @@ isolated function initCacheTable(ServerCacheConfig? operationCacheConfig, Server
 
 isolated function addObservabilityTags(string key, string value) {
     if observabilityEnabled {
-        checkpanic  observe:addTagToMetrics(key, value);
+        checkpanic observe:addTagToMetrics(key, value);
     }
 }
 
