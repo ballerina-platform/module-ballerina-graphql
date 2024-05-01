@@ -49,14 +49,14 @@ public isolated class DefaultDataLoader {
     private final BatchLoadFunction batchFunction;
 
     # Initializes the DataLoader with the given batch function.
-    # 
+    #
     # + loadFunction - The batch function to be used
     public isolated function init(BatchLoadFunction loadFunction) {
         self.batchFunction = loadFunction;
     }
 
     # Collects a key to perform a batch operation at a later time.
-    # 
+    #
     # + key - The key to load later
     public isolated function add(anydata key) {
         readonly & anydata clonedKey = key.cloneReadOnly();
@@ -70,7 +70,7 @@ public isolated class DefaultDataLoader {
     }
 
     # Retrieves the result for a particular key.
-    # 
+    #
     # + key - The key to retrieve the result
     # + 'type - The type of the result
     # + return - The result for the key on success, error on failure

@@ -25,13 +25,21 @@ listener graphql:Listener listener4 = new graphql:Listener(9000);
 listener graphql:Listener listener5 = check new graphql:Listener(9000);
 
 graphql:ListenerConfiguration configs = {
-    timeout: 1.0
+   timeout: 1.0
 };
 
 listener graphql:Listener listener6 = new(9000, configs);
 listener graphql:Listener listener7 = check new(9000, configs);
 listener graphql:Listener listener8 = new graphql:Listener(9000, configs);
 listener graphql:Listener listener9 = check new graphql:Listener(9000, configs);
+
+configurable int port = 9090;
+listener graphql:Listener listener10 = new(port,
+    secureSocket = {
+        certFile: "sample/cert/file",
+        keyFile: "sample/key/file"
+    }
+);
 
 service graphql:Service on new graphql:Listener(4000) {
     resource function get name() returns string {

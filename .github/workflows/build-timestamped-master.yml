@@ -15,5 +15,5 @@ jobs:
     call_workflow:
         name: Run Build Workflow
         if: ${{ github.repository_owner == 'ballerina-platform' }}
-        uses: ballerina-platform/ballerina-standard-library/.github/workflows/build-timestamp-master-template.yml@main
+        uses: ballerina-platform/ballerina-library/.github/workflows/build-timestamp-master-template.yml@main
         secrets: inherit

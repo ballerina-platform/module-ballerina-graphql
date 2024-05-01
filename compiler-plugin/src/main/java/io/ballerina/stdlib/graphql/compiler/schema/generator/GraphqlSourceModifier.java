@@ -431,9 +431,7 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
             SeparatedNodeList<MappingFieldNode> updatedFields =
                     getUpdatedFields(annotationNode.annotValue().get(), schemaString, cacheConfigContext);
             MappingConstructorExpressionNode node =
-                    NodeFactory.createMappingConstructorExpressionNode(
-                            NodeFactory.createToken(SyntaxKind.OPEN_BRACE_TOKEN), updatedFields,
-                            NodeFactory.createToken(SyntaxKind.CLOSE_BRACE_TOKEN));
+                    annotationNode.annotValue().get().modify().withFields(updatedFields).apply();
             return annotationNode.modify().withAnnotValue(node).apply();
         }
         return getServiceAnnotation(schemaString, cacheConfigContext, prefix);
@@ -445,8 +443,14 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
         List<Node> fields = new ArrayList<>();
         SeparatedNodeList<MappingFieldNode> existingFields = annotationValue.fields();
         Token separator = NodeFactory.createToken(SyntaxKind.COMMA_TOKEN);
-        for (MappingFieldNode field : existingFields) {
-            fields.add(field);
+        int fieldCount = existingFields.size();
+        for (int i = 0; i < fieldCount; i++) {
+            fields.add(existingFields.get(i));
+            if (fieldCount > 1 && i < fieldCount - 1) {
+                fields.add(existingFields.getSeparator(i));
+            }
+        }
+        if (fieldCount > 0) {
             fields.add(separator);
         }
         fields.add(getSchemaStringFieldNode(schemaString));

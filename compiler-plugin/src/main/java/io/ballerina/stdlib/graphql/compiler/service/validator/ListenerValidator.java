@@ -19,6 +19,9 @@
 package io.ballerina.stdlib.graphql.compiler.service.validator;
 
 import io.ballerina.compiler.api.symbols.Symbol;
+import io.ballerina.compiler.api.symbols.SymbolKind;
+import io.ballerina.compiler.api.symbols.TypeDescKind;
+import io.ballerina.compiler.api.symbols.VariableSymbol;
 import io.ballerina.compiler.syntax.tree.ExplicitNewExpressionNode;
 import io.ballerina.compiler.syntax.tree.FunctionArgumentNode;
 import io.ballerina.compiler.syntax.tree.ImplicitNewExpressionNode;
@@ -100,11 +103,18 @@ public class ListenerValidator implements AnalysisTask<SyntaxNodeAnalysisContext
         // two args are valid only if the first arg is numeric (i.e, port and config)
         if (arguments.size() > 1) {
             PositionalArgumentNode firstArg = (PositionalArgumentNode) arguments.get(0);
-            FunctionArgumentNode secondArg = arguments.get(1);
-            SyntaxKind firstArgSyntaxKind = firstArg.expression().kind();
-            if (firstArgSyntaxKind != SyntaxKind.NUMERIC_LITERAL) {
-                updateContext(context, CompilationDiagnostic.INVALID_LISTENER_INIT, secondArg.location());
+            if (context.semanticModel().symbol(firstArg.expression()).isEmpty()) {
+                return;
             }
+            Symbol firstArgSymbol = context.semanticModel().symbol(firstArg.expression()).get();
+            if (firstArgSymbol.kind() == SymbolKind.VARIABLE) {
+                VariableSymbol variableSymbol = (VariableSymbol) firstArgSymbol;
+                if (variableSymbol.typeDescriptor().typeKind() == TypeDescKind.INT) {
+                    return;
+                }
+            }
+            FunctionArgumentNode secondArg = arguments.get(1);
+            updateContext(context, CompilationDiagnostic.INVALID_LISTENER_INIT, secondArg.location());
         }
     }
 }
