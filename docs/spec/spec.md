@@ -3934,4 +3934,51 @@ service /graphql on new graphql:Listener(9090) {
 }
 ```
 
-In this example, caching is enabled at the operation level. Therefore, the field `name` and `type` will be cached. Since the field-level cache configuration overrides the parent cache configurations, the field `version` will not be cached. When updating the name with a mutation, the cached values become invalid. Hence, the `invalidate` function can be used to ivalidate the existing cache values.
+In this example, caching is enabled at the operation level. Therefore, the field `name` and `type` will be cached. Since the field-level cache configuration overrides the parent cache configurations, the field `version` will not be cached. When updating the name with a mutation, the cached values become invalid. Hence, the `invalidate` function can be used to invalidate the existing cache values.
+
+### 10.8 Observability
+
+The Ballerina GraphQL services are observable by default. The GraphQL module provides the following observability features:
+
+* [Metrics](#1081-metrics)
+* [Tracing](#1082-tracing)
+* [Logging](#1083-logging)
+
+To enable observability, add the following to the `Ballerina.toml` file:
+
+```toml
+[build-options]
+observabilityIncluded = true
+```
+
+#### 10.8.1 Metrics
+
+The GraphQL observability metrics are published to Prometheus through the Ballerina Prometheus extension.
+
+There will be multiple metrics published under multiple tags in the Prometheus format. The following section describes the tags and the corresponding metrics published.
+
+##### 10.8.1.1 Operation Type
+
+The GraphQL operation type will be published under the `graphql_service_operation_type` tag. The value will be one of `query`, `mutation`, or `subscription`. This metric can be used to identify the type of operation that is being executed in the GraphQL service.
+
+##### 10.8.1.2 Operation Name
+
+The GraphQL operation name will be published under the `graphql_service_operation_name` tag. If the operation name is not provided, the value will be `anonymous`. This metric can be used to identify the operations that are being executed in the GraphQL service.
+
+##### 10.8.1.3 Field Name
+
+Each field from the GraphQL operations will be published under the `graphql_service_field_name` tag, where the value will be the corresponding field name. This metric can be used to identify the fields that are being executed in the GraphQL service.
+
+##### 10.8.1.4 Errors
+
+If an error occurs during the execution of the GraphQL operation, the error type will be published under the `graphql_service_errors` tag. The value will be one of `graphql_service_parsing_error`, `graphql_service_validation_error`, or `graphql_service_execution_error`.
+
+* The `graphql_service_parsing_error` metric will be published when there is an error in parsing the GraphQL document.
+* The `graphql_service_validation_error` metric will be published when there is an error in validating the GraphQL document.
+* The `graphql_service_execution_error` metric will be published when there is an error in executing the GraphQL document.
+
+#### 10.8.2 Tracing
+
+#### 10.8.3 Logging
+
+A Ballerina GraphQL service will log the errors that occurred during the execution of the GraphQL request. The errors will be logged at the `ERROR` level. The error message and the stack trace will be printed in the log, in the `ballerina/log` module log format.
