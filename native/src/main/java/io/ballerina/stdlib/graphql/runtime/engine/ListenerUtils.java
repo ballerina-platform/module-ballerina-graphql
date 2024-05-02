@@ -37,6 +37,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static io.ballerina.runtime.observability.ObservabilityConstants.KEY_OBSERVER_CONTEXT;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
 
@@ -165,16 +166,19 @@ public final class ListenerUtils {
         BString file = StringUtils.fromString("engine.bal");
         BString service = StringUtils.fromString("/graphql");
         BString resourcePath = StringUtils.fromString("resource");
+
+        environment.setStrandLocal(KEY_OBSERVER_CONTEXT, observerContext);
         ObserveUtils.startResourceObservation(environment, module, file, 1, 100, service, resourcePath, operationName,
                 true, false);
     }
 
-    public static void stopObservationContext(BObject context) {
+    public static void stopObservationContext(Environment environment, BObject context) {
         ObserverContext observerContext = (ObserverContext) context.getNativeData("observerContext");
         if (observerContext != null && observerContext.isManuallyClosed()) {
             ObserverContext parentContext = observerContext.getParent();
             context.addNativeData("observerContext", parentContext);
             ObserveUtils.stopObservationWithContext(observerContext);
+            environment.setStrandLocal(KEY_OBSERVER_CONTEXT, parentContext);
         }
     }
 }
