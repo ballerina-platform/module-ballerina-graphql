@@ -70,13 +70,20 @@ isolated function getResponseFromJsonPayload(Engine engine, Context context, htt
 
 isolated function getResponseFromQuery(Engine engine, string document, string? operationName, map<json>? variables,
         Context context, map<Upload|Upload[]> fileInfo = {}) returns http:Response {
+    createObserverContext(context, "vaidation");
     parser:OperationNode|OutputObject validationResult = engine.validate(document, operationName, variables);
+    stopObservationContext(context);
+    http:Response response;
     if validationResult is parser:OperationNode {
         context.setFileInfo(fileInfo);
-        return getResponseFromExecution(engine, validationResult, context);
+        createObserverContext(context, "execution");
+        response = getResponseFromExecution(engine, validationResult, context);
+        stopObservationContext(context);
     } else {
-        return createResponse(validationResult.toJson(), http:STATUS_BAD_REQUEST);
+        response = createResponse(validationResult.toJson(), http:STATUS_BAD_REQUEST);
     }
+    stopObservationContext(context);
+    return response;
 }
 
 isolated function getResponseFromExecution(Engine engine, parser:OperationNode operationNode, Context context)
@@ -465,5 +472,13 @@ isolated function attachWebsocketServiceToGraphqlService(Service s, UpgradeServi
 
 isolated function getWebsocketServiceFromGraphqlService(Service s) returns UpgradeService? =
 @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
+} external;
+
+isolated function createObserverContext(Context context, string operationName) = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
+} external;
+
+isolated function stopObservationContext(Context context) = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;

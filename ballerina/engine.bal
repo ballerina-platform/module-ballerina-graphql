@@ -276,6 +276,7 @@ isolated class Engine {
 
     isolated function resolve(Context context, Field 'field, boolean executePrefetchMethod = true) returns anydata {
         parser:FieldNode fieldNode = 'field.getInternalNode();
+        createObserverContext(context, 'field.getName());
         addObservabilityTags(GRAPHQL_FIELD_NAME, fieldNode.getName());
 
         if executePrefetchMethod {
@@ -284,7 +285,9 @@ isolated class Engine {
                 string prefetchMethodName = getPrefetchMethodName(serviceObject, 'field)
                     ?: getDefaultPrefetchMethodName(fieldNode.getName());
                 if self.hasPrefetchMethod(serviceObject, prefetchMethodName) {
-                    return self.getResultFromPrefetchMethodExecution(context, 'field, serviceObject, prefetchMethodName);
+                    anydata result = self.getResultFromPrefetchMethodExecution(context, 'field, serviceObject, prefetchMethodName);
+                    stopObservationContext(context);
+                    return result;
                 }
             }
         }
@@ -298,7 +301,9 @@ isolated class Engine {
             if interceptor is readonly & Interceptor {
                 any|error result = self.executeInterceptor(interceptor, 'field, context);
                 string interceptorName = self.getInterceptorName(interceptor);
-                return check validateInterceptorReturnValue(fieldType, result, interceptorName);
+                anydata r = check validateInterceptorReturnValue(fieldType, result, interceptorName);
+                stopObservationContext(context);
+                return r;
             }
             any fieldValue;
             if 'field.getOperationType() == parser:OPERATION_QUERY && 'field.isCacheEnabled() {
@@ -316,7 +321,9 @@ isolated class Engine {
             } else {
                 fieldValue = check self.getFieldValue(context, 'field, responseGenerator);
             }
-            return responseGenerator.getResult(fieldValue, fieldNode);
+            anydata r = responseGenerator.getResult(fieldValue, fieldNode);
+            stopObservationContext(context);
+            return r;
         } on fail error errorValue {
             return responseGenerator.getResult(errorValue, fieldNode);
         }

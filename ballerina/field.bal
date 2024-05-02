@@ -31,11 +31,12 @@ public class Field {
     private final boolean cacheEnabled;
     private final decimal cacheMaxAge;
     private boolean hasRequestedNullableFields;
+    private final boolean isRootService;
 
     isolated function init(parser:FieldNode internalNode, __Type fieldType, service object {}? serviceObject = (),
                            (string|int)[] path = [], parser:RootOperationType operationType = parser:OPERATION_QUERY,
                            string[] resourcePath = [], any|error fieldValue = (), ServerCacheConfig? cacheConfig = (),
-                           readonly & string[] parentArgHashes = []) {
+                           readonly & string[] parentArgHashes = [], boolean isRootService = false) {
         self.internalNode = internalNode;
         self.serviceObject = serviceObject;
         self.fieldType = fieldType;
@@ -60,6 +61,7 @@ public class Field {
         }
         self.hasRequestedNullableFields = self.cacheEnabled && serviceObject is service object {}
             && hasFields(getOfType(self.fieldType)) && hasRecordReturnType(serviceObject, self.resourcePath);
+        self.isRootService = isRootService;
     }
 
     # Returns the name of the field.

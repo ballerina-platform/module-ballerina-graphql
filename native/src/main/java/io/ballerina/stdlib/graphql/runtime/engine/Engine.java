@@ -38,8 +38,11 @@ import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
+import io.ballerina.runtime.observability.ObserveUtils;
+import io.ballerina.runtime.observability.ObserverContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.runtime.exception.ConstraintValidationException;
+import io.ballerina.stdlib.graphql.runtime.observability.GraphqlObserverContext;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -320,6 +323,9 @@ public class Engine {
         ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
         ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context, fieldObject, null, false);
         Object[] arguments = argumentHandler.getArguments();
+        GraphqlObserverContext observerContext = (GraphqlObserverContext) context.getNativeData("observerContext");
+        ObserverContext childContext = ObserveUtils.getObserverContextOfCurrentFrame(environment);
+        childContext.setParent(observerContext);
         if (serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName())) {
             environment.getRuntime()
                     .invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null, RESOURCE_EXECUTION_STRAND,

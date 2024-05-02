@@ -18,10 +18,14 @@
 
 package io.ballerina.stdlib.graphql.runtime.engine;
 
+import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
+import io.ballerina.runtime.observability.ObserveUtils;
+import io.ballerina.runtime.observability.ObserverContext;
+import io.ballerina.stdlib.graphql.runtime.observability.GraphqlObserverContext;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,7 +53,8 @@ public final class ListenerUtils {
     private static final String REGEX_URL = "${url}";
     private static final String FORWARD_SLASH = "/";
 
-    private ListenerUtils() {}
+    private ListenerUtils() {
+    }
 
     public static void attachHttpServiceToGraphqlService(BObject graphqlService, BObject httpService) {
         graphqlService.addNativeData(HTTP_SERVICE, httpService);
@@ -78,7 +83,7 @@ public final class ListenerUtils {
         }
         return null;
     }
-    
+
     public static Object getGraphiqlServiceFromGraphqlService(BObject graphqlService) {
         Object graphiqlService = graphqlService.getNativeData(GRAPHIQL_SERVICE);
         if (graphiqlService instanceof BObject) {
@@ -92,7 +97,7 @@ public final class ListenerUtils {
         try {
             new URL(uri).toURI();
             return null;
-        } catch (URISyntaxException | MalformedURLException  e) {
+        } catch (URISyntaxException | MalformedURLException e) {
             return createError("Invalid path provided for GraphiQL client", ERROR_TYPE);
         }
     }
@@ -136,13 +141,40 @@ public final class ListenerUtils {
             StringBuilder graphiqlUrl = new StringBuilder("{ url: \"" + url.getValue() + "\"");
             if (subscriptionUrl != null) {
                 graphiqlUrl.append(" , subscriptionUrl: \"")
-                           .append(((BString) subscriptionUrl).getValue()).append("\"");
+                        .append(((BString) subscriptionUrl).getValue()).append("\"");
             }
             graphiqlUrl.append(" }");
             htmlAsString = htmlAsString.replace(REGEX_URL, graphiqlUrl.toString());
             return StringUtils.fromString(htmlAsString);
         } catch (IOException e) {
             return createError("Error occurred while loading the GraphiQL client", ERROR_TYPE);
+        }
+    }
+
+    public static void createObserverContext(Environment environment, BObject context, BString operationName) {
+        ObserverContext observerContext = new GraphqlObserverContext(operationName.getValue());
+        observerContext.setManuallyClosed(true);
+        Object parentContext = context.getNativeData("observerContext");
+        if (parentContext != null) {
+            observerContext.setParent((ObserverContext) parentContext);
+        } else {
+            observerContext.setParent(ObserveUtils.getObserverContextOfCurrentFrame(environment));
+        }
+        context.addNativeData("observerContext", observerContext);
+        BString module = StringUtils.fromString("graphql");
+        BString file = StringUtils.fromString("engine.bal");
+        BString service = StringUtils.fromString("/graphql");
+        BString resourcePath = StringUtils.fromString("resource");
+        ObserveUtils.startResourceObservation(environment, module, file, 1, 100, service, resourcePath, operationName,
+                true, false);
+    }
+
+    public static void stopObservationContext(BObject context) {
+        ObserverContext observerContext = (ObserverContext) context.getNativeData("observerContext");
+        if (observerContext != null && observerContext.isManuallyClosed()) {
+            ObserverContext parentContext = observerContext.getParent();
+            context.addNativeData("observerContext", parentContext);
+            ObserveUtils.stopObservationWithContext(observerContext);
         }
     }
 }
