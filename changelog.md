@@ -13,7 +13,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [[#6310] Fix Incorrect Error Message in Compiler Plugin](https://github.com/ballerina-platform/ballerina-library/issues/6310)
 - [[#6459] Fix Incorrect Compilation Error when Port is Passed via a Variable with SSL Settings](https://github.com/ballerina-platform/ballerina-library/issues/6459)
 
-## [1.11.0] - 2023-02-21
+### Added
+
+- [[#6461] Add Support for Publishing Observability Metrics for GraphQL Services](https://github.com/ballerina-platform/ballerina-library/issues/6461)
+
+## [1.11.0] - 2024-02-21
 
 ### Added
 - [[#1586] Add Compile Time Schema Generation for Default Parameters](https://github.com/ballerina-platform/module-ballerina-graphql/pull/1586)
