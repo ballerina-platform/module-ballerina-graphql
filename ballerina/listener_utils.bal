@@ -21,6 +21,7 @@ import ballerina/io;
 import ballerina/jballerina.java;
 import ballerina/mime;
 import ballerina/websocket;
+import ballerina/observe;
 
 isolated function handleGetRequests(Engine engine, Context context, http:Request request) returns http:Response {
     string? query = request.getQueryParamValue(PARAM_QUERY);
@@ -70,13 +71,20 @@ isolated function getResponseFromJsonPayload(Engine engine, Context context, htt
 
 isolated function getResponseFromQuery(Engine engine, string document, string? operationName, map<json>? variables,
         Context context, map<Upload|Upload[]> fileInfo = {}) returns http:Response {
+    addAndStartTracing(context, "graphql:Document", "query", "vaidation", "graphql", "listner_utils.bal", 73, 5);
     parser:OperationNode|OutputObject validationResult = engine.validate(document, operationName, variables);
+    stopTracing(context);
+    http:Response response;
     if validationResult is parser:OperationNode {
         context.setFileInfo(fileInfo);
-        return getResponseFromExecution(engine, validationResult, context);
+        addAndStartTracing(context, "graphql:Document", "query", "execution", "graphql", "listner_utils.bal", 79, 9);
+        response = getResponseFromExecution(engine, validationResult, context);
+        stopTracing(context);
     } else {
-        return createResponse(validationResult.toJson(), http:STATUS_BAD_REQUEST);
+        response = createResponse(validationResult.toJson(), http:STATUS_BAD_REQUEST);
     }
+    stopTracing(context);
+    return response;
 }
 
 isolated function getResponseFromExecution(Engine engine, parser:OperationNode operationNode, Context context)
@@ -292,7 +300,12 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
 
     HttpService httpService = @http:ServiceConfig {
         cors: corsConfig
-    } isolated service object {
+    }
+    @display {
+        label: "GraphQL Service",
+        id: "graphql-service"
+    } 
+    isolated service object {
         private final Engine engine = gqlEngine;
         private final readonly & ListenerAuthConfig[]? authConfig = authConfigurations;
         private final ContextInit contextInit = contextInitFunction;
@@ -428,6 +441,23 @@ returns [string, string] {
     return [string `https://${LOCALHOST}:${port}`, string `wss://${LOCALHOST}:${port}`];
 }
 
+isolated function addAndStartTracing(Context context, string serviceName, string operationType, string? operationName, 
+string? moduleName, string? fileName, int? startLine, int? startColumn) {
+    if (observe:isObservabilityEnabled() && observe:isTracingEnabled()) {
+        if operationName != null && moduleName != null && fileName != null && startLine != null && startColumn != null {
+            createAndStartObserverContext(context, serviceName, operationType, operationName, moduleName, fileName, startLine, startColumn);
+        } else {
+            createObserverContext(context, serviceName, operationType);
+        }
+    }
+}
+
+isolated function stopTracing(Context context) {
+    if (observe:isObservabilityEnabled() && observe:isTracingEnabled()) {
+        stopObserverContext(context);
+    }
+}
+
 isolated function attachHttpServiceToGraphqlService(Service s, HttpService httpService) = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;
@@ -465,5 +495,18 @@ isolated function attachWebsocketServiceToGraphqlService(Service s, UpgradeServi
 
 isolated function getWebsocketServiceFromGraphqlService(Service s) returns UpgradeService? =
 @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
+} external;
+
+isolated function createObserverContext(Context context, string serviceName, string operationType) = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
+} external;
+
+isolated function createAndStartObserverContext(Context context, string serviceName, string operationType, string operationName, 
+string moduleName, string fileName, int startLine, int startColumn) = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
+} external;
+
+isolated function stopObserverContext(Context context) = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;

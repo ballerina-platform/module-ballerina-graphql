@@ -18,10 +18,14 @@
 
 package io.ballerina.stdlib.graphql.runtime.engine;
 
+import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
+import io.ballerina.runtime.observability.ObserveUtils;
+import io.ballerina.runtime.observability.ObserverContext;
+import io.ballerina.stdlib.graphql.runtime.observability.GraphqlObserverContext;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +37,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static io.ballerina.runtime.observability.ObservabilityConstants.KEY_OBSERVER_CONTEXT;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
 
@@ -49,7 +54,8 @@ public final class ListenerUtils {
     private static final String REGEX_URL = "${url}";
     private static final String FORWARD_SLASH = "/";
 
-    private ListenerUtils() {}
+    private ListenerUtils() {
+    }
 
     public static void attachHttpServiceToGraphqlService(BObject graphqlService, BObject httpService) {
         graphqlService.addNativeData(HTTP_SERVICE, httpService);
@@ -78,7 +84,7 @@ public final class ListenerUtils {
         }
         return null;
     }
-    
+
     public static Object getGraphiqlServiceFromGraphqlService(BObject graphqlService) {
         Object graphiqlService = graphqlService.getNativeData(GRAPHIQL_SERVICE);
         if (graphiqlService instanceof BObject) {
@@ -92,7 +98,7 @@ public final class ListenerUtils {
         try {
             new URL(uri).toURI();
             return null;
-        } catch (URISyntaxException | MalformedURLException  e) {
+        } catch (URISyntaxException | MalformedURLException e) {
             return createError("Invalid path provided for GraphiQL client", ERROR_TYPE);
         }
     }
@@ -136,13 +142,56 @@ public final class ListenerUtils {
             StringBuilder graphiqlUrl = new StringBuilder("{ url: \"" + url.getValue() + "\"");
             if (subscriptionUrl != null) {
                 graphiqlUrl.append(" , subscriptionUrl: \"")
-                           .append(((BString) subscriptionUrl).getValue()).append("\"");
+                        .append(((BString) subscriptionUrl).getValue()).append("\"");
             }
             graphiqlUrl.append(" }");
             htmlAsString = htmlAsString.replace(REGEX_URL, graphiqlUrl.toString());
             return StringUtils.fromString(htmlAsString);
         } catch (IOException e) {
             return createError("Error occurred while loading the GraphiQL client", ERROR_TYPE);
+        }
+    }
+
+    public static void createAndStartObserverContext(Environment environment, BObject context, BString serviceName,
+                                             BString operationType, BString operationName, BString moduleName,
+                                                     BString fileName, int startLine, int startColumn) {
+        ObserverContext observerContext = new GraphqlObserverContext(operationName.getValue(), serviceName.getValue());
+        observerContext.setManuallyClosed(true);
+        Object parentContext = context.getNativeData(KEY_OBSERVER_CONTEXT);
+        if (parentContext != null) {
+            observerContext.setParent((ObserverContext) parentContext);
+        } else {
+            observerContext.setParent(ObserveUtils.getObserverContextOfCurrentFrame(environment));
+        }
+        context.addNativeData(KEY_OBSERVER_CONTEXT, observerContext);
+
+        environment.setStrandLocal(KEY_OBSERVER_CONTEXT, observerContext);
+        ObserveUtils.startResourceObservation(environment, moduleName, fileName, startLine, startColumn, serviceName,
+                operationName, operationType, true, false);
+    }
+
+    public static void createObserverContext(Environment environment, BObject context, BString serviceName,
+                                             BString operationType) {
+        ObserverContext observerContext = new GraphqlObserverContext(operationType.getValue(), serviceName.getValue());
+        observerContext.setManuallyClosed(true);
+        Object parentContext = context.getNativeData(KEY_OBSERVER_CONTEXT);
+        if (parentContext != null) {
+            observerContext.setParent((ObserverContext) parentContext);
+        } else {
+            observerContext.setParent(ObserveUtils.getObserverContextOfCurrentFrame(environment));
+        }
+        context.addNativeData(KEY_OBSERVER_CONTEXT, observerContext);
+
+        environment.setStrandLocal(KEY_OBSERVER_CONTEXT, observerContext);
+    }
+
+    public static void stopObserverContext(Environment environment, BObject context) {
+        ObserverContext observerContext = (ObserverContext) context.getNativeData(KEY_OBSERVER_CONTEXT);
+        if (observerContext != null && observerContext.isManuallyClosed()) {
+            ObserverContext parentContext = observerContext.getParent();
+            context.addNativeData(KEY_OBSERVER_CONTEXT, parentContext);
+            ObserveUtils.stopObservationWithContext(observerContext);
+            environment.setStrandLocal(KEY_OBSERVER_CONTEXT, parentContext);
         }
     }
 }
