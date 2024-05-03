@@ -95,3 +95,7 @@ const GRAPHQL_PARSING_ERROR = "graphql_service_parsing_error";
 const GRAPHQL_VALIDATION_ERROR = "graphql_service_validation_error";
 const GRAPHQL_EXECUTION_ERROR = "graphql_service_execution_error";
 const GRPAHQL_ANONYMOUS_OPERATION = "anonymous";
+
+// Observability Tracing
+const OPERATION_VALIDATION = "validation";
+const OPERATION_EXECUTION = "execution";
