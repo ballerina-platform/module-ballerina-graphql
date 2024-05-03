@@ -152,31 +152,44 @@ public final class ListenerUtils {
         }
     }
 
-    public static void createObserverContext(Environment environment, BObject context, BString operationName) {
-        ObserverContext observerContext = new GraphqlObserverContext(operationName.getValue());
+    public static void createAndStartObserverContext(Environment environment, BObject context, BString serviceName,
+                                             BString operationType, BString operationName, BString moduleName,
+                                                     BString fileName, int startLine, int startColumn) {
+        ObserverContext observerContext = new GraphqlObserverContext(operationName.getValue(), serviceName.getValue());
         observerContext.setManuallyClosed(true);
-        Object parentContext = context.getNativeData("observerContext");
+        Object parentContext = context.getNativeData(KEY_OBSERVER_CONTEXT);
         if (parentContext != null) {
             observerContext.setParent((ObserverContext) parentContext);
         } else {
             observerContext.setParent(ObserveUtils.getObserverContextOfCurrentFrame(environment));
         }
-        context.addNativeData("observerContext", observerContext);
-        BString module = StringUtils.fromString("graphql");
-        BString file = StringUtils.fromString("engine.bal");
-        BString service = StringUtils.fromString("/graphql");
-        BString resourcePath = StringUtils.fromString("resource");
+        context.addNativeData(KEY_OBSERVER_CONTEXT, observerContext);
 
         environment.setStrandLocal(KEY_OBSERVER_CONTEXT, observerContext);
-        ObserveUtils.startResourceObservation(environment, module, file, 1, 100, service, resourcePath, operationName,
-                true, false);
+        ObserveUtils.startResourceObservation(environment, moduleName, fileName, startLine, startColumn, serviceName,
+                operationName, operationType, true, false);
     }
 
-    public static void stopObservationContext(Environment environment, BObject context) {
-        ObserverContext observerContext = (ObserverContext) context.getNativeData("observerContext");
+    public static void createObserverContext(Environment environment, BObject context, BString serviceName,
+                                             BString operationType) {
+        ObserverContext observerContext = new GraphqlObserverContext(operationType.getValue(), serviceName.getValue());
+        observerContext.setManuallyClosed(true);
+        Object parentContext = context.getNativeData(KEY_OBSERVER_CONTEXT);
+        if (parentContext != null) {
+            observerContext.setParent((ObserverContext) parentContext);
+        } else {
+            observerContext.setParent(ObserveUtils.getObserverContextOfCurrentFrame(environment));
+        }
+        context.addNativeData(KEY_OBSERVER_CONTEXT, observerContext);
+
+        environment.setStrandLocal(KEY_OBSERVER_CONTEXT, observerContext);
+    }
+
+    public static void stopObserverContext(Environment environment, BObject context) {
+        ObserverContext observerContext = (ObserverContext) context.getNativeData(KEY_OBSERVER_CONTEXT);
         if (observerContext != null && observerContext.isManuallyClosed()) {
             ObserverContext parentContext = observerContext.getParent();
-            context.addNativeData("observerContext", parentContext);
+            context.addNativeData(KEY_OBSERVER_CONTEXT, parentContext);
             ObserveUtils.stopObservationWithContext(observerContext);
             environment.setStrandLocal(KEY_OBSERVER_CONTEXT, parentContext);
         }

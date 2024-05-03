@@ -28,13 +28,21 @@ import io.ballerina.runtime.observability.ObserverContext;
 public class GraphqlObserverContext extends ObserverContext {
 
     private final String operationName;
+    private final String serviceName;
 
-    public GraphqlObserverContext(String operationName) {
+    public GraphqlObserverContext(String operationName, String serviceName) {
         super();
         this.operationName = operationName;
+        this.serviceName = serviceName;
     }
 
+    @Override
     public String getOperationName() {
         return operationName;
+    }
+
+    @Override
+    public String getServiceName() {
+        return serviceName;
     }
 }

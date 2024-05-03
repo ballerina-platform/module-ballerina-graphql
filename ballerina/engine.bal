@@ -276,7 +276,6 @@ isolated class Engine {
 
     isolated function resolve(Context context, Field 'field, boolean executePrefetchMethod = true) returns anydata {
         parser:FieldNode fieldNode = 'field.getInternalNode();
-        createObserverContext(context, 'field.getName());
         addObservabilityTags(GRAPHQL_FIELD_NAME, fieldNode.getName());
 
         if executePrefetchMethod {
@@ -285,8 +284,9 @@ isolated class Engine {
                 string prefetchMethodName = getPrefetchMethodName(serviceObject, 'field)
                     ?: getDefaultPrefetchMethodName(fieldNode.getName());
                 if self.hasPrefetchMethod(serviceObject, prefetchMethodName) {
+                    addAndStartTracing(context, prefetchMethodName, 'field.getOperationType(), null, null, null, null, null);
                     anydata result = self.getResultFromPrefetchMethodExecution(context, 'field, serviceObject, prefetchMethodName);
-                    stopObservationContext(context);
+                    stopTracing(context);
                     return result;
                 }
             }
@@ -299,14 +299,17 @@ isolated class Engine {
         );
         do {
             if interceptor is readonly & Interceptor {
-                any|error result = self.executeInterceptor(interceptor, 'field, context);
                 string interceptorName = self.getInterceptorName(interceptor);
-                anydata r = check validateInterceptorReturnValue(fieldType, result, interceptorName);
-                stopObservationContext(context);
-                return r;
+                addAndStartTracing(context, interceptorName, 'field.getOperationType(), null, null, null, null, null);
+                any|error result = self.executeInterceptor(interceptor, 'field, context);
+                anydata response = check validateInterceptorReturnValue(fieldType, result, interceptorName);
+                stopTracing(context);
+                return response;
             }
-            any fieldValue;
+            any fieldValue;  
             if 'field.getOperationType() == parser:OPERATION_QUERY && 'field.isCacheEnabled() {
+                string cacheName = string `${'field.getName()}.cache`;
+                addAndStartTracing(context, cacheName, 'field.getOperationType(), null, null, null, null, null);
                 string cacheKey = 'field.getCacheKey();
                 any|error cachedValue = self.getFromCache(cacheKey);
                 if cachedValue is any {
@@ -319,13 +322,16 @@ isolated class Engine {
                     }
                 }
             } else {
+                addAndStartTracing(context, 'field.getName(), 'field.getOperationType(), null, null, null, null, null);
                 fieldValue = check self.getFieldValue(context, 'field, responseGenerator);
             }
-            anydata r = responseGenerator.getResult(fieldValue, fieldNode);
-            stopObservationContext(context);
-            return r;
+            anydata response = responseGenerator.getResult(fieldValue, fieldNode);
+            stopTracing(context);
+            return response;
         } on fail error errorValue {
-            return responseGenerator.getResult(errorValue, fieldNode);
+            anydata result = responseGenerator.getResult(errorValue, fieldNode);
+            stopTracing(context);
+            return result;
         }
     }
 
