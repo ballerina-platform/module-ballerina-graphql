@@ -284,7 +284,14 @@ isolated class Engine {
                 string prefetchMethodName = getPrefetchMethodName(serviceObject, 'field)
                     ?: getDefaultPrefetchMethodName(fieldNode.getName());
                 if self.hasPrefetchMethod(serviceObject, prefetchMethodName) {
-                    return self.getResultFromPrefetchMethodExecution(context, 'field, serviceObject, prefetchMethodName);
+                    addTracingInfomation({
+                                             context,
+                                             serviceName: prefetchMethodName,
+                                             operationType: 'field.getOperationType()
+                                         });
+                    anydata result = self.getResultFromPrefetchMethodExecution(context, 'field, serviceObject, prefetchMethodName);
+                    stopTracing(context);
+                    return result;
                 }
             }
         }
@@ -296,12 +303,21 @@ isolated class Engine {
         );
         do {
             if interceptor is readonly & Interceptor {
-                any|error result = self.executeInterceptor(interceptor, 'field, context);
                 string interceptorName = self.getInterceptorName(interceptor);
-                return check validateInterceptorReturnValue(fieldType, result, interceptorName);
+                addTracingInfomation({
+                                         context,
+                                         serviceName: interceptorName,
+                                         operationType: 'field.getOperationType()
+                                     });
+                any|error result = self.executeInterceptor(interceptor, 'field, context);
+                anydata response = check validateInterceptorReturnValue(fieldType, result, interceptorName);
+                stopTracing(context);
+                return response;
             }
             any fieldValue;
             if 'field.getOperationType() == parser:OPERATION_QUERY && 'field.isCacheEnabled() {
+                string cacheName = string `${'field.getName()}.cache`;
+                addTracingInfomation({context, serviceName: cacheName, operationType: 'field.getOperationType()});
                 string cacheKey = 'field.getCacheKey();
                 any|error cachedValue = self.getFromCache(cacheKey);
                 if cachedValue is any {
@@ -314,11 +330,20 @@ isolated class Engine {
                     }
                 }
             } else {
+                addTracingInfomation({
+                                         context,
+                                         serviceName: 'field.getName(),
+                                         operationType: 'field.getOperationType()
+                                     });
                 fieldValue = check self.getFieldValue(context, 'field, responseGenerator);
             }
-            return responseGenerator.getResult(fieldValue, fieldNode);
+            anydata response = responseGenerator.getResult(fieldValue, fieldNode);
+            stopTracing(context);
+            return response;
         } on fail error errorValue {
-            return responseGenerator.getResult(errorValue, fieldNode);
+            anydata result = responseGenerator.getResult(errorValue, fieldNode);
+            stopTracing(context);
+            return result;
         }
     }
 

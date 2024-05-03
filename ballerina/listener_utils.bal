@@ -70,13 +70,29 @@ isolated function getResponseFromJsonPayload(Engine engine, Context context, htt
 
 isolated function getResponseFromQuery(Engine engine, string document, string? operationName, map<json>? variables,
         Context context, map<Upload|Upload[]> fileInfo = {}) returns http:Response {
+    TraceObserverContext traceObserverContext = {
+        context,
+        operationName: OPERATION_VALIDATION
+    };
+    addTracingInfomation(traceObserverContext);
     parser:OperationNode|OutputObject validationResult = engine.validate(document, operationName, variables);
+    stopTracing(context);
+    http:Response response;
     if validationResult is parser:OperationNode {
         context.setFileInfo(fileInfo);
-        return getResponseFromExecution(engine, validationResult, context);
+        traceObserverContext = {
+            context,
+            operationType: validationResult.getKind(),
+            operationName: OPERATION_EXECUTION
+        };
+        addTracingInfomation(traceObserverContext);
+        response = getResponseFromExecution(engine, validationResult, context);
+        stopTracing(context);
     } else {
-        return createResponse(validationResult.toJson(), http:STATUS_BAD_REQUEST);
+        response = createResponse(validationResult.toJson(), http:STATUS_BAD_REQUEST);
     }
+    stopTracing(context);
+    return response;
 }
 
 isolated function getResponseFromExecution(Engine engine, parser:OperationNode operationNode, Context context)
@@ -292,7 +308,12 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
 
     HttpService httpService = @http:ServiceConfig {
         cors: corsConfig
-    } isolated service object {
+    }
+    @display {
+        label: "GraphQL Service",
+        id: "graphql-service"
+    }
+    isolated service object {
         private final Engine engine = gqlEngine;
         private final readonly & ListenerAuthConfig[]? authConfig = authConfigurations;
         private final ContextInit contextInit = contextInitFunction;
