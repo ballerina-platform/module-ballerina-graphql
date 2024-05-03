@@ -18,9 +18,13 @@ import ballerina/jballerina.java;
 import ballerina/observe;
 
 final boolean observabilityEnabled;
+final boolean metricsEnabled;
+final boolean tracingEnabled;
 
 isolated function init() {
     observabilityEnabled = observe:isObservabilityEnabled();
+    metricsEnabled = observabilityEnabled && observe:isMetricsEnabled();
+    tracingEnabled = observabilityEnabled && observe:isTracingEnabled();
     setModule();
 }
 

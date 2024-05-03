@@ -39,7 +39,7 @@ class ResponseFormatter {
         if originalErrors == () {
             return;
         } else {
-            addObservabilityTags(GRAPHQL_ERRORS, GRAPHQL_EXECUTION_ERROR);
+            addObservabilityMetricsTags(GRAPHQL_ERRORS, GRAPHQL_EXECUTION_ERROR);
             ErrorDetail[] sortedErrors = array:sort(originalErrors, array:ASCENDING, sortErrorDetail);
             self.coercedOutputObject[ERRORS_FIELD] = sortedErrors;
         }
