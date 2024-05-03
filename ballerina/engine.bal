@@ -82,22 +82,22 @@ isolated class Engine {
     isolated function validate(string documentString, string? operationName, map<json>? variables)
         returns parser:OperationNode|OutputObject {
 
-        addObservabilityTags(GRAPHQL_OPERATION_NAME, operationName ?: GRPAHQL_ANONYMOUS_OPERATION);
+        addObservabilityMetricsTags(GRAPHQL_OPERATION_NAME, operationName ?: GRPAHQL_ANONYMOUS_OPERATION);
         ParseResult|OutputObject result = self.parse(documentString);
         if result is OutputObject {
-            addObservabilityTags(GRAPHQL_ERRORS, GRAPHQL_PARSING_ERROR);
+            addObservabilityMetricsTags(GRAPHQL_ERRORS, GRAPHQL_PARSING_ERROR);
             return result;
         }
 
         OutputObject|parser:DocumentNode validationResult = self.validateDocument(result, operationName, variables);
         if validationResult is OutputObject {
-            addObservabilityTags(GRAPHQL_ERRORS, GRAPHQL_VALIDATION_ERROR);
+            addObservabilityMetricsTags(GRAPHQL_ERRORS, GRAPHQL_VALIDATION_ERROR);
             return validationResult;
         }
         // Since unused operation nodes are removed from the Document node, it includes only the operation node
         // related to the currently executing operation. Hence directly access that node from here.
         parser:OperationNode operationNode = validationResult.getOperations()[0];
-        addObservabilityTags(GRAPHQL_OPERATION_TYPE, operationNode.getKind());
+        addObservabilityMetricsTags(GRAPHQL_OPERATION_TYPE, operationNode.getKind());
         return operationNode;
     }
 
@@ -276,7 +276,7 @@ isolated class Engine {
 
     isolated function resolve(Context context, Field 'field, boolean executePrefetchMethod = true) returns anydata {
         parser:FieldNode fieldNode = 'field.getInternalNode();
-        addObservabilityTags(GRAPHQL_FIELD_NAME, fieldNode.getName());
+        addObservabilityMetricsTags(GRAPHQL_FIELD_NAME, fieldNode.getName());
 
         if executePrefetchMethod {
             service object {}? serviceObject = 'field.getServiceObject();
