@@ -24,7 +24,7 @@ type TraceObserverContext record {|
     string operationName;
     string moduleName = "graphql";
     string fileName = "listener_utils.bal";
-    int startLine = 73;
+    int startLine = 78;
     int startColumn = 5;
 |};
 
@@ -53,9 +53,13 @@ isolated function addTracingInfomation(TraceObserverContext|TraceInformation tra
     }
 }
 
-isolated function stopTracing(Context context) {
+isolated function stopTracing(Context context, error? errorMessage = null) {
     if tracingEnabled {
-        stopObserverContext(context);
+        if errorMessage == null {
+            stopObserverContext(context);
+        } else {
+            stopObserverContextWithError(context, errorMessage);
+        }
     }
 }
 
@@ -69,5 +73,9 @@ isolated function createAndStartObserverContext(Context context, string serviceN
 } external;
 
 isolated function stopObserverContext(Context context) = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
+} external;
+
+isolated function stopObserverContextWithError(Context context, error errorMessage) = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;
