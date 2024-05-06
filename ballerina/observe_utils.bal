@@ -35,13 +35,13 @@ type TraceInformation record {|
 |};
 
 isolated function addObservabilityMetricsTags(string key, string value) {
-    if observabilityEnabled && metricsEnabled {
+    if metricsEnabled {
         checkpanic observe:addTagToMetrics(key, value);
     }
 }
 
 isolated function addTracingInfomation(TraceObserverContext|TraceInformation traceInformation) {
-    if !observabilityEnabled || !tracingEnabled {
+    if !tracingEnabled {
         return;
     }
     if traceInformation is TraceObserverContext {
@@ -54,7 +54,7 @@ isolated function addTracingInfomation(TraceObserverContext|TraceInformation tra
 }
 
 isolated function stopTracing(Context context, error? err = ()) {
-    if observabilityEnabled && tracingEnabled {
+    if tracingEnabled {
         if err is () {
             stopObserverContext(context);
         } else {
