@@ -196,7 +196,7 @@ public final class ListenerUtils {
             environment.setStrandLocal(KEY_OBSERVER_CONTEXT, parentContext);
         }
     }
-
+  
     public static void stopObserverContextWithError(Environment environment, BObject context, BError error) {
         ObserverContext observerContext = (ObserverContext) context.getNativeData(KEY_OBSERVER_CONTEXT);
         if (observerContext != null && observerContext.isManuallyClosed()) {
