@@ -10,7 +10,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - [[#6461] Add Support for Publishing Observability Metrics for GraphQL Services](https://github.com/ballerina-platform/ballerina-library/issues/6461)
 
-
 ## [1.12.0] - 2024-05-03
 
 ### Fixed
