@@ -4031,6 +4031,8 @@ If an error occurs during the execution of the GraphQL operation, the error type
 
 #### 10.8.2 Tracing
 
+The GraphQL tracing feature provides detailed information about the execution of the GraphQL request. The tracing information will be published to Jaeger through the Ballerina Jaeger extension.
+
 #### 10.8.3 Logging
 
 A Ballerina GraphQL service will log the errors that occurred during the execution of the GraphQL request. The errors will be logged at the `ERROR` level. The error message and the stack trace will be printed in the log, in the `ballerina/log` module log format.
