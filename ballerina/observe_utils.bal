@@ -53,12 +53,12 @@ isolated function addTracingInfomation(TraceObserverContext|TraceInformation tra
     }
 }
 
-isolated function stopTracing(Context context, error? errorMessage = null) {
+isolated function stopTracing(Context context, error? err = ()) {
     if tracingEnabled {
-        if errorMessage == null {
+        if err is () {
             stopObserverContext(context);
         } else {
-            stopObserverContextWithError(context, errorMessage);
+            stopObserverContextWithError(context, err);
         }
     }
 }
@@ -76,6 +76,6 @@ isolated function stopObserverContext(Context context) = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;
 
-isolated function stopObserverContextWithError(Context context, error errorMessage) = @java:Method {
+isolated function stopObserverContextWithError(Context context, error err) = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;
