@@ -200,9 +200,7 @@ public final class ListenerUtils {
     public static void stopObserverContextWithError(Environment environment, BObject context, BError error) {
         ObserverContext observerContext = (ObserverContext) context.getNativeData(KEY_OBSERVER_CONTEXT);
         if (observerContext != null && observerContext.isManuallyClosed()) {
-            if (error != null) {
-                observerContext.addProperty(PROPERTY_ERROR_VALUE, error);
-            }
+            observerContext.addProperty(PROPERTY_ERROR_VALUE, error);
             ObserverContext parentContext = observerContext.getParent();
             context.addNativeData(KEY_OBSERVER_CONTEXT, parentContext);
             ObserveUtils.stopObservationWithContext(observerContext);
