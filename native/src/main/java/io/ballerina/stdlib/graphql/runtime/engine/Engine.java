@@ -38,6 +38,8 @@ import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
+import io.ballerina.runtime.observability.ObserveUtils;
+import io.ballerina.runtime.observability.ObserverContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.runtime.exception.ConstraintValidationException;
 
@@ -48,8 +50,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 
+import static io.ballerina.runtime.observability.ObservabilityConstants.KEY_OBSERVER_CONTEXT;
 import static io.ballerina.stdlib.graphql.runtime.engine.ArgumentHandler.getEffectiveType;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.COLON;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GET_ACCESSOR;
@@ -128,14 +132,20 @@ public class Engine {
                 ObjectType objectType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(service));
                 UnionType typeUnion =
                         TypeCreator.createUnionType(PredefinedTypes.TYPE_STREAM, PredefinedTypes.TYPE_ERROR);
+
+                HashMap<String, Object> properties = null;
+                if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
+                    properties = getPropertiesToPropagate(environment, context);
+                }
+
                 if (objectType.isIsolated() && objectType.isIsolated(resourceMethod.getName())) {
                     environment.getRuntime()
                             .invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
-                                    null, executionCallback, null, typeUnion, args);
+                                    null, executionCallback, properties, typeUnion, args);
                 } else {
                     environment.getRuntime()
                             .invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
-                                    null, executionCallback, null, typeUnion, args);
+                                    null, executionCallback, properties, typeUnion, args);
                 }
                 return null;
             }
@@ -161,14 +171,20 @@ public class Engine {
         ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
         Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
         Object[] arguments = argumentHandler.getArguments();
+
+        HashMap<String, Object> properties = null;
+        if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
+            properties = getPropertiesToPropagate(environment, context);
+        }
+
         if (serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName())) {
             environment.getRuntime().invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
                     RESOURCE_EXECUTION_STRAND, executionCallback,
-                    null, returnType, arguments);
+                    properties, returnType, arguments);
         } else {
             environment.getRuntime().invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
                     RESOURCE_EXECUTION_STRAND, executionCallback,
-                    null, returnType, arguments);
+                    properties, returnType, arguments);
         }
         return null;
     }
@@ -190,14 +206,20 @@ public class Engine {
                 ExecutionCallback executionCallback = new ExecutionCallback(future);
                 Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
                 Object[] arguments = argumentHandler.getArguments();
+
+                HashMap<String, Object> properties = null;
+                if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
+                    properties = getPropertiesToPropagate(environment, context);
+                }
+
                 if (serviceType.isIsolated() && serviceType.isIsolated(remoteMethod.getName())) {
                     environment.getRuntime().invokeMethodAsyncConcurrently(service, remoteMethod.getName(), null,
                             REMOTE_EXECUTION_STRAND, executionCallback,
-                            null, returnType, arguments);
+                            properties, returnType, arguments);
                 } else {
                     environment.getRuntime().invokeMethodAsyncSequentially(service, remoteMethod.getName(), null,
                             REMOTE_EXECUTION_STRAND, executionCallback,
-                            null, returnType, arguments);
+                            properties, returnType, arguments);
                 }
                 return null;
             }
@@ -216,14 +238,20 @@ public class Engine {
         ExecutionCallback executionCallback = new ExecutionCallback(future);
         Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
         Object[] arguments = getInterceptorArguments(context, field);
+
+        HashMap<String, Object> properties = null;
+        if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
+            properties = getPropertiesToPropagate(environment, context);
+        }
+
         if (serviceType.isIsolated() && serviceType.isIsolated(remoteMethod.getName())) {
             environment.getRuntime().invokeMethodAsyncConcurrently(interceptor, remoteMethod.getName(), null,
                                                                    INTERCEPTOR_EXECUTION_STRAND, executionCallback,
-                                                                   null, returnType, arguments);
+                                                                   properties, returnType, arguments);
         } else {
             environment.getRuntime().invokeMethodAsyncSequentially(interceptor, remoteMethod.getName(), null,
                                                                    INTERCEPTOR_EXECUTION_STRAND, executionCallback,
-                                                                   null, returnType, arguments);
+                                                                   properties, returnType, arguments);
         }
         return null;
     }
@@ -320,14 +348,20 @@ public class Engine {
         ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
         ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context, fieldObject, null, false);
         Object[] arguments = argumentHandler.getArguments();
+
+        HashMap<String, Object> properties = null;
+        if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
+            properties = getPropertiesToPropagate(environment, context);
+        }
+
         if (serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName())) {
             environment.getRuntime()
                     .invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null, RESOURCE_EXECUTION_STRAND,
-                                                   executionCallback, null, null, arguments);
+                                                   executionCallback, properties, null, arguments);
         } else {
             environment.getRuntime()
                     .invokeMethodAsyncSequentially(service, resourceMethod.getName(), null, RESOURCE_EXECUTION_STRAND,
-                                                   executionCallback, null, null, arguments);
+                                                   executionCallback, properties, null, arguments);
         }
     }
 
@@ -353,5 +387,17 @@ public class Engine {
             return isRecordReturnType(TypeUtils.getReferredType(returnType));
         }
         return returnType.getTag() == TypeTags.RECORD_TYPE_TAG;
+    }
+
+    public static HashMap<String, Object> getPropertiesToPropagate(Environment environment, BObject context) {
+        HashMap<String, Object> properties = new HashMap<>();
+        ObserverContext observerContext = (ObserverContext) context.getNativeData(KEY_OBSERVER_CONTEXT);
+        if (observerContext == null) {
+            observerContext = ObserveUtils.getObserverContextOfCurrentFrame(environment);
+        }
+        if (observerContext != null) {
+            properties.put(KEY_OBSERVER_CONTEXT, observerContext);
+        }
+        return properties;
     }
 }

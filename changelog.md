@@ -6,7 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
-## [1.12.0] - 2024-04-03
+### Added
+
+- [[#6461] Add Support for Publishing Observability Metrics for GraphQL Services](https://github.com/ballerina-platform/ballerina-library/issues/6461)
+
+## [1.12.0] - 2024-05-03
 
 ### Fixed
 - [[#4848] Fix Resolvers not Able to Return Error Reference Types](https://github.com/ballerina-platform/ballerina-library/issues/4848)

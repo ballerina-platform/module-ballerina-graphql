@@ -84,3 +84,18 @@ const DEFAULT_PREFETCH_METHOD_NAME_PREFIX = "pre";
 
 // Localhost
 const LOCALHOST = "localhost";
+
+// Observability Metrics
+const GRAPHQL_OPERATION_NAME = "graphql_service_operation_name";
+const GRAPHQL_OPERATION_TYPE = "graphql_service_operation_type";
+const GRAPHQL_ERRORS = "graphql_service_errors";
+const GRAPHQL_FIELD_NAME = "graphql_service_field_name";
+
+const GRAPHQL_PARSING_ERROR = "graphql_service_parsing_error";
+const GRAPHQL_VALIDATION_ERROR = "graphql_service_validation_error";
+const GRAPHQL_EXECUTION_ERROR = "graphql_service_execution_error";
+const GRPAHQL_ANONYMOUS_OPERATION = "anonymous";
+
+// Observability Tracing
+const OPERATION_VALIDATION = "validation";
+const OPERATION_EXECUTION = "execution";

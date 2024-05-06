@@ -85,14 +85,15 @@ isolated function isValidReturnType(__Type 'type, anydata value) returns boolean
 }
 
 isolated function getFieldObject(parser:FieldNode fieldNode, parser:RootOperationType operationType, __Schema schema,
-                                 Engine engine, any|error fieldValue = ()) returns Field {
+        Engine engine, any|error fieldValue = ()) returns Field {
     (string|int)[] path = [fieldNode.getAlias()];
     string operationTypeName = getOperationTypeNameFromOperationType(operationType);
     __Type parentType = <__Type>getTypeFromTypeArray(schema.types, operationTypeName);
     __Type fieldType = getFieldTypeFromParentType(parentType, schema.types, fieldNode);
     string parentArgHashes = generateArgHash(fieldNode.getArguments());
-    return new (fieldNode, fieldType, engine.getService(), path, operationType, fieldValue = fieldValue,
-                cacheConfig = engine.getCacheConfig(), parentArgHashes = [parentArgHashes]);
+    return new (fieldNode, fieldType, parentType, engine.getService(), path, operationType, fieldValue = fieldValue,
+        cacheConfig = engine.getCacheConfig(), parentArgHashes = [parentArgHashes]
+    );
 }
 
 isolated function createSchema(string schemaString) returns readonly & __Schema|Error = @java:Method {
@@ -121,11 +122,12 @@ isolated function getDefaultPrefetchMethodName(string fieldName) returns string 
     });
 }
 
-isolated function initCacheTable(ServerCacheConfig? operationCacheConfig, ServerCacheConfig? fieldCacheConfig) returns cache:Cache? {
+isolated function initCacheTable(ServerCacheConfig? operationCacheConfig, ServerCacheConfig? fieldCacheConfig)
+returns cache:Cache? {
     if operationCacheConfig is ServerCacheConfig && operationCacheConfig.enabled {
-        return new ({capacity:operationCacheConfig.maxSize, evictionFactor:0.2, defaultMaxAge:operationCacheConfig.maxAge});
+        return new ({capacity: operationCacheConfig.maxSize, evictionFactor: 0.2, defaultMaxAge: operationCacheConfig.maxAge});
     } else if fieldCacheConfig is ServerCacheConfig && fieldCacheConfig.enabled {
-        return new({capacity:fieldCacheConfig.maxSize, evictionFactor:0.2, defaultMaxAge:fieldCacheConfig.maxAge});
+        return new ({capacity: fieldCacheConfig.maxSize, evictionFactor: 0.2, defaultMaxAge: fieldCacheConfig.maxAge});
     }
     return;
 }

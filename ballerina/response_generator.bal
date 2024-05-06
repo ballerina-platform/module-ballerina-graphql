@@ -14,9 +14,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/log;
-
 import graphql.parser;
+
+import ballerina/log;
 
 class ResponseGenerator {
     private final Engine engine;
@@ -29,7 +29,7 @@ class ResponseGenerator {
     private final string functionNameGetFragmentFromService = "";
 
     isolated function init(Engine engine, Context context, __Type fieldType, (string|int)[] path = [],
-                           ServerCacheConfig? cacheConfig = (), readonly & string[] parentArgHashes = []) {
+            ServerCacheConfig? cacheConfig = (), readonly & string[] parentArgHashes = []) {
         self.engine = engine;
         self.context = context;
         self.path = path;
@@ -81,9 +81,11 @@ class ResponseGenerator {
         } else if parentValue is service object {} {
             (string|int)[] clonedPath = self.path.clone();
             clonedPath.push(fieldNode.getAlias());
-            __Type fieldType = getFieldTypeFromParentType(self.fieldType, self.engine.getSchema().types, fieldNode);
-            Field 'field = new (fieldNode, fieldType, parentValue, clonedPath, cacheConfig = self.cacheConfig,
-                                parentArgHashes = self.parentArgHashes);
+            __Type parentType = self.fieldType;
+            __Type fieldType = getFieldTypeFromParentType(parentType, self.engine.getSchema().types, fieldNode);
+            Field 'field = new (fieldNode, fieldType, parentType, parentValue, clonedPath,
+                cacheConfig = self.cacheConfig, parentArgHashes = self.parentArgHashes
+            );
             self.context.resetInterceptorCount();
             return self.engine.resolve(self.context, 'field);
         }
@@ -149,12 +151,14 @@ class ResponseGenerator {
         if fieldNode.getName() == TYPE_NAME_FIELD {
             return getTypeNameFromValue(parentValue);
         }
-        any fieldValue = parentValue.hasKey(fieldNode.getName()) ? parentValue.get(fieldNode.getName()): ();
-        __Type fieldType = getFieldTypeFromParentType(self.fieldType, self.engine.getSchema().types, fieldNode);
+        any fieldValue = parentValue.hasKey(fieldNode.getName()) ? parentValue.get(fieldNode.getName()) : ();
+        __Type parentType = self.fieldType;
+        __Type fieldType = getFieldTypeFromParentType(parentType, self.engine.getSchema().types, fieldNode);
         (string|int)[] clonedPath = self.path.clone();
         clonedPath.push(fieldNode.getAlias());
-        Field 'field = new (fieldNode, fieldType, path = clonedPath, fieldValue = fieldValue,
-                            cacheConfig = self.cacheConfig, parentArgHashes = self.parentArgHashes);
+        Field 'field = new (fieldNode, fieldType, parentType, path = clonedPath, fieldValue = fieldValue,
+            cacheConfig = self.cacheConfig, parentArgHashes = self.parentArgHashes
+        );
         self.context.resetInterceptorCount();
         return self.engine.resolve(self.context, 'field);
     }
@@ -208,7 +212,7 @@ class ResponseGenerator {
             return;
         }
         foreach parser:SelectionNode selection in parentNode.getSelections() {
-           if selection is parser:FieldNode {
+            if selection is parser:FieldNode {
                 anydata fieldValue = self.getRecordResult(parentValue, selection);
                 result[selection.getAlias()] = fieldValue is ErrorDetail ? () : fieldValue;
             } else if selection is parser:FragmentNode {
@@ -218,7 +222,7 @@ class ResponseGenerator {
     }
 
     isolated function getResultForFragmentFromService(service object {} parentValue, parser:FragmentNode parentNode,
-                                                      Data result) {
+            Data result) {
         string typeName = getTypeNameFromValue(parentValue);
         if parentNode.getOnType() != typeName && !self.isPossibleTypeOfInterface(parentNode.getOnType(), typeName) {
             return;
@@ -233,8 +237,8 @@ class ResponseGenerator {
         }
     }
 
-    private isolated function isPossibleTypeOfInterface(string interfaceName, 
-                                                        string implementedTypeName) returns boolean {
+    private isolated function isPossibleTypeOfInterface(string interfaceName,
+            string implementedTypeName) returns boolean {
         __Type? interfaceType = getTypeFromTypeArray(self.engine.getSchema().types, interfaceName);
         if interfaceType is () || interfaceType.kind != INTERFACE {
             return false;
