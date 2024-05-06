@@ -21,6 +21,7 @@ package io.ballerina.stdlib.graphql.runtime.engine;
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
+import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.observability.ObserveUtils;
@@ -38,6 +39,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static io.ballerina.runtime.observability.ObservabilityConstants.KEY_OBSERVER_CONTEXT;
+import static io.ballerina.runtime.observability.ObservabilityConstants.PROPERTY_ERROR_VALUE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
 
@@ -188,6 +190,17 @@ public final class ListenerUtils {
     public static void stopObserverContext(Environment environment, BObject context) {
         ObserverContext observerContext = (ObserverContext) context.getNativeData(KEY_OBSERVER_CONTEXT);
         if (observerContext != null && observerContext.isManuallyClosed()) {
+            ObserverContext parentContext = observerContext.getParent();
+            context.addNativeData(KEY_OBSERVER_CONTEXT, parentContext);
+            ObserveUtils.stopObservationWithContext(observerContext);
+            environment.setStrandLocal(KEY_OBSERVER_CONTEXT, parentContext);
+        }
+    }
+  
+    public static void stopObserverContextWithError(Environment environment, BObject context, BError error) {
+        ObserverContext observerContext = (ObserverContext) context.getNativeData(KEY_OBSERVER_CONTEXT);
+        if (observerContext != null && observerContext.isManuallyClosed()) {
+            observerContext.addProperty(PROPERTY_ERROR_VALUE, error);
             ObserverContext parentContext = observerContext.getParent();
             context.addNativeData(KEY_OBSERVER_CONTEXT, parentContext);
             ObserveUtils.stopObservationWithContext(observerContext);

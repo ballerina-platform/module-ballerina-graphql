@@ -76,9 +76,9 @@ isolated function getResponseFromQuery(Engine engine, string document, string? o
     };
     addTracingInfomation(traceObserverContext);
     parser:OperationNode|OutputObject validationResult = engine.validate(document, operationName, variables);
-    stopTracing(context);
     http:Response response;
     if validationResult is parser:OperationNode {
+        stopTracing(context);
         context.setFileInfo(fileInfo);
         traceObserverContext = {
             context,
@@ -90,6 +90,7 @@ isolated function getResponseFromQuery(Engine engine, string document, string? o
         stopTracing(context);
     } else {
         response = createResponse(validationResult.toJson(), http:STATUS_BAD_REQUEST);
+        stopTracing(context, error("Validation failed with error: " + validationResult.errors.toJsonString()));
     }
     stopTracing(context);
     return response;
