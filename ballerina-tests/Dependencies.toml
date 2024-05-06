@@ -113,7 +113,8 @@ dependencies = [
 	{org = "ballerina", name = "test"},
 	{org = "ballerina", name = "url"},
 	{org = "ballerina", name = "uuid"},
-	{org = "ballerina", name = "websocket"}
+	{org = "ballerina", name = "websocket"},
+	{org = "ballerinai", name = "observe"}
 ]
 modules = [
 	{org = "ballerina", packageName = "graphql_tests", moduleName = "graphql_tests"}
@@ -405,5 +406,17 @@ dependencies = [
 ]
 modules = [
 	{org = "ballerina", packageName = "websocket", moduleName = "websocket"}
+]
+
+[[package]]
+org = "ballerinai"
+name = "observe"
+version = "0.0.0"
+dependencies = [
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "observe"}
+]
+modules = [
+	{org = "ballerinai", packageName = "observe", moduleName = "observe"}
 ]
 

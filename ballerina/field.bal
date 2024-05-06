@@ -23,6 +23,7 @@ public class Field {
     private final service object {}? serviceObject;
     private final any|error fieldValue;
     private final __Type fieldType;
+    private final __Type parentType;
     private (string|int)[] path;
     private string[] resourcePath;
     private readonly & Interceptor[] fieldInterceptors;
@@ -32,13 +33,14 @@ public class Field {
     private final decimal cacheMaxAge;
     private boolean hasRequestedNullableFields;
 
-    isolated function init(parser:FieldNode internalNode, __Type fieldType, service object {}? serviceObject = (),
-                           (string|int)[] path = [], parser:RootOperationType operationType = parser:OPERATION_QUERY,
-                           string[] resourcePath = [], any|error fieldValue = (), ServerCacheConfig? cacheConfig = (),
-                           readonly & string[] parentArgHashes = []) {
+    isolated function init(parser:FieldNode internalNode, __Type fieldType, __Type parentType,
+            service object {}? serviceObject = (), (string|int)[] path = [],
+            parser:RootOperationType operationType = parser:OPERATION_QUERY, string[] resourcePath = [],
+            any|error fieldValue = (), ServerCacheConfig? cacheConfig = (), readonly & string[] parentArgHashes = []) {
         self.internalNode = internalNode;
         self.serviceObject = serviceObject;
         self.fieldType = fieldType;
+        self.parentType = parentType;
         self.path = path;
         self.operationType = operationType;
         self.resourcePath = resourcePath;
@@ -66,6 +68,11 @@ public class Field {
     # + return - The name of the field
     public isolated function getName() returns string {
         return self.internalNode.getName();
+    }
+
+    isolated function getQualifiedName() returns string {
+        __Type effectiveType = getOfType(self.parentType);
+        return string `${effectiveType.name.toString()}.${self.internalNode.getName()}`;
     }
 
     # Returns the effective alias of the field.
@@ -136,9 +143,9 @@ public class Field {
     isolated function getFieldObjects(parser:SelectionNode selectionNode, __Type 'type) returns Field[] {
         string[] currentPath = self.path.clone().'map((item) => item is int ? "@" : item);
         string[] unwrappedPath = getUnwrappedPath('type);
-        __Type unwrappedType = getOfType('type);
+        __Type parentType = getOfType('type);
 
-        __Field[]? typeFields = unwrappedType.fields;
+        __Field[]? typeFields = parentType.fields;
         if typeFields is () {
             return [];
         }
@@ -148,7 +155,7 @@ public class Field {
             if selection is parser:FieldNode {
                 foreach __Field 'field in typeFields {
                     if 'field.name == selection.getName() {
-                        result.push(new Field(selection, 'field.'type, (),[...currentPath, ...unwrappedPath, 'field.name],
+                        result.push(new Field(selection, 'field.'type, parentType, (),[...currentPath, ...unwrappedPath, 'field.name],
                             self.operationType.clone(), self.resourcePath.clone(), cacheConfig = self.cacheConfig,
                             parentArgHashes = self.parentArgHashes));
                         break;

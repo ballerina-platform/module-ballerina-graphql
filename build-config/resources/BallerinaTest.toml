@@ -3,3 +3,5 @@ org = "ballerina"
 name = "graphql_tests"
 version = "@toml.version@"
 
+[build-options]
+observabilityIncluded = true

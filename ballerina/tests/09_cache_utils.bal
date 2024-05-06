@@ -1,4 +1,4 @@
-// Copyright (c) 2024, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+// Copyright (c) 2024, WSO2 LLC. (http://www.wso2.org).
 //
 // WSO2 LLC. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
@@ -23,7 +23,7 @@ import graphql.parser;
 function testCacheUtils() returns error? {
     parser:FieldNode[] fields = check getFieldNodesFromDocumentFile("cache_utils");
     test:assertTrue(fields.length() == 1);
-    Field 'field = getField(fields[0], Person, ["person"], {maxAge: 10});
+    Field 'field = getField(fields[0], Person, PersonQuery, ["person"], {maxAge: 10});
     test:assertTrue('field.isCacheEnabled());
     test:assertEquals('field.getCacheMaxAge(), 10d);
     test:assertEquals('field.getCacheKey(), "person.Jq9sXPlesvC6Q7cU5RPkZA==");
@@ -35,7 +35,7 @@ function testCacheUtils() returns error? {
 function testCacheConfigInferring() returns error? {
     parser:FieldNode[] fields = check getFieldNodesFromDocumentFile("cache_utils");
     test:assertTrue(fields.length() == 1);
-    Field 'field = getField(fields[0], Person, ["person"], {maxAge: 10});
+    Field 'field = getField(fields[0], Person, PersonQuery, ["person"], {maxAge: 10});
     test:assertTrue('field.getSubfields() is Field[]);
     Field[] subfields = <Field[]>'field.getSubfields();
     string[] expectedCacheKey = ["person.name.11FxOYiYfpMxmANj4kGJzg==", "person.address.nj4v+q6cUjv3W/MbZdNQXg=="];

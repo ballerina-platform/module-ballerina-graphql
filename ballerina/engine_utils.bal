@@ -91,7 +91,7 @@ isolated function getFieldObject(parser:FieldNode fieldNode, parser:RootOperatio
     __Type parentType = <__Type>getTypeFromTypeArray(schema.types, operationTypeName);
     __Type fieldType = getFieldTypeFromParentType(parentType, schema.types, fieldNode);
     string parentArgHashes = generateArgHash(fieldNode.getArguments());
-    return new (fieldNode, fieldType, engine.getService(), path, operationType, fieldValue = fieldValue,
+    return new (fieldNode, fieldType, parentType, engine.getService(), path, operationType, fieldValue = fieldValue,
         cacheConfig = engine.getCacheConfig(), parentArgHashes = [parentArgHashes]
     );
 }

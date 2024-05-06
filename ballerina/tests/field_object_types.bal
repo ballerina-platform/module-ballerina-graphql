@@ -100,12 +100,50 @@ __Type MissionNonNullList = {
     }
 };
 
+__Type AstronautQuery = {
+    kind: "OBJECT",
+    name: "Query",
+    fields: [
+        {
+            name: "astronauts",
+            args: [],
+            'type: AstronautNonNullList
+        },
+        {
+            name: "missions",
+            args: [],
+            'type: MissionNonNullList
+        }
+    ]
+};
+
 __Type AstronautNonNullList = {
     kind: "LIST",
     ofType: {
         kind: "NON_NULL",
         ofType: Astronaut
     }
+};
+
+__Type PersonQuery = {
+    kind: "OBJECT",
+    name: "Query",
+    fields: [
+        {
+            name: "person",
+            args: [{
+                name: "id",
+                'type: {
+                    kind: "NON_NULL",
+                    ofType: {
+                        kind: "SCALAR",
+                        name: "Int"
+                    }
+                }
+            }],
+            'type: Person
+        }
+    ]
 };
 
 __Type Person = {

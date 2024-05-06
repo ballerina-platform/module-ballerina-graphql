@@ -3,3 +3,5 @@ org = "ballerina"
 name = "graphql_tests"
 version = "1.13.0"
 
+[build-options]
+observabilityIncluded = true
