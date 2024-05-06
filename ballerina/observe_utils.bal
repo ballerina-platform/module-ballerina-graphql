@@ -34,6 +34,12 @@ type TraceInformation record {|
     string operationType;
 |};
 
+isolated function addFieldMetric(Field 'field) {
+    if metricsEnabled {
+        checkpanic observe:addTagToMetrics(GRAPHQL_FIELD_NAME, 'field.getQualifiedName());
+    }
+}
+
 isolated function addObservabilityMetricsTags(string key, string value) {
     if metricsEnabled {
         checkpanic observe:addTagToMetrics(key, value);

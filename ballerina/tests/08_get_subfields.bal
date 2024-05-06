@@ -18,13 +18,13 @@ import ballerina/test;
 import graphql.parser;
 
 @test:Config {
-    groups: ["getSubfields"],
+    groups: ["field", "getSubfields"],
     dataProvider: fieldObjectProvider1
 }
 function testGetSubfields1(string fileName, __Type fieldType, string[] path) returns error? {
     parser:FieldNode[] fields = check getFieldNodesFromDocumentFile(fileName);
     test:assertTrue(fields.length() == 1);
-    Field 'field = getField(fields[0], fieldType, [path[0]]);
+    Field 'field = getField(fields[0], fieldType, AstronautQuery, [path[0]]);
 
     Field[]? subfields = 'field.getSubfields();
     string[] subfieldNames = 'field.getSubfieldNames();
@@ -48,13 +48,13 @@ function fieldObjectProvider1() returns [string, __Type, string[]][] {
 }
 
 @test:Config {
-    groups: ["getSubfields"],
+    groups: ["field", "getSubfields"],
     dataProvider: fieldObjectProvider2
 }
 function testGetSubfields2(string fileName, __Type fieldType, string[] path) returns error? {
     parser:FieldNode[] fields = check getFieldNodesFromDocumentFile(fileName);
     test:assertTrue(fields.length() == 1);
-    Field 'field = getField(fields[0], fieldType, [path[0]]);
+    Field 'field = getField(fields[0], fieldType, AstronautQuery, [path[0]]);
 
     Field[]? subfields = 'field.getSubfields();
     string[] subfieldNames = 'field.getSubfieldNames();
@@ -81,3 +81,27 @@ function fieldObjectProvider2() returns [string, __Type, string[]][] {
     ];
 }
 
+@test:Config {
+    groups: ["field", "qualifiedName"],
+    dataProvider: fieldObjectProvider3
+}
+function testQualifiedName(string fileName, __Type fieldType) returns error? {
+    parser:FieldNode[] fields = check getFieldNodesFromDocumentFile(fileName);
+    test:assertTrue(fields.length() == 1);
+    Field 'field = getField(fields[0], fieldType, AstronautQuery, []);
+    Field[]? subfields = 'field.getSubfields();
+    if subfields is () {
+        return error("Expected subfields");
+    }
+    foreach Field subfield in subfields {
+        string expectedQualifiedName = string `${fieldType.name.toString()}.${subfield.getName()}`;
+        test:assertEquals(subfield.getQualifiedName(), expectedQualifiedName);
+    }
+}
+
+function fieldObjectProvider3() returns [string, __Type][] {
+    return [
+        ["field_object_mission", Mission],
+        ["field_object_mission_with_fragment", Mission]
+    ];
+}

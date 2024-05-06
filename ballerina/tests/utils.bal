@@ -14,9 +14,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import graphql.parser;
+
 import ballerina/file;
 import ballerina/io;
-import graphql.parser;
 
 isolated function getGraphqlDocumentFromFile(string fileName) returns string|error {
     string gqlFileName = string `${fileName}.graphql`;
@@ -56,6 +57,7 @@ isolated function getFieldNodesFromDocumentFile(string fileName) returns parser:
     return fieldNodes;
 }
 
-isolated function getField(parser:FieldNode fieldNode, __Type fieldType, string[] path, ServerCacheConfig? cacheConfig = ()) returns Field {
-    return new (fieldNode, fieldType, path = path, cacheConfig = cacheConfig);
+isolated function getField(parser:FieldNode fieldNode, __Type fieldType, __Type parentType, string[] path,
+        ServerCacheConfig? cacheConfig = ()) returns Field {
+    return new (fieldNode, fieldType, parentType, path = path, cacheConfig = cacheConfig);
 }

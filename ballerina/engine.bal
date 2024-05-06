@@ -313,11 +313,11 @@ isolated class Engine {
                 return response;
             }
             any fieldValue;
-            addObservabilityMetricsTags(GRAPHQL_FIELD_NAME, fieldNode.getName());
             parser:RootOperationType operationType = 'field.getOperationType();
             if operationType == parser:OPERATION_QUERY && 'field.isCacheEnabled() {
                 string cacheName = string `${'field.getName()}.cache`;
                 addTracingInfomation({context, serviceName: cacheName, operationType});
+                addFieldMetric('field);
                 string cacheKey = 'field.getCacheKey();
                 any|error cachedValue = self.getFromCache(cacheKey);
                 if cachedValue is any {
@@ -335,6 +335,7 @@ isolated class Engine {
                                          serviceName: 'field.getName(),
                                          operationType
                                      });
+                addFieldMetric('field);
                 fieldValue = check self.getFieldValue(context, 'field, responseGenerator);
             }
             anydata response = responseGenerator.getResult(fieldValue, fieldNode);
@@ -406,12 +407,16 @@ isolated class Engine {
         }
     }
 
-    isolated function getHierarchicalResult(Context context, Field 'field, parser:FieldNode fieldNode, map<anydata> result) {
+    isolated function getHierarchicalResult(Context context, Field 'field, parser:FieldNode fieldNode,
+            map<anydata> result) {
         string[] resourcePath = 'field.getResourcePath();
         (string|int)[] path = 'field.getPath().clone();
         path.push(fieldNode.getName());
-        __Type fieldType = getFieldTypeFromParentType('field.getFieldType(), self.schema.types, fieldNode);
-        Field selectionField = new (fieldNode, fieldType, 'field.getServiceObject(), path = path, resourcePath = resourcePath);
+        __Type parentType = 'field.getFieldType();
+        __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
+        Field selectionField = new (fieldNode, fieldType, parentType, 'field.getServiceObject(), path = path,
+            resourcePath = resourcePath
+        );
         context.resetInterceptorCount();
         anydata fieldValue = self.resolve(context, selectionField);
         result[fieldNode.getAlias()] = fieldValue is ErrorDetail ? () : fieldValue;
