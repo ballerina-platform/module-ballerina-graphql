@@ -276,8 +276,6 @@ isolated class Engine {
 
     isolated function resolve(Context context, Field 'field, boolean executePrefetchMethod = true) returns anydata {
         parser:FieldNode fieldNode = 'field.getInternalNode();
-        addObservabilityMetricsTags(GRAPHQL_FIELD_NAME, fieldNode.getName());
-
         if executePrefetchMethod {
             service object {}? serviceObject = 'field.getServiceObject();
             if serviceObject is service object {} {
@@ -315,9 +313,11 @@ isolated class Engine {
                 return response;
             }
             any fieldValue;
-            if 'field.getOperationType() == parser:OPERATION_QUERY && 'field.isCacheEnabled() {
+            addObservabilityMetricsTags(GRAPHQL_FIELD_NAME, fieldNode.getName());
+            parser:RootOperationType operationType = 'field.getOperationType();
+            if operationType == parser:OPERATION_QUERY && 'field.isCacheEnabled() {
                 string cacheName = string `${'field.getName()}.cache`;
-                addTracingInfomation({context, serviceName: cacheName, operationType: 'field.getOperationType()});
+                addTracingInfomation({context, serviceName: cacheName, operationType});
                 string cacheKey = 'field.getCacheKey();
                 any|error cachedValue = self.getFromCache(cacheKey);
                 if cachedValue is any {
@@ -333,7 +333,7 @@ isolated class Engine {
                 addTracingInfomation({
                                          context,
                                          serviceName: 'field.getName(),
-                                         operationType: 'field.getOperationType()
+                                         operationType
                                      });
                 fieldValue = check self.getFieldValue(context, 'field, responseGenerator);
             }
