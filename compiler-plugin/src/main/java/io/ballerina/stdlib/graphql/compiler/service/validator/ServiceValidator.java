@@ -1241,7 +1241,7 @@ public class ServiceValidator {
                                                                             finderContext);
         if (typeDefinitionNode == null) {
             addDiagnostic(CompilationDiagnostic.UNABLE_TO_VALIDATE_DEFAULT_VALUES_OF_INPUT_OBJECT_AT_COMPILE_TIME,
-                          getLocation(recordTypeSymbol, location), inputObjectTypeName);
+                    location, inputObjectTypeName);
             return;
         }
         for (RecordFieldSymbol recordFieldSymbol : recordTypeSymbol.fieldDescriptors().values()) {
