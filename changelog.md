@@ -6,15 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
-## [1.10.1] - 2024-02-15
+### Fixed 
 
-### Fixed
-- [[#6067] Fix Returning Error while Accessing the Service via GraphiQL Client in Windows](https://github.com/ballerina-platform/ballerina-library/issues/6067)
-
-## [1.10.0] - 2023-09-18
-
-### Fixed
-- [[#4848] Fix Resolvers not Able to Return Error Reference Types](https://github.com/ballerina-platform/ballerina-library/issues/4848)
 - [[#4859] Fix Service Crashing when Intersection Types are Used as Input Objects](https://github.com/ballerina-platform/ballerina-library/issues/4859)
 
 ## [1.11.0] - 2023-02-21
@@ -27,6 +20,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Changed
 - [[#4634] Use Aliases in GraphQL Error Path](https://github.com/ballerina-platform/ballerina-standard-library/issues/4634)
 - [[#4911] Make some of the Java classes proper utility classes](https://github.com/ballerina-platform/ballerina-standard-library/issues/4911)
+
+## [1.10.1] - 2024-02-15
+
+### Fixed
+- [[#6067] Fix Returning Error while Accessing the Service via GraphiQL Client in Windows](https://github.com/ballerina-platform/ballerina-library/issues/6067)
 
 ## [1.10.0] - 2023-09-18
 
