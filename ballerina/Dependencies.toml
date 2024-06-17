@@ -25,7 +25,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "cache"
-version = "3.7.1"
+version = "3.8.0"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -39,7 +39,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "constraint"
-version = "1.4.0"
+version = "1.5.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -47,7 +47,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "crypto"
-version = "2.5.0"
+version = "2.6.2"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "time"}
@@ -105,7 +105,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.10.12"
+version = "2.10.13"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -309,7 +309,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "observe"
-version = "1.2.2"
+version = "1.2.3"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -384,7 +384,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "websocket"
-version = "2.10.1"
+version = "2.10.2"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "constraint"},
