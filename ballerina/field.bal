@@ -31,11 +31,12 @@ public class Field {
     private final boolean cacheEnabled;
     private final decimal cacheMaxAge;
     private boolean hasRequestedNullableFields;
+    private final boolean alreadyCached;
 
     isolated function init(parser:FieldNode internalNode, __Type fieldType, service object {}? serviceObject = (),
-                           (string|int)[] path = [], parser:RootOperationType operationType = parser:OPERATION_QUERY,
-                           string[] resourcePath = [], any|error fieldValue = (), ServerCacheConfig? cacheConfig = (),
-                           readonly & string[] parentArgHashes = []) {
+            (string|int)[] path = [], parser:RootOperationType operationType = parser:OPERATION_QUERY,
+            string[] resourcePath = [], any|error fieldValue = (), ServerCacheConfig? cacheConfig = (),
+            readonly & string[] parentArgHashes = [], boolean isAlreadyCached = false) {
         self.internalNode = internalNode;
         self.serviceObject = serviceObject;
         self.fieldType = fieldType;
@@ -44,6 +45,7 @@ public class Field {
         self.resourcePath = resourcePath;
         self.fieldValue = fieldValue;
         self.resourcePath.push(internalNode.getName());
+        self.alreadyCached = isAlreadyCached;
         self.fieldInterceptors = serviceObject is service object {} ?
             getFieldInterceptors(serviceObject, operationType, internalNode.getName(), self.resourcePath) : [];
         ServerCacheConfig? fieldCache = serviceObject is service object {} ?
@@ -133,6 +135,10 @@ public class Field {
         return self.fieldValue;
     }
 
+    isolated function isAlreadyCached() returns boolean {
+        return self.alreadyCached;
+    }
+
     isolated function getFieldObjects(parser:SelectionNode selectionNode, __Type 'type) returns Field[] {
         string[] currentPath = self.path.clone().'map((item) => item is int ? "@" : item);
         string[] unwrappedPath = getUnwrappedPath('type);
@@ -148,9 +154,13 @@ public class Field {
             if selection is parser:FieldNode {
                 foreach __Field 'field in typeFields {
                     if 'field.name == selection.getName() {
-                        result.push(new Field(selection, 'field.'type, (),[...currentPath, ...unwrappedPath, 'field.name],
-                            self.operationType.clone(), self.resourcePath.clone(), cacheConfig = self.cacheConfig,
-                            parentArgHashes = self.parentArgHashes));
+                        result.push(new Field(selection, 'field.'type, (), [
+                                ...currentPath,
+                                ...unwrappedPath,
+                                'field.name
+                            ], self.operationType.clone(), self.resourcePath.clone(),
+                            cacheConfig = self.cacheConfig, parentArgHashes = self.parentArgHashes
+                        ));
                         break;
                     }
                 }

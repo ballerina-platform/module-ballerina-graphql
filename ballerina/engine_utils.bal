@@ -134,3 +134,7 @@ isolated function hasRecordReturnType(service object {} serviceObject, string[] 
     returns boolean = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
+
+isolated function isRecordWithNoOptionalFields(any|error value) returns boolean = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
+} external;

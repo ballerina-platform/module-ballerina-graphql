@@ -63,7 +63,10 @@ isolated class Engine {
         return self.cacheConfig;
     }
 
-    isolated function addToCache(string key, any value, decimal maxAge) returns any|error {
+    isolated function addToCache(string key, any value, decimal maxAge, boolean alreadyCached = false) returns any|error {
+        if alreadyCached {
+            return;
+        }
         cache:Cache? cache = self.cache;
         if cache is cache:Cache {
             return cache.put(key, value, maxAge);
@@ -294,7 +297,7 @@ isolated class Engine {
                 return check validateInterceptorReturnValue(fieldType, result, interceptorName);
             }
             any fieldValue;
-            if 'field.getOperationType() == parser:OPERATION_QUERY && 'field.isCacheEnabled() {
+            if 'field.isCacheEnabled() && 'field.getOperationType() == parser:OPERATION_QUERY {
                 string cacheKey = 'field.getCacheKey();
                 any|error cachedValue = self.getFromCache(cacheKey);
                 if cachedValue is any {
@@ -302,8 +305,9 @@ isolated class Engine {
                 } else {
                     fieldValue = check self.getFieldValue(context, 'field, responseGenerator);
                     decimal maxAge = 'field.getCacheMaxAge();
-                    if maxAge > 0d && fieldValue !is () {
-                        _ = check self.addToCache(cacheKey, fieldValue, maxAge);
+                    boolean alreadyCached = 'field.isAlreadyCached();
+                    if !alreadyCached && maxAge > 0d && fieldValue !is () {
+                        _ = check self.addToCache(cacheKey, fieldValue, maxAge, alreadyCached);
                     }
                 }
             } else {
@@ -378,7 +382,8 @@ isolated class Engine {
         string[] resourcePath = 'field.getResourcePath();
         (string|int)[] path = 'field.getPath().clone();
         path.push(fieldNode.getName());
-        __Type fieldType = getFieldTypeFromParentType('field.getFieldType(), self.schema.types, fieldNode);
+        __Type parentType = 'field.getFieldType();
+        __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
         Field selectionField = new (fieldNode, fieldType, 'field.getServiceObject(), path = path, resourcePath = resourcePath);
         context.resetInterceptorCount();
         anydata fieldValue = self.resolve(context, selectionField);

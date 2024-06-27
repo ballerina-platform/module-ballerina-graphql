@@ -22,10 +22,10 @@ import ballerina/lang.value;
 
 # The GraphQL context object used to pass the meta information between resolvers.
 public isolated class Context {
-    private final map<value:Cloneable|isolated object {}> attributes;
-    private final ErrorDetail[] errors;
-    private Engine? engine;
-    private int nextInterceptor;
+    private final map<value:Cloneable|isolated object {}> attributes = {};
+    private final ErrorDetail[] errors = [];
+    private Engine? engine = ();
+    private int nextInterceptor = 0;
     private boolean hasFileInfo = false; // This field value changed by setFileInfo method
     private map<dataloader:DataLoader> idDataLoaderMap = {}; // Provides mapping between user defined id and DataLoader
     private map<Placeholder> uuidPlaceholderMap = {};
@@ -33,20 +33,6 @@ public isolated class Context {
     private boolean containPlaceholders = false;
     private int unResolvedPlaceholderCount = 0; // Tracks the number of Placeholders needs to be resolved
     private int unResolvedPlaceholderNodeCount = 0; // Tracks the number of nodes to be replaced in the value tree
-
-    public isolated function init(map<value:Cloneable|isolated object {}> attributes = {}, Engine? engine = (),
-                                  int nextInterceptor = 0) {
-        self.attributes = {};
-        self.engine = engine;
-        self.errors = [];
-        self.nextInterceptor = nextInterceptor;
-
-        foreach var [key, value] in attributes.entries() {
-            lock {
-                self.attributes[key] = value is value:Cloneable ? value.cloneReadOnly() : value;
-            }
-        }
-    }
 
     # Sets a given value for a given key in the GraphQL context.
     #
@@ -297,7 +283,7 @@ public isolated class Context {
     }
 
     isolated function clearDataLoadersCachesAndPlaceholders() {
-        // This function is called at the end of each subscription loop execution to prevent using old values 
+        // This function is called at the end of each subscription loop execution to prevent using old values
         // from DataLoader caches in the next iteration and to avoid filling up the idPlaceholderMap.
         lock {
             self.idDataLoaderMap.forEach(dataloader => dataloader.clearAll());

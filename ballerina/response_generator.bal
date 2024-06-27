@@ -81,7 +81,8 @@ class ResponseGenerator {
         } else if parentValue is service object {} {
             (string|int)[] clonedPath = self.path.clone();
             clonedPath.push(fieldNode.getAlias());
-            __Type fieldType = getFieldTypeFromParentType(self.fieldType, self.engine.getSchema().types, fieldNode);
+            __Type parentType = self.fieldType;
+            __Type fieldType = getFieldTypeFromParentType(parentType, self.engine.getSchema().types, fieldNode);
             Field 'field = new (fieldNode, fieldType, parentValue, clonedPath, cacheConfig = self.cacheConfig,
                                 parentArgHashes = self.parentArgHashes);
             self.context.resetInterceptorCount();
@@ -150,11 +151,14 @@ class ResponseGenerator {
             return getTypeNameFromValue(parentValue);
         }
         any fieldValue = parentValue.hasKey(fieldNode.getName()) ? parentValue.get(fieldNode.getName()): ();
-        __Type fieldType = getFieldTypeFromParentType(self.fieldType, self.engine.getSchema().types, fieldNode);
+        __Type parentType = self.fieldType;
+        __Type fieldType = getFieldTypeFromParentType(parentType, self.engine.getSchema().types, fieldNode);
+        boolean isAlreadyCached = isRecordWithNoOptionalFields(parentValue);
         (string|int)[] clonedPath = self.path.clone();
         clonedPath.push(fieldNode.getAlias());
         Field 'field = new (fieldNode, fieldType, path = clonedPath, fieldValue = fieldValue,
-                            cacheConfig = self.cacheConfig, parentArgHashes = self.parentArgHashes);
+                            cacheConfig = self.cacheConfig, parentArgHashes = self.parentArgHashes,
+                            isAlreadyCached = isAlreadyCached);
         self.context.resetInterceptorCount();
         return self.engine.resolve(self.context, 'field);
     }
@@ -233,7 +237,7 @@ class ResponseGenerator {
         }
     }
 
-    private isolated function isPossibleTypeOfInterface(string interfaceName, 
+    private isolated function isPossibleTypeOfInterface(string interfaceName,
                                                         string implementedTypeName) returns boolean {
         __Type? interfaceType = getTypeFromTypeArray(self.engine.getSchema().types, interfaceName);
         if interfaceType is () || interfaceType.kind != INTERFACE {
