@@ -25,21 +25,18 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "cache"
-version = "3.8.0"
+version = "3.7.0"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "task"},
 	{org = "ballerina", name = "time"}
 ]
-modules = [
-	{org = "ballerina", packageName = "cache", moduleName = "cache"}
-]
 
 [[package]]
 org = "ballerina"
 name = "constraint"
-version = "1.5.0"
+version = "1.4.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -76,7 +73,6 @@ name = "graphql"
 version = "1.11.2"
 dependencies = [
 	{org = "ballerina", name = "auth"},
-	{org = "ballerina", name = "cache"},
 	{org = "ballerina", name = "crypto"},
 	{org = "ballerina", name = "file"},
 	{org = "ballerina", name = "http"},
@@ -105,7 +101,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.10.14"
+version = "2.10.13"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -309,7 +305,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "observe"
-version = "1.2.3"
+version = "1.2.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
