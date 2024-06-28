@@ -23,6 +23,7 @@ import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.flags.SymbolFlags;
 import io.ballerina.runtime.api.types.ArrayType;
+import io.ballerina.runtime.api.types.Field;
 import io.ballerina.runtime.api.types.IntersectionType;
 import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
@@ -105,10 +106,6 @@ public class EngineUtils {
     public static final String FILE_INFO_FIELD = "graphql.context.fileInfo";
     public static final BString HAS_FILE_INFO_FIELD = StringUtils.fromString("hasFileInfo");
     public static final BString RESULT_FIELD = StringUtils.fromString("result");
-
-    // Entity annotation fields
-    private static final BString ENTITY_ANNOTATION_KEY_FIELD = StringUtils.fromString("key");
-    private static final BString ENTITY_ANNOTATION_RESOLVER_FIELD = StringUtils.fromString("resolveReference");
 
     // Resource annotation
     public static final String RESOURCE_CONFIG = "ResourceConfig";
@@ -199,6 +196,23 @@ public class EngineUtils {
             return StringUtils.fromString(bValue.getType().getName());
         }
         return StringUtils.fromString("");
+    }
+
+    public static boolean isRecordWithNoOptionalFields(Object value) {
+        if (value instanceof BMap) {
+            BMap<BString, Object> recordValue = (BMap<BString, Object>) value;
+            Type type = TypeUtils.getImpliedType(recordValue.getType());
+            if (type.getTag() == TypeTags.RECORD_TYPE_TAG) {
+                RecordType recordType = (RecordType) type;
+                for (Field field : recordType.getFields().values()) {
+                    if (SymbolFlags.isFlagOn(field.getFlags(), SymbolFlags.OPTIONAL)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     static String getTypeNameFromRecordValue(RecordType recordType) {

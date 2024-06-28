@@ -407,3 +407,9 @@ type User record {|
     string name?;
     int age?;
 |};
+
+type ProfileInfo record {|
+    string name;
+    int age;
+    string contact;
+|};

@@ -6,8 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
-### Fixed
+### Changed
+- [[#6652] Cache Entire Record Having All Non-Optional Fields Instead of Caching Each Field Separately](https://github.com/ballerina-platform/ballerina-library/issues/6652)
 
+
+## [1.11.1] - 2024-06-17
+
+### Fixed
 - [[#4859] Fix Service Crashing when Intersection Types are Used as Input Objects](https://github.com/ballerina-platform/ballerina-library/issues/4859)
 
 ## [1.11.0] - 2023-02-21
