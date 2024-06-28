@@ -63,7 +63,10 @@ isolated class Engine {
         return self.cacheConfig;
     }
 
-    isolated function addToCache(string key, any value, decimal maxAge) returns any|error {
+    isolated function addToCache(string key, any value, decimal maxAge, boolean alreadyCached = false) returns any|error {
+        if alreadyCached {
+            return;
+        }
         cache:Cache? cache = self.cache;
         if cache is cache:Cache {
             return cache.put(key, value, maxAge);
@@ -314,7 +317,7 @@ isolated class Engine {
             }
             any fieldValue;
             parser:RootOperationType operationType = 'field.getOperationType();
-            if operationType == parser:OPERATION_QUERY && 'field.isCacheEnabled() {
+            if 'field.isCacheEnabled() && 'field.getOperationType() == parser:OPERATION_QUERY {
                 string cacheName = string `${'field.getName()}.cache`;
                 addTracingInfomation({context, serviceName: cacheName, operationType});
                 addFieldMetric('field);
@@ -325,8 +328,9 @@ isolated class Engine {
                 } else {
                     fieldValue = check self.getFieldValue(context, 'field, responseGenerator);
                     decimal maxAge = 'field.getCacheMaxAge();
-                    if maxAge > 0d && fieldValue !is () {
-                        _ = check self.addToCache(cacheKey, fieldValue, maxAge);
+                    boolean alreadyCached = 'field.isAlreadyCached();
+                    if !alreadyCached && maxAge > 0d && fieldValue !is () {
+                        _ = check self.addToCache(cacheKey, fieldValue, maxAge, alreadyCached);
                     }
                 }
             } else {

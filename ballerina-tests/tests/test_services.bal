@@ -3044,3 +3044,30 @@ service /cache_with_list_input on basicListener {
         return address;
     }
 }
+
+
+@graphql:ServiceConfig {
+    cacheConfig: {
+        maxSize: 5
+    }
+}
+service /server_cache_records_with_non_optional on basicListener {
+    private table<ProfileInfo> profiles = table [
+        {name: "John", age: 30, contact: "0123456789"},
+        {name: "Doe", age: 25, contact: "9876543210"},
+        {name: "Jane", age: 35, contact: "1234567890"}
+    ];
+
+    resource function get profiles() returns ProfileInfo[] {
+        return self.profiles.toArray();
+    }
+
+    remote function removeProfiles(graphql:Context ctx, boolean enableEvict) returns ProfileInfo[]|error {
+        if enableEvict {
+            check ctx.invalidateAll();
+        }
+        ProfileInfo[] profiles = self.profiles.toArray();
+        self.profiles.removeAll();
+        return profiles;
+    }
+}

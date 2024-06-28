@@ -154,11 +154,12 @@ class ResponseGenerator {
         any fieldValue = parentValue.hasKey(fieldNode.getName()) ? parentValue.get(fieldNode.getName()) : ();
         __Type parentType = self.fieldType;
         __Type fieldType = getFieldTypeFromParentType(parentType, self.engine.getSchema().types, fieldNode);
+        boolean isAlreadyCached = isRecordWithNoOptionalFields(parentValue);
         (string|int)[] clonedPath = self.path.clone();
         clonedPath.push(fieldNode.getAlias());
         Field 'field = new (fieldNode, fieldType, parentType, path = clonedPath, fieldValue = fieldValue,
-            cacheConfig = self.cacheConfig, parentArgHashes = self.parentArgHashes
-        );
+            cacheConfig = self.cacheConfig, parentArgHashes = self.parentArgHashes,
+            isAlreadyCached = isAlreadyCached);
         self.context.resetInterceptorCount();
         return self.engine.resolve(self.context, 'field);
     }
