@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 ### Changed
-[[$6652] Cache Entire Record Having All Non-Optional Fields Instead of Caching Each Field Separately](https://github.com/ballerina-platform/ballerina-library/issues/6652)
+- [[#6652] Cache Entire Record Having All Non-Optional Fields Instead of Caching Each Field Separately](https://github.com/ballerina-platform/ballerina-library/issues/6652)
 
 
 ## [1.11.1] - 2024-06-17

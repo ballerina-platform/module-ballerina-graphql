@@ -3766,7 +3766,7 @@ Operation-level caching can be used to cache the entire operation, and this can 
 
 The GraphQL field-level caching can be enabled only for a specific field. This can be done by providing the [field cache configurations](#723-field-level-cache-configuration). Once the field-level caching is enabled for a field, it will be applied to the sub-fields of that field. The field-level cache configuration can be used to override the operation-level cache configurations.
 
->**Note:**  In both cases above, if the resolver returns a record that doesn't contain any optional fields, then the entire record will be cached instead of individually caching the subfields of this record. In the case of the resolver returning a record containing optional fields, all the subfields of the record will be cached individually.
+>**Note:**  In both cases above, if the resolver returns a record that doesn't contain any optional fields, then the entire record will be cached instead of individually caching the subfields of this record. In the case of the resolver returning a service type or a record containing optional fields, all the subfields of the returned value will be cached individually.
 
 #### 10.7.1.3 Cache Invalidation
 
