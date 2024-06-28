@@ -13,9 +13,9 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
+import graphql.parser;
 
 import ballerina/test;
-import graphql.parser;
 
 @test:Config {
     groups: ["server_cache"]
@@ -39,7 +39,7 @@ function testCacheConfigInferring() returns error? {
     test:assertTrue('field.getSubfields() is Field[]);
     Field[] subfields = <Field[]>'field.getSubfields();
     string[] expectedCacheKey = ["person.name.11FxOYiYfpMxmANj4kGJzg==", "person.address.nj4v+q6cUjv3W/MbZdNQXg=="];
-    foreach int i in 0..<subfields.length() {
+    foreach int i in 0 ..< subfields.length() {
         test:assertTrue(subfields[i].isCacheEnabled());
         test:assertEquals(subfields[i].getCacheMaxAge(), 10d);
         test:assertEquals(subfields[i].getCacheKey(), expectedCacheKey[i]);

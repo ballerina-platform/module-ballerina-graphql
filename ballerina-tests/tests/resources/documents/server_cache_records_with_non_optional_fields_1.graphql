@@ -1,0 +1,11 @@
+query GetProfiles {
+  profiles {
+    name
+  }
+}
+
+mutation RemoveProfiles($enableEvict: Boolean!) {
+  removeProfiles(enableEvict: $enableEvict) {
+    name
+  }
+}

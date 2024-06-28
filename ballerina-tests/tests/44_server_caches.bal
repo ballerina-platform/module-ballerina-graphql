@@ -201,6 +201,34 @@ isolated function testServerSideCacheInOperationalLevelWithTTL() returns error? 
 @test:Config {
     groups: ["server_cache"]
 }
+isolated function testCachingRecordWithoutNonOptionalFields() returns error? {
+    string url = "http://localhost:9091/server_cache_records_with_non_optional";
+    string document = check getGraphqlDocumentFromFile("server_cache_records_with_non_optional_fields_1");
+
+    json actualPayload = check getJsonPayloadFromService(url, document, (), "GetProfiles");
+    json expectedPayload = check getJsonContentFromFile("server_cache_records_with_non_optional_fields_1");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+
+    _ = check getJsonPayloadFromService(url, document, {enableEvict: false}, "RemoveProfiles");
+
+    actualPayload = check getJsonPayloadFromService(url, document, (), "GetProfiles");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+
+    document = check getGraphqlDocumentFromFile("server_cache_records_with_non_optional_fields_2");
+    actualPayload = check getJsonPayloadFromService(url, document, (), "GetProfiles");
+    expectedPayload = check getJsonContentFromFile("server_cache_records_with_non_optional_fields_2");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+
+    _ = check getJsonPayloadFromService(url, document, {enableEvict: true}, "RemoveProfiles");
+
+    actualPayload = check getJsonPayloadFromService(url, document, (), "GetProfiles");
+    expectedPayload = check getJsonContentFromFile("server_cache_records_with_non_optional_fields_3");
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["server_cache"]
+}
 isolated function testServerCacheEvictionWithTTL() returns error? {
     string url = "http://localhost:9091/field_caching_with_interceptors";
     string document = check getGraphqlDocumentFromFile("server_cache_fields_with_TTL");
