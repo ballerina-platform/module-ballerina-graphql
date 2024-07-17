@@ -122,3 +122,13 @@ public const COMPRESSION_NEVER = "NEVER";
 
 # Options to compress using gzip or deflate.
 public type Compression COMPRESSION_AUTO|COMPRESSION_ALWAYS|COMPRESSION_NEVER;
+
+# Defines the query complexity configuration for the GraphQL service.
+public type QueryComplexityConfig readonly & record {|
+    # Maximum allowed query depth
+    int maxComplexity = 100;
+    # Default complexity for a field
+    int defaultFieldComplexity = 1;
+    # Whether to only log a warning or return an error when the complexity exceeds the limit
+    boolean warnOnly = false;
+|};

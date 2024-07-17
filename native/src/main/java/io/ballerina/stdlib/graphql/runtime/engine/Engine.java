@@ -41,6 +41,7 @@ import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.observability.ObserveUtils;
 import io.ballerina.runtime.observability.ObserverContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
+import io.ballerina.stdlib.graphql.runtime.engine.meta.ServiceAnalyzer;
 import io.ballerina.stdlib.graphql.runtime.exception.ConstraintValidationException;
 
 import java.io.ByteArrayInputStream;
@@ -76,13 +77,17 @@ import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
  * This handles Ballerina GraphQL Engine.
  */
 public class Engine {
+    public static final String RESOURCE_MAP = "graphql.resourceMap";
 
     private Engine() {
     }
 
-    public static Object createSchema(BString schemaString) {
+    public static Object createSchema(Environment environment, BString schemaString, BObject service) {
         try {
             Schema schema = getDecodedSchema(schemaString);
+            ServiceAnalyzer serviceAnalyzer = new ServiceAnalyzer((ServiceType) TypeUtils.getType(service));
+            serviceAnalyzer.analyze();
+            service.addNativeData(RESOURCE_MAP, serviceAnalyzer.getResourceMap());
             SchemaRecordGenerator schemaRecordGenerator = new SchemaRecordGenerator(schema);
             return schemaRecordGenerator.getSchemaRecord();
         } catch (BError e) {

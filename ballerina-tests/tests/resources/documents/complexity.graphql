@@ -1,0 +1,17 @@
+query SimpleQuery {
+    latest {
+        score
+    }
+}
+
+query ComplexQuery {
+    a1: all {
+        score
+    }
+    a2: all {
+        score
+    }
+    a3: all {
+        score
+    }
+}

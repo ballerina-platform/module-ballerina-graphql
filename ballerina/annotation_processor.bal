@@ -91,6 +91,13 @@ isolated function getValidation(GraphqlServiceConfig? serviceConfig) returns boo
     return true;
 }
 
+isolated function getQueryComplexityConfig(GraphqlServiceConfig? serviceConfig) returns QueryComplexityConfig? {
+    if serviceConfig is GraphqlServiceConfig {
+        return serviceConfig.queryComplexityConfig;
+    }
+    return;
+}
+
 isolated function getFieldInterceptors(service object {} serviceObj, parser:RootOperationType operationType,
         string fieldName, string[] resourcePath) returns readonly & (readonly & Interceptor)[] {
     GraphqlResourceConfig? resourceConfig = getResourceAnnotation(serviceObj, operationType, resourcePath, fieldName);

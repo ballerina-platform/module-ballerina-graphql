@@ -38,12 +38,17 @@ import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BValue;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.commons.utils.SdlSchemaStringGenerator;
+import io.ballerina.stdlib.graphql.runtime.engine.meta.Resource;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static io.ballerina.runtime.api.TypeTags.SERVICE_TAG;
+import static io.ballerina.stdlib.graphql.runtime.engine.Engine.RESOURCE_MAP;
 import static io.ballerina.stdlib.graphql.runtime.engine.Engine.getDecodedSchema;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
 
 /**
  * This class provides utility functions for Ballerina GraphQL engine.
@@ -255,5 +260,16 @@ public class EngineUtils {
 
     public static Object getResult(BObject executorVisitor) {
         return executorVisitor.get(RESULT_FIELD);
+    }
+
+    public static Object getFieldComplexity(BObject engine, BString coordinate) {
+        BObject serviceObject = (BObject) engine.getNativeData(GRAPHQL_SERVICE_OBJECT);
+        Map<String, Resource> resourceMap = (Map<String, Resource>) serviceObject.getNativeData(RESOURCE_MAP);
+        String coordinateKey = coordinate.getValue();
+        if (resourceMap.containsKey(coordinateKey)) {
+            Resource resource = resourceMap.get(coordinateKey);
+            return resource.complexity();
+        }
+        return createError("Complexity not found for the resource: " + coordinateKey, ERROR_TYPE);
     }
 }

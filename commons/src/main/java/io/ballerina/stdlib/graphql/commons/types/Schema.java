@@ -76,10 +76,9 @@ public class Schema implements Serializable {
      * Adds a type to the schema and returns it. If the type name already exists, returns the existing type. If the
      * type name does not exist in the schema, creates the type and returns it.
      *
-     * @param typeName - The name of the type
-     * @param kind - The TypeKind of the type
+     * @param typeName    - The name of the type
+     * @param kind        - The TypeKind of the type
      * @param description - The description of the type
-     *
      * @return - The created or existing type with the provided name
      */
     public Type addType(String typeName, TypeKind kind, String description) {
@@ -104,11 +103,10 @@ public class Schema implements Serializable {
      * Adds a Object type to the schema from a given ObjectKind and returns it. If the object type already exist,
      * returns the existing scalar type.
      *
-     * @param typeName - The name of the type
-     * @param kind - The TypeKind of the type
+     * @param typeName    - The name of the type
+     * @param kind        - The TypeKind of the type
      * @param description - The description of the type
-     * @param objectKind - The objectKind of the type
-     *
+     * @param objectKind  - The objectKind of the type
      * @return - The created or existing type with the provided name
      */
     public Type addType(String typeName, TypeKind kind, String description, Position position,
@@ -126,7 +124,6 @@ public class Schema implements Serializable {
      * returns the existing scalar type.
      *
      * @param scalarType - The ScalarType to be added
-     *
      * @return - The created or existing scalar type
      */
     public Type addType(ScalarType scalarType) {
@@ -232,7 +229,7 @@ public class Schema implements Serializable {
         getEntities().forEach(entity::addPossibleType);
 
         Field entities = new Field(ENTITIES_RESOLVER_NAME,
-                                   new Type(TypeKind.NON_NULL, new Type(TypeKind.LIST, entity)));
+                new Type(TypeKind.NON_NULL, new Type(TypeKind.LIST, entity)));
         Type nonNullableAnyScalar = new Type(TypeKind.NON_NULL, getType(TypeName.ANY.getName()));
         Type nonNullableListOfAny = new Type(TypeKind.NON_NULL, new Type(TypeKind.LIST, nonNullableAnyScalar));
         entities.addArg(new InputValue(REPRESENTATIONS_ARGUMENT, nonNullableListOfAny, null, null));
