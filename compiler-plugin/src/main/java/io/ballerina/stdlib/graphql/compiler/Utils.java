@@ -69,7 +69,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static io.ballerina.stdlib.graphql.commons.utils.Utils.PACKAGE_NAME;
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.hasGraphqlListener;
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.isGraphQLServiceObjectDeclaration;
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.isGraphqlModuleSymbol;
@@ -503,12 +502,12 @@ public final class Utils {
         return new ArrayList<>();
     }
 
-    public static boolean isGraphqlServiceConfig(AnnotationNode annotationNode) {
+    public static boolean isGraphqlServiceConfig(AnnotationNode annotationNode, String modulePrefix) {
         if (annotationNode.annotReference().kind() != SyntaxKind.QUALIFIED_NAME_REFERENCE) {
             return false;
         }
         QualifiedNameReferenceNode referenceNode = ((QualifiedNameReferenceNode) annotationNode.annotReference());
-        if (!PACKAGE_NAME.equals(referenceNode.modulePrefix().text())) {
+        if (!modulePrefix.equals(referenceNode.modulePrefix().text())) {
             return false;
         }
         return SERVICE_CONFIG_IDENTIFIER.equals(referenceNode.identifier().text());
