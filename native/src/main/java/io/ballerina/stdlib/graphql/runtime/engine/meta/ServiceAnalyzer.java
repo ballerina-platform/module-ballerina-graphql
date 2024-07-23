@@ -35,6 +35,7 @@ import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
+import io.ballerina.stdlib.graphql.commons.types.Schema;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -52,6 +53,7 @@ public class ServiceAnalyzer {
     private static final BString packageName = StringUtils.fromString(getModule().toString());
 
     private final Map<String, Resource> resourceMap;
+    private final Schema schema;
 
     private static final BString serviceConfigName = StringUtils.fromString("ServiceConfig");
     private static final BString resourceConfigName = StringUtils.fromString("ResourceConfig");
@@ -62,9 +64,10 @@ public class ServiceAnalyzer {
     private final ServiceType serviceType;
     private final Long defaultQueryComplexity;
 
-    public ServiceAnalyzer(ServiceType serviceType) {
+    public ServiceAnalyzer(ServiceType serviceType, Schema schema) {
         this.resourceMap = new HashMap<>();
         this.serviceType = serviceType;
+        this.schema = schema;
         BMap<BString, Object> serviceConfig = getServiceConfig(serviceType);
         this.defaultQueryComplexity = getDefaultQueryComplexity(serviceConfig);
     }
@@ -178,8 +181,8 @@ public class ServiceAnalyzer {
         if (resourcePath.length == 1) {
             return typeName + "." + resourcePath[0];
         }
-        // TODO: Handle hierarchical resource paths
-        return resourcePath[0] + "." + resourcePath[1];
+        int length = resourcePath.length;
+        return resourcePath[length - 2] + "." + resourcePath[length - 1];
     }
 
     @SuppressWarnings("unchecked")

@@ -1,7 +1,9 @@
 {
     "data": {
-        "latest": {
-            "score": 20
+        "device": {
+            "brand": "Apple",
+            "model": "iPhone 15 Pro",
+            "os": "iOS"
         }
     }
 }

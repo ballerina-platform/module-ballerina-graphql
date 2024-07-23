@@ -15,8 +15,9 @@
 // under the License.
 
 import ballerina/graphql as gql;
+import ballerina/graphql;
 
-listener gql:Listener graphqlListener = new(9098);
+listener gql:Listener graphqlListener = new (9098);
 
 service /interfaces on graphqlListener {
     isolated resource function get character(int id) returns Character {
@@ -35,5 +36,58 @@ service /interfaces on graphqlListener {
 service /interfaces_implementing_interface on graphqlListener {
     resource function get animal(int id) returns Animalia? {
         return id <= animals.length() && id > 0 ? animals[id - 1] : ();
+    }
+}
+
+@gql:ServiceConfig {
+    queryComplexityConfig: {
+        maxComplexity: 20,
+        defaultFieldComplexity: 2
+    }
+}
+service /complexity on graphqlListener {
+    resource function get greeting() returns string {
+        return "Hello";
+    }
+
+    @gql:ResourceConfig {
+        complexity: 10
+    }
+    resource function get device(int id) returns Device {
+        if id < 10 {
+            return new Phone(id, "Apple", "iPhone 15 Pro", 1199.00, "iOS");
+        }
+
+        if id < 20 {
+            return new Laptop(id, "Apple", "MacBook Pro", 2399.00, "M1", 32);
+        }
+
+        return new Tablet(id, "Samsung", "Galaxy Tab S7", 649.99, true);
+    }
+
+    @gql:ResourceConfig {
+        complexity: 5
+    }
+    resource function get mobile(int id) returns Mobile {
+        if id < 10 {
+            return new Phone(id, "Apple", "iPhone 15 Pro", 1199.00, "iOS");
+        }
+
+        return new Tablet(id, "Samsung", "Galaxy Tab S7", 649.99, true);
+    }
+
+    @graphql:ResourceConfig {
+        complexity: 15
+    }
+    remote function addReview(RatingInput input) returns Rating {
+        lock {
+            int id = ratingTable.length();
+            RatingData rating = {
+                id,
+                ...input
+            };
+            ratingTable.put(rating);
+            return new (rating);
+        }
     }
 }

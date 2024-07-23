@@ -1,7 +1,7 @@
 {
     "errors": [
         {
-            "message": "The operation ComplexQuery exceeds the maximum query complexity threshold. Maximum allowed complexity: 20, actual complexity: 36",
+            "message": "The operation exceeds the maximum query complexity threshold. Maximum allowed complexity: 20, actual complexity: 29",
             "locations": [
                 {
                     "line": 1,

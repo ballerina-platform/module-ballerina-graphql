@@ -207,9 +207,10 @@ isolated class Engine {
             if queryComplexityConfig is () {
                 return [];
             }
-            QueryComplexityValidatorVisitor validator = new (self, schema, queryComplexityConfig, operationName,
+            parser:OperationNode operation = modifiedDocument.getOperations()[0];
+            QueryComplexityValidatorVisitor validator = new (self, schema, queryComplexityConfig, operation.getName(),
                 nodeModifierContext);
-            modifiedDocument.getOperations()[0].accept(validator);
+            operation.accept(validator);
             return validator.getErrors() ?: [];
         }
 

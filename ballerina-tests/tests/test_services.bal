@@ -2022,39 +2022,21 @@ table<Review> reviews = table [
     {product: new ("5"), score: 20, description: "Product 05"}
 ];
 
-@graphql:ServiceConfig {
-    queryComplexityConfig: {
-        maxComplexity: 20,
-        defaultFieldComplexity: 2
-    }
-}
 service /reviews on wrappedListener {
-    @graphql:ResourceConfig {
-        complexity: 1
-    }
     resource function get latest() returns Review {
         return reviews.toArray().pop();
     }
 
-    @graphql:ResourceConfig {
-        complexity: 10
-    }
     resource function get all() returns table<Review> {
         return reviews;
     }
 
-    @graphql:ResourceConfig {
-        complexity: 5
-    }
     resource function get top3() returns Review[] {
         return from var review in reviews
             limit 3
             select review;
     }
 
-    @graphql:ResourceConfig {
-        complexity: 3
-    }
     resource function get account() returns AccountRecords {
         return {details: {acc1: new ("James", 2022), acc2: new ("Paul", 2015)}};
     }
@@ -2133,12 +2115,6 @@ isolated service /service_with_http1 on http1BasedListener {
 @display {
     label: "diplay",
     id: "display-1"
-}
-@graphql:ServiceConfig {
-    queryComplexityConfig: {
-        maxComplexity: 20,
-        defaultFieldComplexity: 2
-    }
 }
 service /annotations on wrappedListener {
     resource function get greeting() returns string {
@@ -3095,3 +3071,5 @@ service /server_cache_records_with_non_optional on basicListener {
         return profiles;
     }
 }
+
+

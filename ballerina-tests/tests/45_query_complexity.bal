@@ -20,10 +20,10 @@ import ballerina/test;
     groups: ["query_complexity"]
 }
 isolated function testValidComplexityQuery() returns error? {
-    string url = "http://localhost:9090/reviews";
-    string document = check getGraphqlDocumentFromFile("complexity");
+    string url = "http://localhost:9098/complexity";
+    string document = check getGraphqlDocumentFromFile("valid_complexity_query");
     string resourceFileName = "valid_complexity_query";
-    json actualPayload = check getJsonPayloadFromService(url, document, operationName = "SimpleQuery");
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -32,10 +32,10 @@ isolated function testValidComplexityQuery() returns error? {
     groups: ["query_complexity"]
 }
 isolated function testInvalidComplexityQuery() returns error? {
-    string url = "http://localhost:9090/reviews";
-    string document = check getGraphqlDocumentFromFile("complexity");
+    string url = "http://localhost:9098/complexity";
+    string document = check getGraphqlDocumentFromFile("invalid_complexity_query");
     string resourceFileName = "invalid_complexity_query";
-    json actualPayload = check getJsonPayloadFromService(url, document, operationName = "ComplexQuery");
+    json actualPayload = check getJsonPayloadFromService(url, document);
     json expectedPayload = check getJsonContentFromFile(resourceFileName);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
@@ -44,9 +44,31 @@ isolated function testInvalidComplexityQuery() returns error? {
     groups: ["query_complexity"]
 }
 isolated function testPrimitiveTypeFieldComplexity() returns error? {
-    string url = "http://localhost:9090/annotations";
+    string url = "http://localhost:9098/complexity";
     string document = "{ greeting }";
     json expectedPayload = { "data": { "greeting": "Hello" } };
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["query_complexity"]
+}
+isolated function testComplexityWithUnionTypes() returns error? {
+    string url = "http://localhost:9098/complexity";
+    string document = check getGraphqlDocumentFromFile("complexity_with_union_types");
+    json expectedPayload = check getJsonContentFromFile("complexity_with_union_types");
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["query_complexity"]
+}
+isolated function testComplexityWithMutation() returns error? {
+    string url = "http://localhost:9098/complexity";
+    string document = check getGraphqlDocumentFromFile("complexity_with_mutation");
+    json expectedPayload = check getJsonContentFromFile("complexity_with_mutation");
     json actualPayload = check getJsonPayloadFromService(url, document);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }

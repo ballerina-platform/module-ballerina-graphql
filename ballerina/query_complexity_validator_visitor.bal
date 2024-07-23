@@ -24,13 +24,13 @@ class QueryComplexityValidatorVisitor {
     private final Engine engine;
     private final readonly & __Schema schema;
     private final QueryComplexityConfig queryComplexityConfig;
-    private final string? operationName;
+    private final string operationName;
     private final NodeModifierContext nodeModifierContext;
     private int queryComplexity = 0;
     private ErrorDetail[] errors = [];
 
     isolated function init(Engine engine, readonly & __Schema schema, QueryComplexityConfig queryComplexityConfig,
-            string? operationName, NodeModifierContext nodeModifierContext) {
+            string operationName, NodeModifierContext nodeModifierContext) {
         self.engine = engine;
         self.schema = schema;
         self.queryComplexityConfig = queryComplexityConfig;
@@ -57,7 +57,7 @@ class QueryComplexityValidatorVisitor {
             selection.accept(self, parentType);
         }
         if self.queryComplexityConfig.maxComplexity < self.queryComplexity {
-            string operationName = self.operationName is string ? string `${self.operationName.toString()} ` : "";
+            string operationName = self.operationName == parser:ANONYMOUS_OPERATION ? "" : string `${self.operationName} `;
             string message = string `The operation ${operationName}exceeds the maximum query complexity threshold. Maximum allowed complexity: ${self.queryComplexityConfig.maxComplexity}, actual complexity: ${self.queryComplexity}`;
             if self.queryComplexityConfig.warnOnly {
                 log:printWarn(message);
@@ -73,16 +73,14 @@ class QueryComplexityValidatorVisitor {
         if 'type is __Type {
             __Type parentType = getOfType('type);
             string coordinate = string `${parentType.name.toString()}.${fieldNode.getName()}`;
-            int|Error complexityValue = getFieldComplexity(self.engine, coordinate);
-            if complexityValue is Error {
-                log:printDebug("Error in getting field complexity for " + coordinate, complexityValue);
+            int|Error fieldComplexity = getFieldComplexity(self.engine, coordinate);
+            if fieldComplexity is Error {
+                log:printDebug("Complexity not found for field: " + coordinate, fieldComplexity);
             }
-            int complexity = complexityValue is int ? complexityValue : self.queryComplexityConfig.defaultFieldComplexity;
+            int complexity = fieldComplexity is int ? fieldComplexity : self.queryComplexityConfig.defaultFieldComplexity;
             self.queryComplexity += complexity;
             __Field? requiredFieldValue = getRequierdFieldFromType(parentType, self.schema.types, fieldNode);
             if requiredFieldValue is () {
-                string message = getFieldNotFoundErrorMessageFromType(fieldNode.getName(), parentType);
-                self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
                 return;
             }
             fieldType = requiredFieldValue.'type;
@@ -95,8 +93,10 @@ class QueryComplexityValidatorVisitor {
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         parser:FragmentNode modifiedFragmentNode = self.nodeModifierContext.getModifiedFragmentNode(fragmentNode);
+        string fragmentOnTypeName = fragmentNode.getOnType();
+        __Type? fragmentOnType = getTypeFromTypeArray(self.schema.types, fragmentOnTypeName);
         foreach parser:SelectionNode selection in modifiedFragmentNode.getSelections() {
-            selection.accept(self);
+            selection.accept(self, fragmentOnType);
         }
     }
 

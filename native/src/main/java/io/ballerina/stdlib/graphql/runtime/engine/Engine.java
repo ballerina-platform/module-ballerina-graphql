@@ -85,7 +85,7 @@ public class Engine {
     public static Object createSchema(Environment environment, BString schemaString, BObject service) {
         try {
             Schema schema = getDecodedSchema(schemaString);
-            ServiceAnalyzer serviceAnalyzer = new ServiceAnalyzer((ServiceType) TypeUtils.getType(service));
+            ServiceAnalyzer serviceAnalyzer = new ServiceAnalyzer((ServiceType) TypeUtils.getType(service), schema);
             serviceAnalyzer.analyze();
             service.addNativeData(RESOURCE_MAP, serviceAnalyzer.getResourceMap());
             SchemaRecordGenerator schemaRecordGenerator = new SchemaRecordGenerator(schema);
