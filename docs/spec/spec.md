@@ -1633,7 +1633,7 @@ This annotation consists of the following fields.
 
 #### 7.1.1 Max Query Depth
 
-The `maxQueryDepth` field is used to provide a limit on the depth of an incoming request. 
+The `maxQueryDepth` field is used to provide a limit on the depth of an incoming request.
 
 ###### Example: Setting Max Query Depth
 
@@ -1796,7 +1796,7 @@ service on new graphql:Listener(9090) {
 
 #### 7.1.8 Constraint Configurations
 
-The `validation` field is used to enable or disable the validation of constraints defined on GraphQL input types. 
+The `validation` field is used to enable or disable the validation of constraints defined on GraphQL input types.
 
 ###### Example: Disable Constraint Validation Support
 
@@ -4095,7 +4095,7 @@ The Ballerina GraphQL package provides various measures to validate incoming Gra
 
 #### 10.9.1 Query Complexity Validation
 
-The query complexity validation will evaluate the complexity of incoming GraphQL queries and help prevent performance and security issues caused by overly complex queries. 
+The query complexity validation will evaluate the complexity of incoming GraphQL queries and help prevent performance and security issues caused by overly complex queries.
 
 The query complexity of a GraphQL operation can be calculated based on the complexity of its fields. The complexity of a field can be defined by the user based on the field’s type and the amount of data it retrieves. The complexity of a query is the sum of the complexities of its fields. Users can set a maximum complexity threshold for queries, and queries exceeding this threshold can be either rejected by throwing an error or logged as a warning as per the user’s configuration.
 
@@ -4113,7 +4113,7 @@ The incoming GraphQL requests are validated against the `maxComplexity` value be
 
 This field defines the default complexity value for all the fields in the GraphQL schema. The default value is set to `1` and the value should be a positive integer.
 
-When the query complexity analysis is enabled and a particular field has not defined a complexity value, the `defaultFieldComplexity` value will be applied to that field. 
+When the query complexity analysis is enabled and a particular field has not defined a complexity value, the `defaultFieldComplexity` value will be applied to that field.
 
 ###### 10.9.1.1.3 The `warnOnly` Field
 
@@ -4137,7 +4137,7 @@ This field defines the behavior of the scenario where the complexity of a query 
 
 This section describes the behavior of the query complexity validation configurations for a field. See [Field Complexity Configurations](#724-query-complexity-configurations) section for information on how to configure field complexity.
 
-The field complexity value is derived from either from the provided field-specific complexity value, or from the `defaultFieldComplexity` value. 
+The field complexity value is derived from either from the provided field-specific complexity value, or from the `defaultFieldComplexity` value.
 
 To override the `defaultFieldComplexity` value for a specific field, the user can define the field complexity value in the field configuration. The field complexity value should be a positive integer.
 
@@ -4149,7 +4149,7 @@ The `complexity` value of a record field cannot be overriden and will always get
 
 ###### 10.9.1.2.2 List Field Complexity
 
-When a GraphQL field type is a `LIST`, the complexity value will not be depended on the number of elements in the returned list. Users are advised to consider the complexity of retrieving a list of values, when assigning complexity value to a particular field.
+When a GraphQL field type is a `LIST`, the complexity value will not be dependent on the number of elements in the returned list. Users are advised to consider the complexity of retrieving a list of values when assigning a complexity value to a particular field.
 
 ###### 10.9.1.2.3 Hierarchical Resource Paths Complexity
 
@@ -4161,7 +4161,7 @@ Due to [a limitation](https://github.com/ballerina-platform/ballerina-lang/issue
 
 ###### 10.9.1.2.5 Introspection Query Complexities
 
-The query complexity validation is currently not applied to introspection queries. This might change in the future releases.
+The query complexity validation is currently not applied to introspection queries. This might change in future releases.
 
 ##### 10.9.1.3 Response for Invalid Document with Exceeding Max Query Complexity
 
@@ -4194,7 +4194,7 @@ service on new graphql:Listener(9090) {
 }
 ```
 
-Consider the following GraphQL document. The `profile` field has a complexity value of 3 and all the other fields (`name`, `age`) have the complexity value of 1. The profile is intended to be execute three times with aliases. Therefore, the document has a combined complexity of 15.
+Consider the following GraphQL document. The `profile` field has a complexity value of 3 and all the other fields (`name`, `age`) have a complexity value of 1. The profile is intended to be executed three times with aliases. Therefore, the document has a combined complexity of 15.
 
 ```graphql
 {
@@ -4367,7 +4367,7 @@ This will result in the following response.
 
 #### 10.9.4 Constraint Validation
 
-This section describes the constraint validation features provided by the Ballerina GraphQL package. See [Constraint Configurations](#718-constraint-configurations) section for information on how to configure constraints.
+This section describes the constraint validation features provided by the Ballerina GraphQL package. See the [Constraint Configurations](#718-constraint-configurations) section for information on how to configure constraints.
 
 If constraint validation support is enabled, the GraphQL service verifies all constraints set on the GraphQL inputs when executing the resolver. By default, constraint validation is enabled for Ballerina GraphQL services.
 
@@ -4412,7 +4412,7 @@ service on new graphql:Listener(9090) {
 }
 ```
 
-The following GraphQL document has a `name` field with a length of 1 and age field with a value of 17.
+The following GraphQL document has a `name` field with a length of 1 and an `age` field with a value of 17.
 
 ```graphql
 mutation {

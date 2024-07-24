@@ -96,7 +96,7 @@ isolated function getFieldObject(parser:FieldNode fieldNode, parser:RootOperatio
     );
 }
 
-isolated function createSchema(string schemaString, Service s) returns readonly & __Schema|Error
+isolated function createSchema(string schemaString) returns readonly & __Schema|Error
 = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"
 } external;
@@ -143,5 +143,9 @@ isolated function isRecordWithNoOptionalFields(any|error value) returns boolean 
 } external;
 
 isolated function getFieldComplexity(Engine engine, string coordinate) returns int|Error = @java:Method {
+    'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
+} external;
+
+isolated function analyzeServices(Service[] services) = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
 } external;

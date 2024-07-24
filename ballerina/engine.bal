@@ -23,7 +23,7 @@ import ballerina/uuid;
 isolated class Engine {
     private final readonly & __Schema schema;
     private final int? maxQueryDepth;
-    private final readonly & (readonly & Interceptor)[] interceptors;
+    private final readonly & Interceptor[] interceptors;
     private final readonly & boolean introspection;
     private final readonly & boolean validation;
     private final cache:Cache? cache;
@@ -39,7 +39,7 @@ isolated class Engine {
             return error Error("Max query depth value must be a positive integer");
         }
         self.maxQueryDepth = maxQueryDepth;
-        self.schema = check createSchema(schemaString, s);
+        self.schema = check createSchema(schemaString);
         self.interceptors = interceptors;
         self.introspection = introspection;
         self.validation = validation;

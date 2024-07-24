@@ -23,7 +23,9 @@ class QueryComplexityValidatorVisitor {
 
     private final Engine engine;
     private final readonly & __Schema schema;
-    private final QueryComplexityConfig queryComplexityConfig;
+    private final int maxComplexity;
+    private final int defaultFieldComplexity;
+    private final boolean warnOnly;
     private final string operationName;
     private final NodeModifierContext nodeModifierContext;
     private int queryComplexity = 0;
@@ -33,7 +35,9 @@ class QueryComplexityValidatorVisitor {
             string operationName, NodeModifierContext nodeModifierContext) {
         self.engine = engine;
         self.schema = schema;
-        self.queryComplexityConfig = queryComplexityConfig;
+        self.maxComplexity = queryComplexityConfig.maxComplexity;
+        self.defaultFieldComplexity = queryComplexityConfig.defaultFieldComplexity;
+        self.warnOnly = queryComplexityConfig.warnOnly;
         self.operationName = operationName;
         self.nodeModifierContext = nodeModifierContext;
     }
@@ -42,7 +46,7 @@ class QueryComplexityValidatorVisitor {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
-        if self.queryComplexityConfig.maxComplexity == 0 {
+        if self.maxComplexity == 0 {
             return;
         }
         __Type parentType;
@@ -56,10 +60,10 @@ class QueryComplexityValidatorVisitor {
         foreach parser:SelectionNode selection in operationNode.getSelections() {
             selection.accept(self, parentType);
         }
-        if self.queryComplexityConfig.maxComplexity < self.queryComplexity {
+        if self.maxComplexity < self.queryComplexity {
             string operationName = self.operationName == parser:ANONYMOUS_OPERATION ? "" : string `${self.operationName} `;
-            string message = string `The operation ${operationName}exceeds the maximum query complexity threshold. Maximum allowed complexity: ${self.queryComplexityConfig.maxComplexity}, actual complexity: ${self.queryComplexity}`;
-            if self.queryComplexityConfig.warnOnly {
+            string message = string `The operation ${operationName}exceeds the maximum query complexity threshold. Maximum allowed complexity: ${self.maxComplexity}, actual complexity: ${self.queryComplexity}`;
+            if self.warnOnly {
                 log:printWarn(message);
             } else {
                 self.errors.push(getErrorDetailRecord(message, operationNode.getLocation()));
@@ -75,9 +79,9 @@ class QueryComplexityValidatorVisitor {
             string coordinate = string `${parentType.name.toString()}.${fieldNode.getName()}`;
             int|Error fieldComplexity = getFieldComplexity(self.engine, coordinate);
             if fieldComplexity is Error {
-                log:printDebug(string `Complexity not found for field: ${coordinate}`, fieldComplexity);
+                log:printDebug(string `Complexity not found for field: "coordinate"`, fieldComplexity);
             }
-            int complexity = fieldComplexity is int ? fieldComplexity : self.queryComplexityConfig.defaultFieldComplexity;
+            int complexity = fieldComplexity is int ? fieldComplexity : self.defaultFieldComplexity;
             self.queryComplexity += complexity;
             __Field? requiredFieldValue = getRequierdFieldFromType(parentType, self.schema.types, fieldNode);
             if requiredFieldValue is () {

@@ -27,6 +27,7 @@ import io.ballerina.runtime.api.types.Field;
 import io.ballerina.runtime.api.types.IntersectionType;
 import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
+import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.StringUtils;
@@ -39,6 +40,7 @@ import io.ballerina.runtime.api.values.BValue;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.commons.utils.SdlSchemaStringGenerator;
 import io.ballerina.stdlib.graphql.runtime.engine.meta.Resource;
+import io.ballerina.stdlib.graphql.runtime.engine.meta.ServiceAnalyzer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -119,6 +121,15 @@ public class EngineUtils {
     // Root operation types
     public static final String OPERATION_QUERY = "query";
     public static final String OPERATION_SUBSCRIPTION = "subscription";
+
+    public static void analyzeServices(BArray services) {
+        for (int i = 0; i < services.size(); i++) {
+            BObject service = (BObject) services.get(i);
+            ServiceAnalyzer serviceAnalyzer = new ServiceAnalyzer((ServiceType) TypeUtils.getType(service));
+            serviceAnalyzer.analyze();
+            service.addNativeData(RESOURCE_MAP, serviceAnalyzer.getResourceMap());
+        }
+    }
 
     static boolean isPathsMatching(ResourceMethodType resourceMethod, List<String> paths) {
         String[] resourcePath = resourceMethod.getResourcePath();

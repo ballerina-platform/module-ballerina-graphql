@@ -24,13 +24,6 @@ isolated function getCorsConfig(GraphqlServiceConfig? serviceConfig) returns Cor
     return {};
 }
 
-isolated function getMaxQueryDepth(GraphqlServiceConfig? serviceConfig) returns int? {
-    if serviceConfig is GraphqlServiceConfig {
-        return serviceConfig?.maxQueryDepth;
-    }
-    return;
-}
-
 isolated function getListenerAuthConfig(GraphqlServiceConfig? serviceConfig) returns ListenerAuthConfig[]? {
     if serviceConfig is GraphqlServiceConfig {
         return serviceConfig?.auth;
@@ -45,30 +38,19 @@ isolated function getContextInit(GraphqlServiceConfig? serviceConfig) returns Co
     return initDefaultContext;
 }
 
-isolated function getGraphiqlConfig(GraphqlServiceConfig? serviceConfig) returns Graphiql {
-    if serviceConfig is GraphqlServiceConfig {
-        return serviceConfig.graphiql;
-    }
-    return {};
-}
-
-isolated function getServiceConfig(Service serviceObject) returns GraphqlServiceConfig? {
+isolated function getServiceConfig(Service serviceObject) returns GraphqlServiceConfig|Error {
     typedesc<any> serviceType = typeof serviceObject;
-    return serviceType.@ServiceConfig;
-}
-
-isolated function getSchemaString(GraphqlServiceConfig? serviceConfig) returns string {
-    if serviceConfig is GraphqlServiceConfig {
-        return serviceConfig.schemaString;
+    GraphqlServiceConfig|error config = serviceType.@ServiceConfig.ensureType();
+    if config is error {
+        return error Error("Service configuration not found");
     }
-    return "";
+    return config;
 }
 
-isolated function getServiceInterceptors(GraphqlServiceConfig? serviceConfig)
-returns readonly & (readonly & Interceptor)[] {
+isolated function getServiceInterceptors(GraphqlServiceConfig? serviceConfig) returns readonly & Interceptor[] {
     if serviceConfig is GraphqlServiceConfig {
-        readonly & ((readonly & Interceptor)|(readonly & Interceptor)[]) interceptors = serviceConfig.interceptors;
-        if interceptors is (readonly & Interceptor) {
+        readonly & Interceptor|readonly & Interceptor[] interceptors = serviceConfig.interceptors;
+        if interceptors is Interceptor {
             return [interceptors];
         } else {
             return interceptors;
@@ -89,13 +71,6 @@ isolated function getValidation(GraphqlServiceConfig? serviceConfig) returns boo
         return serviceConfig.validation;
     }
     return true;
-}
-
-isolated function getQueryComplexityConfig(GraphqlServiceConfig? serviceConfig) returns QueryComplexityConfig? {
-    if serviceConfig is GraphqlServiceConfig {
-        return serviceConfig.queryComplexityConfig;
-    }
-    return;
 }
 
 isolated function getFieldInterceptors(service object {} serviceObj, parser:RootOperationType operationType,
