@@ -51,7 +51,6 @@ import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 public class ServiceAnalyzer {
     private static final BString packageName = StringUtils.fromString(getModule().toString());
 
-    private final Map<String, Resource> resourceMap;
 
     private static final BString serviceConfigName = StringUtils.fromString("ServiceConfig");
     private static final BString resourceConfigName = StringUtils.fromString("ResourceConfig");
@@ -59,6 +58,7 @@ public class ServiceAnalyzer {
     private static final BString defaultComplexityKey = StringUtils.fromString("defaultFieldComplexity");
     private static final BString complexityKey = StringUtils.fromString("complexity");
 
+    private final Map<String, Resource> resourceMap;
     private final ServiceType serviceType;
     private final Long defaultQueryComplexity;
 
