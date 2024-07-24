@@ -75,7 +75,7 @@ class QueryComplexityValidatorVisitor {
             string coordinate = string `${parentType.name.toString()}.${fieldNode.getName()}`;
             int|Error fieldComplexity = getFieldComplexity(self.engine, coordinate);
             if fieldComplexity is Error {
-                log:printDebug("Complexity not found for field: " + coordinate, fieldComplexity);
+                log:printDebug(string `Complexity not found for field: ${coordinate}`, fieldComplexity);
             }
             int complexity = fieldComplexity is int ? fieldComplexity : self.queryComplexityConfig.defaultFieldComplexity;
             self.queryComplexity += complexity;
