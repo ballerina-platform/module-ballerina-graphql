@@ -49,9 +49,8 @@ import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
  * This class analyzes the Ballerina service and extracts the meta information.
  */
 public class ServiceAnalyzer {
+
     private static final BString packageName = StringUtils.fromString(getModule().toString());
-
-
     private static final BString serviceConfigName = StringUtils.fromString("ServiceConfig");
     private static final BString resourceConfigName = StringUtils.fromString("ResourceConfig");
     private static final BString queryComplexityConfigKey = StringUtils.fromString("queryComplexityConfig");
