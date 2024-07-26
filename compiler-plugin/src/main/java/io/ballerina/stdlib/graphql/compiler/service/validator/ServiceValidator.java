@@ -84,6 +84,7 @@ import java.util.stream.Collectors;
 
 import static io.ballerina.compiler.syntax.tree.SyntaxKind.SPECIFIC_FIELD;
 import static io.ballerina.compiler.syntax.tree.SyntaxKind.SPREAD_MEMBER;
+import static io.ballerina.stdlib.graphql.commons.utils.Utils.getGraphqlModulePrefix;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getAccessor;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getBooleanValue;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getDefaultableParameterNode;
@@ -158,10 +159,11 @@ public class ServiceValidator {
     }
 
     public void validate() {
+        String modulePrefix = getGraphqlModulePrefix(this.context.node().syntaxTree().rootNode());
         if (serviceNode.kind() == SyntaxKind.SERVICE_DECLARATION) {
-            validateServiceDeclaration();
+            validateServiceDeclaration(modulePrefix);
         } else if (serviceNode.kind() == SyntaxKind.OBJECT_CONSTRUCTOR) {
-            validateServiceObject();
+            validateServiceObject(modulePrefix);
         }
         validateEntities();
     }
@@ -227,11 +229,11 @@ public class ServiceValidator {
         }
     }
 
-    private void validateServiceObject() {
+    private void validateServiceObject(String modulePrefix) {
         ObjectConstructorExpressionNode objectConstructorExpNode = (ObjectConstructorExpressionNode) serviceNode;
         List<Node> serviceMethodNodes = getServiceMethodNodes(objectConstructorExpNode.members());
         if (!objectConstructorExpNode.annotations().isEmpty()) {
-            validateAnnotation(objectConstructorExpNode);
+            validateAnnotation(objectConstructorExpNode, modulePrefix);
         }
         validateRootServiceMethods(serviceMethodNodes, objectConstructorExpNode.location());
         if (!this.hasQueryType) {
@@ -240,7 +242,7 @@ public class ServiceValidator {
         validateEntitiesResolverReturnTypes();
     }
 
-    private void validateServiceDeclaration() {
+    private void validateServiceDeclaration(String modulePrefix) {
         ServiceDeclarationNode node = (ServiceDeclarationNode) serviceNode;
         // No need to check isEmpty(), already validated in ServiceDeclarationAnalysisTask
         // noinspection OptionalGetWithoutIsPresent
@@ -249,7 +251,7 @@ public class ServiceValidator {
         if (serviceDeclarationSymbol.listenerTypes().size() > 1) {
             addDiagnostic(CompilationDiagnostic.INVALID_MULTIPLE_LISTENERS, node.location());
         }
-        validateService();
+        validateService(modulePrefix);
     }
 
     public boolean isErrorOccurred() {
@@ -260,11 +262,11 @@ public class ServiceValidator {
         return this.cacheConfigContext;
     }
 
-    private void validateService() {
+    private void validateService(String modulePrefix) {
         ServiceDeclarationNode serviceDeclarationNode = (ServiceDeclarationNode) this.context.node();
         List<Node> serviceMethodNodes = getServiceMethodNodes(serviceDeclarationNode.members());
         if (serviceDeclarationNode.metadata().isPresent()) {
-            validateAnnotation(serviceDeclarationNode.metadata().get());
+            validateAnnotation(serviceDeclarationNode.metadata().get(), modulePrefix);
         }
         validateRootServiceMethods(serviceMethodNodes, serviceDeclarationNode.location());
         if (!this.hasQueryType) {
@@ -273,17 +275,17 @@ public class ServiceValidator {
         validateEntitiesResolverReturnTypes();
     }
 
-    private void validateAnnotation(MetadataNode metadataNode) {
+    private void validateAnnotation(MetadataNode metadataNode, String modulePrefix) {
         for (AnnotationNode annotationNode : metadataNode.annotations()) {
-            if (isGraphqlServiceConfig(annotationNode)) {
+            if (isGraphqlServiceConfig(annotationNode, modulePrefix)) {
                 validateServiceAnnotation(annotationNode);
             }
         }
     }
 
-    private void validateAnnotation(ObjectConstructorExpressionNode node) {
+    private void validateAnnotation(ObjectConstructorExpressionNode node, String modulePrefix) {
         for (AnnotationNode annotationNode : node.annotations()) {
-            if (isGraphqlServiceConfig(annotationNode)) {
+            if (isGraphqlServiceConfig(annotationNode, modulePrefix)) {
                 validateServiceAnnotation(annotationNode);
             }
         }

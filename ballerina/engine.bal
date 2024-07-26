@@ -23,16 +23,17 @@ import ballerina/uuid;
 isolated class Engine {
     private final readonly & __Schema schema;
     private final int? maxQueryDepth;
-    private final readonly & (readonly & Interceptor)[] interceptors;
+    private final readonly & Interceptor[] interceptors;
     private final readonly & boolean introspection;
     private final readonly & boolean validation;
     private final cache:Cache? cache;
     private final readonly & ServerCacheConfig? cacheConfig;
+    private final readonly & QueryComplexityConfig? queryComplexityConfig;
 
     isolated function init(string schemaString, int? maxQueryDepth, Service s,
             readonly & (readonly & Interceptor)[] interceptors, boolean introspection,
             boolean validation, ServerCacheConfig? cacheConfig = (),
-            ServerCacheConfig? fieldCacheConfig = ())
+            ServerCacheConfig? fieldCacheConfig = (), QueryComplexityConfig? queryComplexityConfig = ())
     returns Error? {
         if maxQueryDepth is int && maxQueryDepth < 1 {
             return error Error("Max query depth value must be a positive integer");
@@ -43,6 +44,7 @@ isolated class Engine {
         self.introspection = introspection;
         self.validation = validation;
         self.cacheConfig = cacheConfig;
+        self.queryComplexityConfig = queryComplexityConfig;
         self.cache = initCacheTable(cacheConfig, fieldCacheConfig);
         self.addService(s);
     }
@@ -200,6 +202,18 @@ isolated class Engine {
             return validator.getErrors() ?: [];
         }
 
+        worker queryComplexityValidatorWorker returns ErrorDetail[] {
+            QueryComplexityConfig? queryComplexityConfig = self.queryComplexityConfig;
+            if queryComplexityConfig is () {
+                return [];
+            }
+            parser:OperationNode operation = modifiedDocument.getOperations()[0];
+            QueryComplexityValidatorVisitor validator = new (self, schema, queryComplexityConfig, operation.getName(),
+                nodeModifierContext);
+            operation.accept(validator);
+            return validator.getErrors() ?: [];
+        }
+
         worker subscriptionValidatorWorker returns ErrorDetail[] {
             SubscriptionValidatorVisitor validator = new (nodeModifierContext);
             modifiedDocument.accept(validator);
@@ -238,6 +252,8 @@ isolated class Engine {
         }
 
         ErrorDetail[] errors = wait queryDepthValidatorWorker;
+        validationErrors.push(...errors);
+        errors = wait queryComplexityValidatorWorker;
         validationErrors.push(...errors);
         errors = wait subscriptionValidatorWorker;
         validationErrors.push(...errors);

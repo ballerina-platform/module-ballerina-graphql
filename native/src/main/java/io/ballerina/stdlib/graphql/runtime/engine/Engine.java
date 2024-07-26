@@ -76,6 +76,7 @@ import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
  * This handles Ballerina GraphQL Engine.
  */
 public class Engine {
+    public static final String RESOURCE_MAP = "graphql.resourceMap";
 
     private Engine() {
     }

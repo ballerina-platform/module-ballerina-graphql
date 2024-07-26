@@ -25,6 +25,8 @@ import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.syntax.tree.IdentifierToken;
+import io.ballerina.compiler.syntax.tree.ImportDeclarationNode;
+import io.ballerina.compiler.syntax.tree.ModulePartNode;
 import io.ballerina.compiler.syntax.tree.ModuleVariableDeclarationNode;
 import io.ballerina.compiler.syntax.tree.QualifiedNameReferenceNode;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
@@ -39,7 +41,8 @@ import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
  */
 public final class Utils {
 
-    private Utils () {}
+    private Utils() {
+    }
 
     public static final String PACKAGE_NAME = "graphql";
     public static final String SUBGRAPH_SUB_MODULE_NAME = "graphql.subgraph";
@@ -109,13 +112,39 @@ public final class Utils {
 
     private static boolean isGraphqlServiceQualifiedNameReference(QualifiedNameReferenceNode nameReferenceNode) {
         Token modulePrefixToken = nameReferenceNode.modulePrefix();
+        String graphqlModulePrefix = getGraphqlModulePrefix(nameReferenceNode.syntaxTree().rootNode());
         if (modulePrefixToken.kind() != SyntaxKind.IDENTIFIER_TOKEN) {
             return false;
         }
-        if (!PACKAGE_NAME.equals(modulePrefixToken.text())) {
+        if (!graphqlModulePrefix.equals(modulePrefixToken.text())) {
             return false;
         }
         IdentifierToken identifier = nameReferenceNode.identifier();
         return SERVICE_NAME.equals(identifier.text());
+    }
+
+    public static String getGraphqlModulePrefix(ModulePartNode rootNode) {
+        for (ImportDeclarationNode importDeclarationNode : rootNode.imports()) {
+            if (!isGraphqlImportNode(importDeclarationNode)) {
+                continue;
+            }
+            if (importDeclarationNode.prefix().isPresent()) {
+                return importDeclarationNode.prefix().get().prefix().text();
+            }
+        }
+        return PACKAGE_NAME;
+    }
+
+    public static boolean isGraphqlImportNode(ImportDeclarationNode importNode) {
+        if (importNode.orgName().isEmpty()) {
+            return false;
+        }
+        if (!PACKAGE_ORG.equals(importNode.orgName().get().orgName().text())) {
+            return false;
+        }
+        if (importNode.moduleName().size() != 1) {
+            return false;
+        }
+        return PACKAGE_NAME.equals(importNode.moduleName().get(0).text());
     }
 }

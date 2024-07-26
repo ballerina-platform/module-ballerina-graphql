@@ -405,7 +405,7 @@ isolated function initContext(Engine engine, ContextInit contextInit, http:Reque
     }
 }
 
-isolated function getGraphiqlService(GraphqlServiceConfig? serviceConfig, string graphqlUrl,
+isolated function getGraphiqlService(GraphqlServiceConfig serviceConfig, string graphqlUrl,
         string? subscriptionUrl = ()) returns HttpService {
     final readonly & ListenerAuthConfig[]? authConfigurations = getListenerAuthConfig(serviceConfig).cloneReadOnly();
     final CorsConfig corsConfig = getCorsConfig(serviceConfig);

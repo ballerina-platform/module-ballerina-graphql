@@ -50,7 +50,7 @@ class FieldValidatorVisitor {
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         __Field parentField = <__Field>data;
         __Type parentType = getOfType(parentField.'type);
-        __Field? requiredFieldValue = getRequierdFieldFromType(parentType, self.schema.types, fieldNode);
+        __Field? requiredFieldValue = getRequiredFieldFromType(parentType, self.schema.types, fieldNode);
         if requiredFieldValue is () {
             string message = getFieldNotFoundErrorMessageFromType(fieldNode.getName(), parentType);
             self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
@@ -245,7 +245,7 @@ class FieldValidatorVisitor {
         json variableValue = modifiedArgNode.getVariableValue();
         if getOfType(schemaArg.'type).name == UPLOAD {
             return;
-        } else if variableValue is Scalar && (getTypeKind(schemaArg.'type) == SCALAR 
+        } else if variableValue is Scalar && (getTypeKind(schemaArg.'type) == SCALAR
                   || getTypeKind(schemaArg.'type) == ENUM) {
             self.coerceArgumentNodeValue(argumentNode, schemaArg);
             self.validateArgumentValue(variableValue, modifiedArgNode.getValueLocation(), getTypeName(modifiedArgNode),
@@ -535,7 +535,7 @@ class FieldValidatorVisitor {
         }
 
         foreach __InputValue inputValue in notFoundInputValues {
-            if inputValue.'type.kind == NON_NULL && inputValue?.defaultValue is () 
+            if inputValue.'type.kind == NON_NULL && inputValue?.defaultValue is ()
                && getOfType(inputValue.'type).name != UPLOAD {
                 string message = getMissingRequiredArgError(fieldNode, inputValue);
                 self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
@@ -685,7 +685,7 @@ returns __Field? {
     return;
 }
 
-isolated function getRequierdFieldFromType(__Type parentType, __Type[] typeArray,
+isolated function getRequiredFieldFromType(__Type parentType, __Type[] typeArray,
                                            parser:FieldNode fieldNode) returns __Field? {
     __Field[] fields = getFieldsArrayFromType(parentType);
     __Field? requiredField = getFieldFromFieldArray(fields, fieldNode.getName());

@@ -465,22 +465,22 @@ isolated function getFieldTypeFromParentType(__Type parentType, __Type[] typeArr
     if typeKind == NON_NULL {
         return getFieldTypeFromParentType(unwrapNonNullype(parentType), typeArray, fieldNode);
     } else if typeKind == OBJECT {
-        __Field requiredFieldValue = <__Field>getRequierdFieldFromType(parentType, typeArray, fieldNode);
+        __Field requiredFieldValue = <__Field>getRequiredFieldFromType(parentType, typeArray, fieldNode);
         return requiredFieldValue.'type;
     } else if typeKind == LIST {
         return getFieldTypeFromParentType(<__Type>parentType.ofType, typeArray, fieldNode);
     } else if typeKind == UNION {
         foreach __Type possibleType in <__Type[]>parentType.possibleTypes {
-            __Field? fieldValue = getRequierdFieldFromType(possibleType, typeArray, fieldNode);
+            __Field? fieldValue = getRequiredFieldFromType(possibleType, typeArray, fieldNode);
             if fieldValue is __Field {
                 return fieldValue.'type;
             }
         }
     } else if typeKind == INTERFACE {
-        __Field? requiredFieldValue = getRequierdFieldFromType(parentType, typeArray, fieldNode);
+        __Field? requiredFieldValue = getRequiredFieldFromType(parentType, typeArray, fieldNode);
         if requiredFieldValue is () {
             foreach __Type possibleType in <__Type[]>parentType.possibleTypes {
-                __Field? fieldValue = getRequierdFieldFromType(possibleType, typeArray, fieldNode);
+                __Field? fieldValue = getRequiredFieldFromType(possibleType, typeArray, fieldNode);
                 if fieldValue is __Field {
                     return fieldValue.'type;
                 }

@@ -100,6 +100,7 @@ public class ArgumentHandler {
     private static final String RETURN_TYPE_PARAM = "$returns$";
     private static final String ARGUMENT_TYPE_PARAM = "$param$";
 
+    @SuppressWarnings("unchecked")
     public ArgumentHandler(MethodType method, BObject context, BObject field, BObject responseGenerator,
                            boolean validation) {
         this.method = method;
@@ -244,6 +245,7 @@ public class ArgumentHandler {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private Object getIdValueFromString(String obj, Type parameterType, BObject argumentNode) {
         if (parameterType.getTag() == TypeTags.STRING_TAG) {
             return StringUtils.fromString(obj);
@@ -337,6 +339,7 @@ public class ArgumentHandler {
         return values;
     }
 
+    @SuppressWarnings("unchecked")
     private BMap<BString, Object> getRepresentationArgument(Object jsonRepresentation, Type parameterType) {
         BMap<BString, ?> map = JsonUtils.convertJSONToMap(jsonRepresentation, PredefinedTypes.TYPE_MAP);
         return ValueCreator.createRecordValue(parameterType.getPackage(), parameterType.getName(),

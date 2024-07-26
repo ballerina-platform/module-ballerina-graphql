@@ -79,6 +79,8 @@ import java.util.stream.Collectors;
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.PACKAGE_NAME;
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.PACKAGE_ORG;
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.SUBGRAPH_SUB_MODULE_NAME;
+import static io.ballerina.stdlib.graphql.commons.utils.Utils.getGraphqlModulePrefix;
+import static io.ballerina.stdlib.graphql.commons.utils.Utils.isGraphqlImportNode;
 import static io.ballerina.stdlib.graphql.compiler.Utils.SERVICE_CONFIG_IDENTIFIER;
 import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlServiceConfig;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.ENABLED_CACHE_FIELD;
@@ -411,7 +413,7 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
         } else {
             boolean isAnnotationFound = false;
             for (AnnotationNode annotationNode : metadataNode.annotations()) {
-                if (isGraphqlServiceConfig(annotationNode)) {
+                if (isGraphqlServiceConfig(annotationNode, prefix)) {
                     isAnnotationFound = true;
                     annotationNode = updateAnnotationNode(annotationNode, schemaString, cacheConfigContext, prefix);
                 }
@@ -551,18 +553,6 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
         context.reportDiagnostic(diagnostic);
     }
 
-    private String getGraphqlModulePrefix(ModulePartNode rootNode) {
-        for (ImportDeclarationNode importDeclarationNode : rootNode.imports()) {
-            if (!isGraphqlImportNode(importDeclarationNode)) {
-                continue;
-            }
-            if (importDeclarationNode.prefix().isPresent()) {
-                return importDeclarationNode.prefix().get().prefix().text();
-            }
-        }
-        return PACKAGE_NAME;
-    }
-
     private ModulePartNode addImportsIfMissing(ModulePartNode rootNode) {
         if (rootNode.imports().isEmpty()) {
             ImportDeclarationNode importDeclarationNode = getGraphqlImportNode();
@@ -602,18 +592,5 @@ public class GraphqlSourceModifier implements ModifierTask<SourceModifierContext
         Token semicolonToken = NodeFactory.createToken(SyntaxKind.SEMICOLON_TOKEN);
         return NodeFactory.createImportDeclarationNode(importKeyword, importOrgNameToken, moduleName, null,
                                                        semicolonToken);
-    }
-
-    private static boolean isGraphqlImportNode(ImportDeclarationNode importNode) {
-        if (importNode.orgName().isEmpty()) {
-            return false;
-        }
-        if (!PACKAGE_ORG.equals(importNode.orgName().get().orgName().text())) {
-            return false;
-        }
-        if (importNode.moduleName().size() != 1) {
-            return false;
-        }
-        return PACKAGE_NAME.equals(importNode.moduleName().get(0).text());
     }
 }

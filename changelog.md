@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+
+- [[#6722] Add Support for Query Complexity Analysis](https://github.com/ballerina-platform/ballerina-library/issues/6722)
+
 ## [1.13.1] - 2024-07-02
 
 ### Changed

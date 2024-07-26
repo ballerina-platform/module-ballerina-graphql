@@ -25,6 +25,10 @@ public class Listener {
     private Graphiql graphiql;
     private string httpEndpoint;
     private string websocketEndpoint;
+    // The service attach method does not contain the annotation values properly assigned. Therefore, the services are
+    // kept in an array to process in the `start` method.
+    // https://github.com/ballerina-platform/ballerina-lang/issues/43162
+    private final Service[] services = [];
 
     # Invoked during the initialization of a `graphql:Listener`. Either an `http:Listener` or a port number must be
     # provided to initialize the listener.
@@ -58,62 +62,33 @@ public class Listener {
     # + return - A `graphql:Error` if an error occurred during the service-attaching process or the schema
     #            generation process or else `()`
     public isolated function attach(Service s, string[]|string? name = ()) returns Error? {
-        GraphqlServiceConfig? serviceConfig = getServiceConfig(s);
-        self.graphiql = getGraphiqlConfig(serviceConfig);
-        string schemaString = getSchemaString(serviceConfig);
-        int? maxQueryDepth = getMaxQueryDepth(serviceConfig);
-        readonly & (readonly & Interceptor)[] interceptors = getServiceInterceptors(serviceConfig);
+        GraphqlServiceConfig serviceConfig = check getServiceConfig(s);
+        self.graphiql = serviceConfig.graphiql;
+        string schemaString = serviceConfig.schemaString;
+        int? maxQueryDepth = serviceConfig.maxQueryDepth;
+        readonly & Interceptor[] interceptors = getServiceInterceptors(serviceConfig);
         boolean introspection = getIntrospection(serviceConfig);
         boolean validation = getValidation(serviceConfig);
         ServerCacheConfig? operationCacheConfig = getCacheConfig(serviceConfig);
         ServerCacheConfig? fieldCacheConfig = getFieldCacheConfigFromServiceConfig(serviceConfig);
-        Engine engine;
+        QueryComplexityConfig? queryComplexityConfig = serviceConfig.queryComplexityConfig;
+        Engine engine  = check new (schemaString, maxQueryDepth, s, interceptors, introspection, validation,
+                                    operationCacheConfig, fieldCacheConfig, queryComplexityConfig);
         if self.graphiql.enabled {
             check validateGraphiqlPath(self.graphiql.path);
-            string gqlServiceBasePath = name is () ? "" : getBasePath(name);
-            engine = check new (schemaString, maxQueryDepth, s, interceptors, introspection, validation,
-                                operationCacheConfig, fieldCacheConfig);
-            __Schema & readonly schema = engine.getSchema();
-            __Type? subscriptionType = schema.subscriptionType;
-            string graphqlUrl = string `${self.httpEndpoint}/${gqlServiceBasePath}`;
-            string subscriptionUrl = string `${self.websocketEndpoint}/${gqlServiceBasePath}`;
-            HttpService graphiqlService = subscriptionType is __Type
-                                        ? getGraphiqlService(serviceConfig, graphqlUrl, subscriptionUrl)
-                                        : getGraphiqlService(serviceConfig, graphqlUrl);
-            attachGraphiqlServiceToGraphqlService(s, graphiqlService);
-            error? result = self.httpListener.attach(graphiqlService, self.graphiql.path);
-            if result is error {
-                return error Error("Error occurred while attaching the GraphiQL endpoint", result);
-            }
-        } else {
-            engine = check new (schemaString, maxQueryDepth, s, interceptors, introspection, validation,
-                                operationCacheConfig, fieldCacheConfig);
+            check self.initGraphiqlService(s, engine, name, serviceConfig);
         }
-
         HttpService httpService = getHttpService(engine, serviceConfig);
         attachHttpServiceToGraphqlService(s, httpService);
-
         error? result = self.httpListener.attach(httpService, name);
         if result is error {
             return error Error("Error occurred while attaching the service", result);
         }
-
         __Schema & readonly schema = engine.getSchema();
         __Type? subscriptionType = schema.subscriptionType;
         if subscriptionType is __Type && self.wsListener is () {
-            string httpVersion = self.httpListener.getConfig().httpVersion;
-            if httpVersion !is http:HTTP_1_1|http:HTTP_1_0 {
-                string message = string `Websocket listener initialization failed due to the incompatibility of ` +
-                                 string `provided HTTP(version ${httpVersion}) listener`;
-                return error Error(message);
-            }
-            websocket:Listener|error wsListener = new(self.httpListener);
-            if wsListener is error {
-                return error Error("Websocket listener initialization failed", wsListener);
-            }
-            self.wsListener = wsListener;
+            check self.initWebsocketListener();
         }
-
         websocket:Listener? wsListener = self.wsListener;
         if wsListener is websocket:Listener {
             UpgradeService wsService = getWebsocketService(engine, schema, serviceConfig);
@@ -123,6 +98,7 @@ public class Listener {
                 return error Error("Error occurred while attaching the websocket service", result);
             }
         }
+        self.services.push(s);
     }
 
     # Detaches the provided service from the Listener.
@@ -162,6 +138,7 @@ public class Listener {
     #
     # + return - A `graphql:Error`, if an error occurred during the service starting process, otherwise nil
     public isolated function 'start() returns Error? {
+        analyzeServices(self.services);
         error? result = self.httpListener.'start();
         if result is error {
             return error Error("Error occurred while starting the service", result);
@@ -211,6 +188,37 @@ public class Listener {
             if result is error {
                 return error Error("Error occurred while stopping the websocket service", result);
             }
+        }
+    }
+
+    private isolated function initWebsocketListener() returns Error? {
+        string httpVersion = self.httpListener.getConfig().httpVersion;
+        if httpVersion !is http:HTTP_1_1|http:HTTP_1_0 {
+            string message = string `Websocket listener initialization failed due to the incompatibility of ` +
+                                string `provided HTTP(version ${httpVersion}) listener`;
+            return error Error(message);
+        }
+        websocket:Listener|error wsListener = new(self.httpListener);
+        if wsListener is error {
+            return error Error("Websocket listener initialization failed", wsListener);
+        }
+        self.wsListener = wsListener;
+    }
+
+    private isolated function initGraphiqlService(Service s, Engine engine, string[]|string? name,
+            GraphqlServiceConfig serviceConfig) returns Error? {
+        string gqlServiceBasePath = name is () ? "" : getBasePath(name);
+        __Schema & readonly schema = engine.getSchema();
+        __Type? subscriptionType = schema.subscriptionType;
+        string graphqlUrl = string `${self.httpEndpoint}/${gqlServiceBasePath}`;
+        string subscriptionUrl = string `${self.websocketEndpoint}/${gqlServiceBasePath}`;
+        HttpService graphiqlService = subscriptionType is __Type
+                                    ? getGraphiqlService(serviceConfig, graphqlUrl, subscriptionUrl)
+                                    : getGraphiqlService(serviceConfig, graphqlUrl);
+        attachGraphiqlServiceToGraphqlService(s, graphiqlService);
+        error? result = self.httpListener.attach(graphiqlService, self.graphiql.path);
+        if result is error {
+            return error Error("Error occurred while attaching the GraphiQL endpoint", result);
         }
     }
 }

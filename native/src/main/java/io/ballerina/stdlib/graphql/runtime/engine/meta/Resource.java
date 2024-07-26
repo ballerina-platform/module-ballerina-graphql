@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.org).
  *
- * WSO2 Inc. licenses this file to you under the Apache License,
+ * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,9 +16,12 @@
  * under the License.
  */
 
-module io.ballerina.stdlib.graphql.runtime {
-    requires io.ballerina.runtime;
-    requires io.ballerina.stdlib.constraint;
-    requires io.ballerina.stdlib.graphql.commons;
-    requires io.ballerina.lang;
+package io.ballerina.stdlib.graphql.runtime.engine.meta;
+
+/**
+ * This class stores the meta information of a Ballerina GraphQL resource.
+ *
+ * @param complexity - The complexity of the resource.
+ */
+public record Resource(Long complexity) {
 }

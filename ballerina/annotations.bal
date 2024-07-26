@@ -15,53 +15,55 @@
 // under the License.
 
 # Provides a set of configurations for the GraphQL service.
-#
-# + maxQueryDepth - The maximum depth allowed for a query
-# + auth - Listener authentication configurations
-# + contextInit - Function to initialize the context. If not provided, an empty context will be created
-# + cors - The cross origin resource sharing configurations for the service
-# + graphiql - GraphiQL client configurations
-# + schemaString - The generated schema. This is auto-generated at the compile-time
-# + interceptors - GraphQL service level interceptors
-# + introspection - Whether to enable or disable the introspection on the service
-# + validation - Whether to enable or disable the constraint validation
-# + cacheConfig - The cache configurations for the operations
-# + fieldCacheConfig - The field cache config derived from the resource annotations. This is auto-generated at the compile time
 public type GraphqlServiceConfig record {|
+    # The maximum depth allowed for a query
     int maxQueryDepth?;
+    # Listener authentication configurations
     ListenerAuthConfig[] auth?;
+    # Function to initialize the context. If not provided, an empty context will be created
     ContextInit contextInit = initDefaultContext;
+    # The cross origin resource sharing configurations for the service
     CorsConfig cors?;
+    # GraphiQL client configurations
     Graphiql graphiql = {};
+    # The generated schema. This is auto-generated at the compile-time. Providing a value for this field will end up in
+    # a compilation error.
     readonly string schemaString = "";
+    # GraphQL service level interceptors
     readonly (readonly & Interceptor)|(readonly & Interceptor)[] interceptors = [];
+    # Whether to enable or disable the introspection on the service
     boolean introspection = true;
+    # Whether to enable or disable the constraint validation
     boolean validation = true;
+    # The cache configurations for the operations
     ServerCacheConfig cacheConfig?;
+    # The field cache config derived from the resource annotations. This is auto-generated at the compile time
     readonly ServerCacheConfig? fieldCacheConfig = ();
+    # The query complexity configuration for the service.
+    QueryComplexityConfig queryComplexityConfig?;
 |};
 
 # The annotation to configure a GraphQL service.
 public annotation GraphqlServiceConfig ServiceConfig on service;
 
 # Provides a set of configurations for the GraphQL resolvers.
-#
-# + interceptors - GraphQL field level interceptors
-# + prefetchMethodName - The name of the instance method to be used for prefetching
-# + cacheConfig - The cache configurations for the fields
 public type GraphqlResourceConfig record {|
+    # GraphQL field level interceptors
     readonly (readonly & Interceptor)|(readonly & Interceptor)[] interceptors = [];
+    # The name of the instance method to be used for prefetching
     string prefetchMethodName?;
+    # The cache configurations for the fields
     ServerCacheConfig cacheConfig?;
+    # The complexity value of the field
+    int complexity?;
 |};
 
 # The annotation to configure a GraphQL resolver.
 public annotation GraphqlResourceConfig ResourceConfig on object function;
 
 # Provides a set of configurations for the GraphQL interceptors.
-#
-# + global - Scope of the interceptor. If `true`, the interceptor will be applied to all the resolvers.
 public type GraphqlInterceptorConfig record {|
+    # Scope of the interceptor. If `true`, the interceptor will be applied to all the resolvers.
     boolean global = true;
 |};
 

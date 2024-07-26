@@ -1452,6 +1452,13 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 51, 44);
     }
 
+    @Test(groups = "valid")
+    public void testAnnotationsWithCustomModulePrefix() {
+        String packagePath = "87_annotations_with_custom_module_prefix";
+        DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
+        Assert.assertEquals(diagnosticResult.errorCount(), 0);
+    }
+
     private DiagnosticResult getDiagnosticResult(String packagePath) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(packagePath);
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
