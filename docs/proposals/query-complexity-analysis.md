@@ -1,9 +1,9 @@
 # Proposal: GraphQL Query Complexity Analysis
 
-_Owners_: @ThisaruGuruge \ 
+_Owners_: @ThisaruGuruge \
 _Reviewers_: @DimuthuMadushan @MohamedSabthar @shafreenAnfar \
 _Created_: 2024/07/10 \
-_Updated_: 2024/07/10 \   
+_Updated_: 2024/07/10 \
 _Issue_: [#6722](https://github.com/ballerina-platform/ballerina-library/issues/6722)
 
 ## Summary

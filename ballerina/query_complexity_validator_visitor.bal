@@ -83,7 +83,7 @@ class QueryComplexityValidatorVisitor {
             }
             int complexity = fieldComplexity is int ? fieldComplexity : self.defaultFieldComplexity;
             self.queryComplexity += complexity;
-            __Field? requiredFieldValue = getRequierdFieldFromType(parentType, self.schema.types, fieldNode);
+            __Field? requiredFieldValue = getRequiredFieldFromType(parentType, self.schema.types, fieldNode);
             if requiredFieldValue is () {
                 return;
             }
