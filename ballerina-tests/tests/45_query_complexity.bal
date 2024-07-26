@@ -29,7 +29,7 @@ isolated function testValidComplexityQuery() returns error? {
 }
 
 @test:Config {
-    groups: ["query_complexity", "test"]
+    groups: ["query_complexity"]
 }
 isolated function testInvalidComplexityQuery() returns error? {
     string url = "http://localhost:9098/complexity";
@@ -69,6 +69,17 @@ isolated function testComplexityWithMutation() returns error? {
     string url = "http://localhost:9098/complexity";
     string document = check getGraphqlDocumentFromFile("complexity_with_mutation");
     json expectedPayload = check getJsonContentFromFile("complexity_with_mutation");
+    json actualPayload = check getJsonPayloadFromService(url, document);
+    assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["query_complexity", "introspection"]
+}
+isolated function testGraphqlPlaygroundIntrospectionQueryWithComplexityVaildation() returns error? {
+    string url = "http://localhost:9098/complexity";
+    string document = check getGraphqlDocumentFromFile("graphql_playground_introspection_query");
+    json expectedPayload = check getJsonContentFromFile("graphql_playground_introspection_query_with_complexity_validation");
     json actualPayload = check getJsonPayloadFromService(url, document);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
