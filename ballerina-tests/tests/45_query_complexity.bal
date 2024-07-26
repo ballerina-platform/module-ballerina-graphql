@@ -29,7 +29,7 @@ isolated function testValidComplexityQuery() returns error? {
 }
 
 @test:Config {
-    groups: ["query_complexity"]
+    groups: ["query_complexity", "test"]
 }
 isolated function testInvalidComplexityQuery() returns error? {
     string url = "http://localhost:9098/complexity";

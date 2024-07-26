@@ -4157,13 +4157,13 @@ For hierarchical resource paths, intermediate fields get `defaultFieldComplexity
 
 ###### 10.9.1.2.4 Interfaces and Objects Implementing Interfaces
 
-Due to [a limitation](https://github.com/ballerina-platform/ballerina-lang/issues/43151) in the jBallerina runtime, the field complexity value of an interface or an object implementing an interface cannot be overriden. The field complexity value will always get the `defaultFieldComplexity` value set at the service level. This will be fixed in a future release.
+Due to [a limitation](https://github.com/ballerina-platform/ballerina-lang/issues/43151) in the jBallerina runtime, the field complexity value of an interface or an object implementing an interface cannot be overridden. The field complexity value will always get the `defaultFieldComplexity` value set at the service level. This will be fixed in a future release.
 
 ###### 10.9.1.2.5 Introspection Query Complexities
 
-The introspection queries will have the `defaultFieldComplexity` per each field. This cannot be overriden.
+The introspection queries will have the `defaultFieldComplexity` per each field. This cannot be overridden.
 
-> **Note:** When the maximum query complexity value is set to a lower value, tools such as GraphiQL may fail to generate the schema from a 
+> **Note:** When the maximum query complexity value is set to a lower value, tools such as GraphiQL may fail to generate the schema from a
 
 ##### 10.9.1.3 Response for Invalid Document with Exceeding Max Query Complexity
 

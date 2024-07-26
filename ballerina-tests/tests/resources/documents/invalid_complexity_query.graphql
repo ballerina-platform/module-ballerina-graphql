@@ -1,25 +1,25 @@
 query ComplexQuery {
-    d1: device(id: 2) {
-        ...DeviceFragment
+    d1: device(id: 2) { # 10
+        ...DeviceFragment # 5
         ... on Phone {
-            os
+            os # 2
         }
     }
-    d2: device(id: 12) {
-        ...DeviceFragment
+    d2: device(id: 12) { # 10
+        ...DeviceFragment # 5
         ... on Laptop {
-            processor
+            processor # 2
         }
     }
-    d3: device(id: 22) {
-        ...DeviceFragment
+    d3: device(id: 22) { # 10
+        ...DeviceFragment # 5
         ... on Tablet {
-            hasCellular
+            hasCellular # 2
         }
     }
 }
 
-fragment DeviceFragment on Device {
-    brand
-    model
+fragment DeviceFragment on Device { # 5
+    brand # 1
+    model # 4
 }

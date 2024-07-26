@@ -264,12 +264,11 @@ public isolated service class ReviewData {
 }
 
 public type Device distinct service object {
+    isolated resource function get id() returns @graphql:ID int;
 
     @graphql:ResourceConfig {
         complexity: 1
     }
-    isolated resource function get id() returns @graphql:ID int;
-
     isolated resource function get brand() returns string;
 
     isolated resource function get model() returns string;
