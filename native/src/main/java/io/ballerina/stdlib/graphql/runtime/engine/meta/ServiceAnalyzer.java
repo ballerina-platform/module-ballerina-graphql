@@ -103,26 +103,37 @@ public class ServiceAnalyzer {
     private void analyzeType(Type type) {
         Type impliedType = TypeUtils.getImpliedType(type);
         int tag = impliedType.getTag();
-        if (tag == TypeTags.SERVICE_TAG) {
-            analyzeServiceType((ServiceType) impliedType);
-        }
-        if (tag == TypeTags.UNION_TAG) {
-            analyzeUnionType((UnionType) impliedType);
-        }
-        if (tag == TypeTags.ARRAY_TAG) {
-            analyzeType(((ArrayType) impliedType).getElementType());
-        }
-        if (tag == TypeTags.TABLE_TAG) {
-            analyzeType(((TableType) impliedType).getConstrainedType());
-        }
-        if (tag == TypeTags.RECORD_TYPE_TAG) {
-            analyzeRecordType((RecordType) impliedType);
-        }
-        if (tag == TypeTags.MAP_TAG) {
-            analyzeType(((MapType) impliedType).getConstrainedType());
-        }
-        if (tag == TypeTags.STREAM_TAG) {
-            analyzeType(((StreamType) impliedType).getConstrainedType());
+        switch (tag) {
+            case TypeTags.SERVICE_TAG: {
+                analyzeServiceType((ServiceType) impliedType);
+                break;
+            }
+            case TypeTags.UNION_TAG: {
+                analyzeUnionType((UnionType) impliedType);
+                break;
+            }
+            case TypeTags.ARRAY_TAG: {
+                analyzeType(((ArrayType) impliedType).getElementType());
+                break;
+            }
+            case TypeTags.TABLE_TAG: {
+                analyzeType(((TableType) impliedType).getConstrainedType());
+                break;
+            }
+            case TypeTags.RECORD_TYPE_TAG: {
+                analyzeRecordType((RecordType) impliedType);
+                break;
+            }
+            case TypeTags.MAP_TAG: {
+                analyzeType(((MapType) impliedType).getConstrainedType());
+                break;
+            }
+            case TypeTags.STREAM_TAG: {
+                analyzeType(((StreamType) impliedType).getConstrainedType());
+                break;
+            }
+            default:
+                break;
         }
     }
 

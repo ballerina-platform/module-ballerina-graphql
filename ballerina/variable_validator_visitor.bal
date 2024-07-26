@@ -64,7 +64,7 @@ class VariableValidatorVisitor {
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         __Field parentField = <__Field>data;
         __Type parentType = getOfType(parentField.'type);
-        __Field? requiredFieldValue = getRequierdFieldFromType(parentType, self.schema.types, fieldNode);
+        __Field? requiredFieldValue = getRequiredFieldFromType(parentType, self.schema.types, fieldNode);
         __InputValue[] inputValues = requiredFieldValue is __Field ? requiredFieldValue.args : [];
         self.validateDirectiveVariables(fieldNode);
         foreach parser:ArgumentNode argument in fieldNode.getArguments() {
