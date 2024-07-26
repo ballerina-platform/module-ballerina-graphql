@@ -91,8 +91,9 @@ class QueryComplexityValidatorVisitor {
             foreach parser:SelectionNode selection in fieldNode.getSelections() {
                 selection.accept(self, fieldType);
             }
+        } else {
+            self.queryComplexity += self.defaultFieldComplexity;
         }
-        // TODO: Handle introspection queries
     }
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {

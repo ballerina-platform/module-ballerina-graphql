@@ -4161,7 +4161,9 @@ Due to [a limitation](https://github.com/ballerina-platform/ballerina-lang/issue
 
 ###### 10.9.1.2.5 Introspection Query Complexities
 
-The query complexity validation is currently not applied to introspection queries. This might change in future releases.
+The introspection queries will have the `defaultFieldComplexity` per each field. This cannot be overriden.
+
+> **Note:** When the maximum query complexity value is set to a lower value, tools such as GraphiQL may fail to generate the schema from a 
 
 ##### 10.9.1.3 Response for Invalid Document with Exceeding Max Query Complexity
 
