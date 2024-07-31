@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-Service testService = service object {
+final isolated Service testService = isolated service object {
     isolated resource function get greet() returns string {
         return "Hello";
     }

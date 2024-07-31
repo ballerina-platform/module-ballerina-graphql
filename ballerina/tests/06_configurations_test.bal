@@ -90,11 +90,13 @@ function dataProviderGraphiQLPath() returns (string[][]) {
 @test:Config {
     groups: ["listener", "configs"]
 }
-function testInvalidMaxQueryDepth() returns error? {
-    Engine|Error engine = new ("", 0, testService, [], true, true);
-    test:assertTrue(engine is Error);
-    Error err = <Error>engine;
-    test:assertEquals(err.message(), "Max query depth value must be a positive integer");
+isolated function testInvalidMaxQueryDepth() returns error? {
+    lock {
+        Engine|Error engine = new ("", 0, testService, [], true, true);
+        test:assertTrue(engine is Error);
+        Error err = <Error>engine;
+        test:assertEquals(err.message(), "Max query depth value must be a positive integer");
+    }
 }
 
 @test:Config {
@@ -125,4 +127,16 @@ function dataProviderGraphiqlPathLog() returns map<[(int|http:Listener), Listene
         "3": [9092, {}, "http://localhost:9092", "ws://localhost:9092"],
         "4": [9093, {secureSocket}, "https://localhost:9093", "wss://localhost:9093"]
     };
+}
+
+@test:Config {
+    groups: ["configs", "validation", "query_complexity"]
+}
+isolated function testInvalidMaxQueryComplexity() returns error? {
+    lock {
+        Engine|Error engine = new ("", 10, testService, [], true, true, queryComplexityConfig = {maxComplexity: -1});
+        test:assertTrue(engine is Error);
+        Error err = <Error>engine;
+        test:assertEquals(err.message(), "Max complexity value must be greater than zero");
+    }
 }
