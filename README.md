@@ -24,7 +24,7 @@ The `graphql:Listener` is used to listen to a given IP/Port. To create a `graphq
 ```ballerina
 import ballerina/graphql;
 
-listener graphql:Listener graphqlListener = new(4000);
+listener graphql:Listener graphqlListener = check new(4000);
 ```
 
 ### Create a `graphql:Listener` using an `http:Listener`
@@ -34,7 +34,7 @@ import ballerina/graphql;
 import ballerina/http;
 
 listener http:Listener httpListener = check new(4000);
-listener graphql:Listener graphqlListener = new(httpListener);
+listener graphql:Listener graphqlListener = check new(httpListener);
 ```
 
 ## Service
