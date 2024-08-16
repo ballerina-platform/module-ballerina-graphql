@@ -35,6 +35,7 @@ import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
+import io.ballerina.stdlib.graphql.runtime.utils.Utils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -86,7 +87,7 @@ public class ServiceAnalyzer {
             return;
         }
         BMap<BString, Object> resourceConfig = getResourceConfig(resourceMethod);
-        Long complexity = getComplexity(resourceConfig);
+        Long complexity = getComplexity(coordinate, resourceConfig);
         Resource resource = new Resource(complexity);
         this.resourceMap.put(coordinate, resource);
         analyzeType(resourceMethod.getType().getReturnType());
@@ -94,7 +95,7 @@ public class ServiceAnalyzer {
 
     private void analyzeRemoteMethod(RemoteMethodType remoteMethod, String coordinate) {
         BMap<BString, Object> resourceConfig = getResourceConfig(remoteMethod);
-        Long complexity = getComplexity(resourceConfig);
+        Long complexity = getComplexity(coordinate, resourceConfig);
         Resource resource = new Resource(complexity);
         this.resourceMap.put(coordinate, resource);
         analyzeType(remoteMethod.getType().getReturnType());
@@ -166,11 +167,16 @@ public class ServiceAnalyzer {
         return this.resourceMap;
     }
 
-    private Long getComplexity(BMap<BString, Object> resourceConfig) {
+    private Long getComplexity(String coordinate, BMap<BString, Object> resourceConfig) {
         if (resourceConfig == null) {
             return this.defaultQueryComplexity;
         }
         if (resourceConfig.containsKey(complexityKey)) {
+            Long complexity = (Long) resourceConfig.get(complexityKey);
+            if (complexity < 0) {
+                String message = "Complexity of the field \"" + coordinate + "\" cannot be negative";
+                throw Utils.createError(message, Utils.ERROR_TYPE);
+            }
             return (Long) resourceConfig.get(complexityKey);
         }
         return this.defaultQueryComplexity;

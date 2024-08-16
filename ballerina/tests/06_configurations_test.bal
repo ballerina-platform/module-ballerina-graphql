@@ -140,3 +140,17 @@ isolated function testInvalidMaxQueryComplexity() returns error? {
         test:assertEquals(err.message(), "Max complexity value must be greater than zero");
     }
 }
+
+@test:Config {
+    groups: ["configs", "validation", "query_complexity"]
+}
+isolated function testInvalidDefaultFieldComplexity() returns error? {
+    lock {
+        Engine|Error engine = new ("", 10, testService, [], true, true, queryComplexityConfig = {
+            defaultFieldComplexity: -1
+        });
+        test:assertTrue(engine is Error);
+        Error err = <Error>engine;
+        test:assertEquals(err.message(), "Default field complexity value must be greater than zero");
+    }
+}

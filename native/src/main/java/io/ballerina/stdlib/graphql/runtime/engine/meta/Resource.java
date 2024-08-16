@@ -19,7 +19,7 @@
 package io.ballerina.stdlib.graphql.runtime.engine.meta;
 
 /**
- * This class stores the meta information of a Ballerina GraphQL resource.
+ * This class stores the meta-information of a Ballerina GraphQL resource.
  *
  * @param complexity - The complexity of the resource.
  */

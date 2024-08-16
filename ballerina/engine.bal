@@ -38,8 +38,13 @@ isolated class Engine {
         if maxQueryDepth is int && maxQueryDepth < 1 {
             return error Error("Max query depth value must be a positive integer");
         }
-        if queryComplexityConfig is QueryComplexityConfig && queryComplexityConfig.maxComplexity < 0 {
-            return error Error("Max complexity value must be greater than zero");
+        if queryComplexityConfig is QueryComplexityConfig {
+            if queryComplexityConfig.maxComplexity < 0 {
+                return error Error("Max complexity value must be greater than zero");
+            }
+            if queryComplexityConfig.defaultFieldComplexity < 0 {
+                return error Error("Default field complexity value must be greater than zero");
+            }
         }
         self.maxQueryDepth = maxQueryDepth;
         self.schema = check createSchema(schemaString);
