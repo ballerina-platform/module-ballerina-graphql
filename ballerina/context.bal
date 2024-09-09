@@ -25,7 +25,6 @@ public isolated class Context {
     private final map<value:Cloneable|isolated object {}> attributes = {};
     private final ErrorDetail[] errors = [];
     private Engine? engine = ();
-    private int nextInterceptor = 0;
     private boolean hasFileInfo = false; // This field value changed by setFileInfo method
     private map<dataloader:DataLoader> idDataLoaderMap = {}; // Provides mapping between user defined id and DataLoader
     private map<Placeholder> uuidPlaceholderMap = {};
@@ -171,48 +170,6 @@ public isolated class Context {
     isolated function getEngine() returns Engine? {
         lock {
             return self.engine;
-        }
-    }
-
-    isolated function getNextInterceptor(Field 'field) returns (readonly & Interceptor)? {
-        Engine? engine = self.getEngine();
-        if engine is Engine {
-            (readonly & Interceptor)[] interceptors = engine.getInterceptors();
-            if interceptors.length() > self.getInterceptorCount() {
-                (readonly & Interceptor) next = interceptors[self.getInterceptorCount()];
-                if !isGlobalInterceptor(next) && 'field.getPath().length() > 1 {
-                    self.increaseInterceptorCount();
-                    return self.getNextInterceptor('field);
-                }
-                self.increaseInterceptorCount();
-                return next;
-            }
-            int nextFieldInterceptor = self.getInterceptorCount() - engine.getInterceptors().length();
-            if 'field.getFieldInterceptors().length() > nextFieldInterceptor {
-                readonly & Interceptor next = 'field.getFieldInterceptors()[nextFieldInterceptor];
-                self.increaseInterceptorCount();
-                return next;
-            }
-        }
-        self.resetInterceptorCount();
-        return;
-    }
-
-    isolated function resetInterceptorCount() {
-        lock {
-            self.nextInterceptor = 0;
-        }
-    }
-
-    isolated function getInterceptorCount() returns int {
-        lock {
-            return self.nextInterceptor;
-        }
-    }
-
-    isolated function increaseInterceptorCount() {
-        lock {
-            self.nextInterceptor += 1;
         }
     }
 

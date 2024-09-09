@@ -56,8 +56,8 @@ isolated class ExecutorVisitor {
         boolean isIntrospection = true;
         lock {
             if fieldNode.getName() == SCHEMA_FIELD {
-            IntrospectionExecutor introspectionExecutor = new(self.schema);
-            self.data[fieldNode.getAlias()] = introspectionExecutor.getSchemaIntrospection(fieldNode);
+                IntrospectionExecutor introspectionExecutor = new(self.schema);
+                self.data[fieldNode.getAlias()] = introspectionExecutor.getSchemaIntrospection(fieldNode);
             } else if fieldNode.getName() == TYPE_FIELD {
                 IntrospectionExecutor introspectionExecutor = new(self.schema);
                 self.data[fieldNode.getAlias()] = introspectionExecutor.getTypeIntrospection(fieldNode);
@@ -96,6 +96,7 @@ isolated class ExecutorVisitor {
             selection.accept(self, dataMap);
         }
     }
+
     public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
 
     public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
@@ -112,7 +113,7 @@ isolated class ExecutorVisitor {
             context = self.context;
         }
         Field 'field = getFieldObject(fieldNode, operationType, schema, engine, result);
-        context.resetInterceptorCount();
+
         anydata resolvedResult = engine.resolve(context, 'field);
         lock {
             self.data[fieldNode.getAlias()] = resolvedResult is ErrorDetail ? () : resolvedResult.cloneReadOnly();
