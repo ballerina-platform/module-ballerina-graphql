@@ -16,6 +16,7 @@
 
 import graphql.parser;
 import ballerina/jballerina.java;
+import ballerina/log;
 
 isolated class ExecutorVisitor {
     *parser:Visitor;
@@ -41,6 +42,10 @@ isolated class ExecutorVisitor {
         string[] path = [];
         if operationNode.getName() != parser:ANONYMOUS_OPERATION {
             path.push(operationNode.getName());
+        }
+        if operationNode.getKind() != parser:OPERATION_MUTATION {
+            map<anydata> dataMap = {[OPERATION_TYPE] : operationNode.getKind(), [PATH] : path};
+            return self.visitSelectionsParallelly(operationNode, dataMap.cloneReadOnly());
         }
         foreach parser:SelectionNode selection in operationNode.getSelections() {
             if selection is parser:FieldNode {
@@ -82,11 +87,50 @@ isolated class ExecutorVisitor {
         }
     }
 
+    private isolated function visitSelectionsParallelly(parser:SelectionParentNode selectionParentNode,
+            readonly & anydata data = ()) {
+        parser:RootOperationType operationType = self.getOperationTypeFromData(data);
+        [parser:SelectionNode, future<()>][] selectionFutures = [];
+        string[] path = self.getSelectionPathFromData(data);
+        foreach parser:SelectionNode selection in selectionParentNode.getSelections() {
+            if selection is parser:FieldNode {
+                path.push(selection.getName());
+            }
+            map<anydata> dataMap = {[OPERATION_TYPE] : operationType, [PATH] : path};
+            future<()> 'future = start selection.accept(self, dataMap.cloneReadOnly());
+            selectionFutures.push([selection, 'future]);
+        }
+        foreach [parser:SelectionNode, future<()>] [selection, 'future] in selectionFutures {
+            error? err = wait 'future;
+            if err is () {
+                continue;
+            }
+            log:printError("Error occured while attempting to resolve selection future", err,
+                            stackTrace = err.stackTrace());
+            if selection is parser:FieldNode {
+                path.push(selection.getName());
+                lock {
+                    ErrorDetail errorDetail = {
+                        message: err.message(),
+                        locations: [selection.getLocation()],
+                        path: path.clone()
+                    };
+                    self.data[selection.getAlias()] = ();
+                    self.context.addError(errorDetail);
+                }
+            }
+        }
+    }
+
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {}
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         parser:RootOperationType operationType = self.getOperationTypeFromData(data);
         string[] path = self.getSelectionPathFromData(data);
+        if operationType != parser:OPERATION_MUTATION {
+            map<anydata> dataMap = {[OPERATION_TYPE] : operationType, [PATH] : path};
+            return self.visitSelectionsParallelly(fragmentNode, dataMap.cloneReadOnly());
+        }
         foreach parser:SelectionNode selection in fragmentNode.getSelections() {
             string[] clonedPath = path.clone();
             if selection is parser:FieldNode {
