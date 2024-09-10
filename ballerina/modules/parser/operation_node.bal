@@ -26,7 +26,7 @@ public readonly class OperationNode {
     private boolean cofiguredInSchema;
 
     public isolated function init(string name, RootOperationType kind, Location location,
-                                  map<VariableNode> variables = {}, SelectionNode[] selections = [], 
+                                  map<VariableNode> variables = {}, SelectionNode[] selections = [],
                                   DirectiveNode[] directives = []) {
         self.name = name;
         self.kind = kind;

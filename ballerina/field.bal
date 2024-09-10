@@ -23,7 +23,7 @@ public class Field {
     private final service object {}? serviceObject;
     private final any|error fieldValue;
     private final __Type fieldType;
-    private (string|int)[] path;
+    private final readonly & (string|int)[] path;
     private string[] resourcePath;
     private readonly & Interceptor[] fieldInterceptors;
     private final ServerCacheConfig? cacheConfig;
@@ -35,7 +35,7 @@ public class Field {
     private int nextInterceptor = 0;
 
     isolated function init(parser:FieldNode internalNode, __Type fieldType, service object {}? serviceObject = (),
-            (string|int)[] path = [], parser:RootOperationType operationType = parser:OPERATION_QUERY,
+            readonly & (string|int)[] path = [], parser:RootOperationType operationType = parser:OPERATION_QUERY,
             string[] resourcePath = [], any|error fieldValue = (), ServerCacheConfig? cacheConfig = (),
             readonly & string[] parentArgHashes = [], boolean isAlreadyCached = false) {
         self.internalNode = internalNode;
@@ -80,7 +80,7 @@ public class Field {
     # Returns the current path of the field. If the field returns an array, the path will include the index of the
     # element.
     # + return - The path of the field
-    public isolated function getPath() returns (string|int)[] {
+    public isolated function getPath() returns readonly & (string|int)[] {
         return self.path;
     }
 
@@ -141,7 +141,7 @@ public class Field {
     }
 
     isolated function getFieldObjects(parser:SelectionNode selectionNode, __Type 'type) returns Field[] {
-        string[] currentPath = self.path.clone().'map((item) => item is int ? "@" : item);
+        string[] currentPath = self.path.'map((item) => item is int ? "@" : item);
         string[] unwrappedPath = getUnwrappedPath('type);
         __Type unwrappedType = getOfType('type);
 

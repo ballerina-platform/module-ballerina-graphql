@@ -23,7 +23,7 @@ isolated class ExecutorVisitor {
     private final readonly & __Schema schema;
     private final Engine engine; // This field needed to be accessed from the native code
     private Data data;
-    private Context context;
+    private final Context context;
     private any|error result; // The value of this field is set using setResult method
 
     isolated function init(Engine engine, readonly & __Schema schema, Context context, any|error result = ()) {
@@ -121,14 +121,22 @@ isolated class ExecutorVisitor {
     }
 
     isolated function getOutput() returns OutputObject {
+        readonly & Data data;
+        readonly & ErrorDetail[] errors;
+        Context context;
         lock {
-            if !self.context.hasPlaceholders() {
-                // Avoid rebuilding the value tree if there are no place holders
-                return getOutputObject(self.data.clone(), self.context.getErrors().clone());
-            }
-            ValueTreeBuilder valueTreeBuilder = new (self.context, self.data);
-            return getOutputObject(valueTreeBuilder.build(), self.context.getErrors().clone());
+            data = self.data.cloneReadOnly();
+            errors = self.context.getErrors().cloneReadOnly();
+            context = self.context;
         }
+        if !self.context.hasPlaceholders() {
+            // Avoid rebuilding the value tree if there are no place holders
+            return getOutputObject(data, errors);
+        }
+        ValueTreeBuilder valueTreeBuilder = new (context, data);
+        data = valueTreeBuilder.build().cloneReadOnly();
+        errors = context.getErrors().cloneReadOnly();
+        return getOutputObject(data, errors);
     }
 
     private isolated function getSelectionPathFromData(anydata data) returns string[] {

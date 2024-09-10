@@ -380,8 +380,7 @@ isolated class Engine {
 
     isolated function getHierarchicalResult(Context context, Field 'field, parser:FieldNode fieldNode, map<anydata> result) {
         string[] resourcePath = 'field.getResourcePath();
-        (string|int)[] path = 'field.getPath().clone();
-        path.push(fieldNode.getName());
+        readonly & (string|int)[] path = [...'field.getPath(), fieldNode.getName()];
         __Type parentType = 'field.getFieldType();
         __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
         Field selectionField = new (fieldNode, fieldType, 'field.getServiceObject(), path = path, resourcePath = resourcePath);
