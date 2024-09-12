@@ -34,7 +34,12 @@ isolated class ExecutorVisitor {
         self.data = {};
         self.result = ();
         self.setResult(result);
+        self.initializeDataMap();
     }
+
+    isolated function initializeDataMap() = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.ExecutorVisitor"
+    } external;
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {}
 
@@ -59,31 +64,25 @@ isolated class ExecutorVisitor {
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         parser:RootOperationType operationType = self.getOperationTypeFromData(data);
         boolean isIntrospection = true;
-        lock {
-            if fieldNode.getName() == SCHEMA_FIELD {
-                IntrospectionExecutor introspectionExecutor = new(self.schema);
-                self.data[fieldNode.getAlias()] = introspectionExecutor.getSchemaIntrospection(fieldNode);
-            } else if fieldNode.getName() == TYPE_FIELD {
-                IntrospectionExecutor introspectionExecutor = new(self.schema);
-                self.data[fieldNode.getAlias()] = introspectionExecutor.getTypeIntrospection(fieldNode);
-            } else if fieldNode.getName() == TYPE_NAME_FIELD {
-                if operationType == parser:OPERATION_QUERY {
-                    self.data[fieldNode.getAlias()] = QUERY_TYPE_NAME;
-                } else if operationType == parser:OPERATION_MUTATION {
-                    self.data[fieldNode.getAlias()] = MUTATION_TYPE_NAME;
-                } else {
-                    self.data[fieldNode.getAlias()] = SUBSCRIPTION_TYPE_NAME;
-                }
+        if fieldNode.getName() == SCHEMA_FIELD {
+            IntrospectionExecutor introspectionExecutor = new(self.schema);
+            self.addData(fieldNode.getAlias(), introspectionExecutor.getSchemaIntrospection(fieldNode));
+        } else if fieldNode.getName() == TYPE_FIELD {
+            IntrospectionExecutor introspectionExecutor = new(self.schema);
+            self.addData(fieldNode.getAlias(), introspectionExecutor.getTypeIntrospection(fieldNode));
+        } else if fieldNode.getName() == TYPE_NAME_FIELD {
+            if operationType == parser:OPERATION_QUERY {
+                self.addData(fieldNode.getAlias(), QUERY_TYPE_NAME);
+            } else if operationType == parser:OPERATION_MUTATION {
+                self.addData(fieldNode.getAlias(), MUTATION_TYPE_NAME);
             } else {
-                isIntrospection = false;
+                self.addData(fieldNode.getAlias(), SUBSCRIPTION_TYPE_NAME);
             }
-        }
-        isolated function (parser:FieldNode, parser:RootOperationType) execute;
-        lock {
-            execute = self.execute;
+        } else {
+            isIntrospection = false;
         }
         if !isIntrospection {
-            execute(fieldNode, operationType);
+            self.execute(fieldNode, operationType);
         }
     }
 
@@ -109,13 +108,14 @@ isolated class ExecutorVisitor {
                             stackTrace = err.stackTrace());
             if selection is parser:FieldNode {
                 path.push(selection.getName());
+                self.addData(selection.getAlias(), ());
                 lock {
                     ErrorDetail errorDetail = {
                         message: err.message(),
                         locations: [selection.getLocation()],
                         path: path.clone()
                     };
-                    self.data[selection.getAlias()] = ();
+                    // self.data[selection.getAlias()] = ();
                     self.context.addError(errorDetail);
                 }
             }
@@ -159,20 +159,17 @@ isolated class ExecutorVisitor {
         Field 'field = getFieldObject(fieldNode, operationType, schema, engine, result);
 
         anydata resolvedResult = engine.resolve(context, 'field);
-        lock {
-            self.data[fieldNode.getAlias()] = resolvedResult is ErrorDetail ? () : resolvedResult.cloneReadOnly();
-        }
+        resolvedResult = resolvedResult is ErrorDetail ? () : resolvedResult.cloneReadOnly();
+        self.addData(fieldNode.getAlias(), resolvedResult);
     }
 
     isolated function getOutput() returns OutputObject {
-        readonly & Data data;
-        readonly & ErrorDetail[] errors;
+        readonly & Data data = self.getDataMap().cloneReadOnly();
         Context context;
         lock {
-            data = self.data.cloneReadOnly();
-            errors = self.context.getErrors().cloneReadOnly();
             context = self.context;
         }
+        readonly & ErrorDetail[] errors = context.getErrors().cloneReadOnly();
         if !self.context.hasPlaceholders() {
             // Avoid rebuilding the value tree if there are no place holders
             return getOutputObject(data, errors);
@@ -200,5 +197,13 @@ isolated class ExecutorVisitor {
 
     private isolated function getResult() returns any|error =  @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
+    } external;
+
+    private isolated function addData(string key, anydata value) =  @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.ExecutorVisitor"
+    } external;
+
+    private isolated function getDataMap() returns Data =  @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.ExecutorVisitor"
     } external;
 }
