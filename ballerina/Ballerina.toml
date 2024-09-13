@@ -1,7 +1,7 @@
 [package]
 org = "ballerina"
 name = "graphql"
-version = "1.11.2"
+version = "1.11.3"
 authors = ["Ballerina"]
 export=["graphql", "graphql.subgraph", "graphql.dataloader"]
 keywords = ["gql", "network", "query", "service"]
@@ -16,11 +16,11 @@ graalvmCompatible = true
 [[platform.java17.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "graphql-native"
-version = "1.11.2"
-path = "../native/build/libs/graphql-native-1.11.2.jar"
+version = "1.11.3"
+path = "../native/build/libs/graphql-native-1.11.3-SNAPSHOT.jar"
 
 [[platform.java17.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "graphql-commons"
-version = "1.11.2"
-path = "../commons/build/libs/graphql-commons-1.11.2.jar"
+version = "1.11.3"
+path = "../commons/build/libs/graphql-commons-1.11.3-SNAPSHOT.jar"

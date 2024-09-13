@@ -8,7 +8,7 @@ keywords = ["gql", "network", "query", "service"]
 repository = "https://github.com/ballerina-platform/module-ballerina-graphql"
 icon = "icon.png"
 license = ["Apache-2.0"]
-distribution = "2201.8.8"
+distribution = "2201.8.5"
 
 [platform.java17]
 graalvmCompatible = true

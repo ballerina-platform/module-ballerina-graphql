@@ -5,7 +5,7 @@
 
 [ballerina]
 dependencies-toml-version = "2"
-distribution-version = "2201.8.8"
+distribution-version = "2201.8.5"
 
 [[package]]
 org = "ballerina"
@@ -25,11 +25,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "cache"
-<<<<<<< HEAD
-version = "3.7.0"
-=======
-version = "3.8.0"
->>>>>>> 182f1a48... Add executor visitor native class
+version = "3.7.1"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -43,11 +39,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "constraint"
-<<<<<<< HEAD
 version = "1.4.0"
-=======
-version = "1.5.0"
->>>>>>> 182f1a48... Add executor visitor native class
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -81,11 +73,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql"
-<<<<<<< HEAD
-version = "1.11.2"
-=======
 version = "1.11.3"
->>>>>>> 182f1a48... Add executor visitor native class
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -117,11 +105,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "http"
-<<<<<<< HEAD
-version = "2.10.13"
-=======
 version = "2.10.15"
->>>>>>> 182f1a48... Add executor visitor native class
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -153,11 +137,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "io"
-<<<<<<< HEAD
 version = "1.6.0"
-=======
-version = "1.6.2"
->>>>>>> 182f1a48... Add executor visitor native class
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.value"}
@@ -329,11 +309,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "observe"
-<<<<<<< HEAD
-version = "1.2.0"
-=======
 version = "1.2.3"
->>>>>>> 182f1a48... Add executor visitor native class
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -375,11 +351,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "time"
-<<<<<<< HEAD
-version = "2.4.0"
-=======
 version = "2.4.1"
->>>>>>> 182f1a48... Add executor visitor native class
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]

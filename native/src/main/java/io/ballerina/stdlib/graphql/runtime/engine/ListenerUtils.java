@@ -78,7 +78,7 @@ public final class ListenerUtils {
         }
         return null;
     }
-    
+
     public static Object getGraphiqlServiceFromGraphqlService(BObject graphqlService) {
         Object graphiqlService = graphqlService.getNativeData(GRAPHIQL_SERVICE);
         if (graphiqlService instanceof BObject) {

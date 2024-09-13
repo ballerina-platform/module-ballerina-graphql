@@ -53,20 +53,20 @@ function dataProviderServerCache() returns map<[string, string[], json, string[]
     return dataSet;
 }
 
-// @test:Config {
-//     groups: ["server_cache", "data_loader"],
-//     dataProvider: dataProviderServerCacheWithDataloader
-// }
-// isolated function testServerSideCacheWithDataLoader(string documentFile, string[] resourceFileNames, json variables = (), string[] operationNames = []) returns error? {
-//     string url = "http://localhost:9090/caching_with_dataloader";
-//     string document = check getGraphqlDocumentFromFile(documentFile);
-//     foreach int i in 0..< resourceFileNames.length() {
-//         json actualPayload = check getJsonPayloadFromService(url, document, variables, operationNames[i]);
-//         json expectedPayload = check getJsonContentFromFile(resourceFileNames[i]);
-//         assertJsonValuesWithOrder(actualPayload, expectedPayload);
-//     }
-//     resetDispatchCounters();
-// }
+@test:Config {
+    groups: ["server_cache", "data_loader"],
+    dataProvider: dataProviderServerCacheWithDataloader
+}
+isolated function testServerSideCacheWithDataLoader(string documentFile, string[] resourceFileNames, json variables = (), string[] operationNames = []) returns error? {
+    string url = "http://localhost:9090/caching_with_dataloader";
+    string document = check getGraphqlDocumentFromFile(documentFile);
+    foreach int i in 0..< resourceFileNames.length() {
+        json actualPayload = check getJsonPayloadFromService(url, document, variables, operationNames[i]);
+        json expectedPayload = check getJsonContentFromFile(resourceFileNames[i]);
+        assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    }
+    resetDispatchCounters();
+}
 
 function dataProviderServerCacheWithDataloader() returns map<[string, string[], json, string[]]> {
     map<[string, string[], json, string[]]> dataSet = {
@@ -76,20 +76,20 @@ function dataProviderServerCacheWithDataloader() returns map<[string, string[], 
     return dataSet;
 }
 
-// @test:Config {
-//     groups: ["server_cache", "data_loader"],
-//     dataProvider: dataProviderServerCacheWithDataloaderInOperationalLevel
-// }
-// isolated function testServerSideCacheWithDataLoaderInOperationalLevel(string documentFile, string[] resourceFileNames, json variables = (), string[] operationNames = []) returns error? {
-//     string url = "http://localhost:9090/caching_with_dataloader_operational";
-//     string document = check getGraphqlDocumentFromFile(documentFile);
-//     foreach int i in 0..< resourceFileNames.length() {
-//         json actualPayload = check getJsonPayloadFromService(url, document, variables, operationNames[i]);
-//         json expectedPayload = check getJsonContentFromFile(resourceFileNames[i]);
-//         assertJsonValuesWithOrder(actualPayload, expectedPayload);
-//     }
-//     resetDispatchCounters();
-// }
+@test:Config {
+    groups: ["server_cache", "data_loader"],
+    dataProvider: dataProviderServerCacheWithDataloaderInOperationalLevel
+}
+isolated function testServerSideCacheWithDataLoaderInOperationalLevel(string documentFile, string[] resourceFileNames, json variables = (), string[] operationNames = []) returns error? {
+    string url = "http://localhost:9090/caching_with_dataloader_operational";
+    string document = check getGraphqlDocumentFromFile(documentFile);
+    foreach int i in 0..< resourceFileNames.length() {
+        json actualPayload = check getJsonPayloadFromService(url, document, variables, operationNames[i]);
+        json expectedPayload = check getJsonContentFromFile(resourceFileNames[i]);
+        assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    }
+    resetDispatchCounters();
+}
 
 function dataProviderServerCacheWithDataloaderInOperationalLevel() returns map<[string, string[], json, string[]]> {
     map<[string, string[], json, string[]]> dataSet = {
@@ -149,19 +149,19 @@ isolated function testServerSideCacheWithInterceptors(string documentFile, strin
     }
 }
 
-// @test:Config {
-//     groups: ["server_cache", "data_loader"],
-//     dataProvider: dataProviderServerCacheWithInterceptors
-// }
-// isolated function testServerSideCacheWithInterceptorInOperationalLevel(string documentFile, string[] resourceFileNames, json variables = (), string[] operationNames = []) returns error? {
-//     string url = "http://localhost:9091/caching_with_interceptor_operations";
-//     string document = check getGraphqlDocumentFromFile(documentFile);
-//     foreach int i in 0..< resourceFileNames.length() {
-//         json actualPayload = check getJsonPayloadFromService(url, document, variables, operationNames[i]);
-//         json expectedPayload = check getJsonContentFromFile(resourceFileNames[i]);
-//         assertJsonValuesWithOrder(actualPayload, expectedPayload);
-//     }
-// }
+@test:Config {
+    groups: ["server_cache", "data_loader"],
+    dataProvider: dataProviderServerCacheWithInterceptors
+}
+isolated function testServerSideCacheWithInterceptorInOperationalLevel(string documentFile, string[] resourceFileNames, json variables = (), string[] operationNames = []) returns error? {
+    string url = "http://localhost:9091/caching_with_interceptor_operations";
+    string document = check getGraphqlDocumentFromFile(documentFile);
+    foreach int i in 0..< resourceFileNames.length() {
+        json actualPayload = check getJsonPayloadFromService(url, document, variables, operationNames[i]);
+        json expectedPayload = check getJsonContentFromFile(resourceFileNames[i]);
+        assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    }
+}
 
 function dataProviderServerCacheWithInterceptors() returns map<[string, string[], json, string[]]> {
     map<[string, string[], json, string[]]> dataSet = {
