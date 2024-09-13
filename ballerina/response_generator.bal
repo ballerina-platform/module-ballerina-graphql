@@ -26,8 +26,6 @@ isolated class ResponseGenerator {
     private final readonly & ServerCacheConfig? cacheConfig;
     private final readonly & string[] parentArgHashes;
 
-    private final string functionNameGetFragmentFromService = "";
-
     isolated function init(Engine engine, Context context, __Type fieldType, readonly & (string|int)[] path = [],
                            ServerCacheConfig? cacheConfig = (), readonly & string[] parentArgHashes = []) {
         self.engine = engine;
@@ -191,6 +189,9 @@ isolated class ResponseGenerator {
 
     isolated function getResultFromService(service object {} serviceObject, parser:FieldNode parentNode, (string|int)[] path = []) returns anydata {
         Data result = {};
+        if serviceObject is isolated service object {} {
+            return self.executeResourcesParallely(serviceObject, parentNode, path);
+        }
         foreach parser:SelectionNode selection in parentNode.getSelections() {
             if selection is parser:FieldNode {
                 anydata selectionValue = self.getResultFromObject(serviceObject, selection, path);
@@ -200,6 +201,59 @@ isolated class ResponseGenerator {
             }
         }
         return result;
+    }
+
+    isolated function executeResourcesParallely(isolated service object {} serviceObject, parser:SelectionNode parentNode, (string|int)[] path = []) returns Data {
+        Data result = {};
+        [parser:FieldNode, future<anydata>][] selectionFutures = [];
+        readonly & (string|int)[] clonedPath = [...path];
+        foreach parser:SelectionNode selection in parentNode.getSelections() {
+            if selection is parser:FieldNode {
+                future<anydata> 'future = start self.getResultFromObject(serviceObject, selection, clonedPath);
+                selectionFutures.push([selection, 'future]);
+            } else if selection is parser:FragmentNode {
+                self.getResultForFragmentFromServiceParallely(serviceObject, selection, result, clonedPath);
+            }
+        }
+        foreach [parser:FieldNode, future<anydata>] [selection, 'future] in selectionFutures {
+            anydata|error fieldValue = wait 'future;
+            if fieldValue is error {
+                log:printError("Error occured while attempting to resolve selection future", fieldValue,
+                            stackTrace = fieldValue.stackTrace());
+                result[selection.getAlias()] = ();
+                continue;
+            }
+            result[selection.getAlias()] = fieldValue is ErrorDetail ? () : fieldValue;
+        }
+        return result;
+    }
+
+    isolated function getResultForFragmentFromServiceParallely(isolated service object {} parentValue, parser:FragmentNode parentNode,
+                                                               Data result, (string|int)[] path = []) {
+        string typeName = getTypeNameFromValue(parentValue);
+        if parentNode.getOnType() != typeName && !self.isPossibleTypeOfInterface(parentNode.getOnType(), typeName) {
+            return;
+        }
+        [parser:FieldNode, future<anydata>][] selections = [];
+        readonly & (string|int)[] clonedPath = [...path];
+        foreach parser:SelectionNode selection in parentNode.getSelections() {
+            if selection is parser:FieldNode {
+                future<anydata> 'future = start self.getResultFromObject(parentValue, selection, clonedPath);
+                selections.push([selection, 'future]);
+            } else if selection is parser:FragmentNode {
+                self.getResultForFragmentFromServiceParallely(parentValue, selection, result, clonedPath);
+            }
+        }
+        foreach [parser:FieldNode, future<anydata>] [selection, 'future] in selections {
+            anydata|error fieldValue = wait 'future;
+            if fieldValue is error {
+                log:printError("Error occured while attempting to resolve selection future", fieldValue,
+                            stackTrace = fieldValue.stackTrace());
+                result[selection.getAlias()] = ();
+                continue;
+            }
+            result[selection.getAlias()] = fieldValue is ErrorDetail ? () : fieldValue;
+        }
     }
 
     isolated function getResultForFragmentFromMap(map<any> parentValue, parser:FragmentNode parentNode, Data result, (string|int)[] path = []) {

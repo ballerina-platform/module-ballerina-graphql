@@ -48,7 +48,7 @@ isolated class ExecutorVisitor {
         if operationNode.getName() != parser:ANONYMOUS_OPERATION {
             path.push(operationNode.getName());
         }
-        if operationNode.getKind() != parser:OPERATION_MUTATION {
+        if operationNode.getKind() == parser:OPERATION_QUERY {
             map<anydata> dataMap = {[OPERATION_TYPE] : operationNode.getKind(), [PATH] : path};
             return self.visitSelectionsParallelly(operationNode, dataMap.cloneReadOnly());
         }
@@ -115,7 +115,6 @@ isolated class ExecutorVisitor {
                         locations: [selection.getLocation()],
                         path: path.clone()
                     };
-                    // self.data[selection.getAlias()] = ();
                     self.context.addError(errorDetail);
                 }
             }
@@ -127,7 +126,7 @@ isolated class ExecutorVisitor {
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         parser:RootOperationType operationType = self.getOperationTypeFromData(data);
         string[] path = self.getSelectionPathFromData(data);
-        if operationType != parser:OPERATION_MUTATION {
+        if operationType == parser:OPERATION_QUERY {
             map<anydata> dataMap = {[OPERATION_TYPE] : operationType, [PATH] : path};
             return self.visitSelectionsParallelly(fragmentNode, dataMap.cloneReadOnly());
         }
