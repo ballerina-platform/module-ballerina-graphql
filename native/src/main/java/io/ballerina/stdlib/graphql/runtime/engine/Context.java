@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * This class provides native implementations of the Ballerina Context class.
  */
 public class Context {
+    private final ConcurrentHashMap<BString, Object> attributes;
     // Provides mapping between user defined id and DataLoader
     private final ConcurrentHashMap<BString, BObject> idDataLoaderMap;
     private final ConcurrentHashMap<BString, BObject> uuidPlaceholderMap;
@@ -29,6 +30,7 @@ public class Context {
     private static final String CONTEXT = "context";
 
     private Context() {
+        this.attributes = new ConcurrentHashMap<>();
         this.idDataLoaderMap = new ConcurrentHashMap<>();
         this.uuidPlaceholderMap = new ConcurrentHashMap<>();
         this.unResolvedPlaceholders = new ConcurrentHashMap<>();
@@ -44,6 +46,21 @@ public class Context {
     public static void registerDataLoader(BObject object, BString key, BObject dataloader) {
         Context context = (Context) object.getNativeData(CONTEXT);
         context.registerDataLoader(key, dataloader);
+    }
+
+    public static void setAttribute(BObject object, BString key, Object value) {
+        Context context = (Context) object.getNativeData(CONTEXT);
+        context.setAttribute(key, value);
+    }
+
+    public static Object getAttribute(BObject object, BString key) {
+        Context context = (Context) object.getNativeData(CONTEXT);
+        return context.getAttribute(key);
+    }
+
+    public static Object removeAttribute(BObject object, BString key) {
+        Context context = (Context) object.getNativeData(CONTEXT);
+        return context.removeAttribute(key);
     }
 
     public static BObject getDataLoader(BObject object, BString key) {
@@ -104,6 +121,18 @@ public class Context {
     public static void clearPlaceholders(BObject object) {
         Context context = (Context) object.getNativeData(CONTEXT);
         context.clearPlaceholders();
+    }
+
+    private void setAttribute(BString key, Object value) {
+        this.attributes.put(key, value);
+    }
+
+    private Object getAttribute(BString key) {
+        return this.attributes.get(key);
+    }
+
+    private Object removeAttribute(BString key) {
+        return this.attributes.remove(key);
     }
 
     private void registerDataLoader(BString key, BObject dataloader) {

@@ -22,7 +22,6 @@ import ballerina/lang.value;
 
 # The GraphQL context object used to pass the meta information between resolvers.
 public isolated class Context {
-    private final map<value:Cloneable|isolated object {}> attributes = {};
     private final ErrorDetail[] errors = [];
     private Engine? engine = ();
     private boolean hasFileInfo = false; // This field value changed by setFileInfo method
@@ -36,50 +35,54 @@ public isolated class Context {
     # + key - The key for the value to be set
     # + value - Value to be set
     public isolated function set(string 'key, value:Cloneable|isolated object {} value) {
-        lock {
-            if value is value:Cloneable {
-                self.attributes['key] = value.clone();
-            } else {
-                self.attributes['key] = value;
-            }
+        if value is value:Cloneable {
+            self.setAttribute('key, value.clone());
+        } else {
+            self.setAttribute('key, value);
         }
     }
+
+    isolated function setAttribute(string uuid, value:Cloneable|isolated object {} value) = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
 
     # Retrieves a value using the given key from the GraphQL context.
     #
     # + key - The key corresponding to the required value
     # + return - The value if the key is present in the context, a `graphql:Error` otherwise
     public isolated function get(string 'key) returns value:Cloneable|isolated object {}|Error {
-        lock {
-            if self.attributes.hasKey('key) {
-                value:Cloneable|isolated object {} value = self.attributes.get('key);
-                if value is value:Cloneable {
-                    return value.clone();
-                } else {
-                    return value;
-                }
-            }
+        value:Cloneable|isolated object {}? value = self.getAttribute('key);
+        if value is () {
             return error Error(string`Attribute with the key "${'key}" not found in the context`);
+        } else if value is value:Cloneable {
+            return value.clone();
+        } else {
+            return value;
         }
     }
+
+    isolated function getAttribute(string uuid) returns value:Cloneable|isolated object {}? = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
 
     # Removes a value using the given key from the GraphQL context.
     #
     # + key - The key corresponding to the value to be removed
     # + return - The value if the key is present in the context, a `graphql:Error` otherwise
     public isolated function remove(string 'key) returns value:Cloneable|isolated object {}|Error {
-        lock {
-            if self.attributes.hasKey('key) {
-                value:Cloneable|isolated object {} value = self.attributes.remove('key);
-                if value is value:Cloneable {
-                    return value.clone();
-                } else {
-                    return value;
-                }
-            }
+        value:Cloneable|isolated object {}? value = self.removeAttribute('key);
+        if value is () {
             return error Error(string`Attribute with the key "${'key}" not found in the context`);
+        } else if value is value:Cloneable {
+            return value.clone();
+        } else {
+            return value;
         }
     }
+
+    isolated function removeAttribute(string uuid) returns value:Cloneable|isolated object {}? = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
 
     # Register a given DataLoader instance for a given key in the GraphQL context.
     #

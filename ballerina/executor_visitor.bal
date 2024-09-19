@@ -45,7 +45,11 @@ isolated class ExecutorVisitor {
         if operationNode.getName() != parser:ANONYMOUS_OPERATION {
             path.push(operationNode.getName());
         }
-        if operationNode.getKind() != parser:OPERATION_MUTATION {
+        service object {} serviceObject;
+        lock {
+            serviceObject = self.engine.getService();
+        }
+        if operationNode.getKind() != parser:OPERATION_MUTATION && serviceObject is isolated service object {} {
             map<anydata> dataMap = {[OPERATION_TYPE] : operationNode.getKind(), [PATH] : path};
             return self.visitSelectionsParallelly(operationNode, dataMap.cloneReadOnly());
         }
@@ -106,20 +110,19 @@ isolated class ExecutorVisitor {
     public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
 
     isolated function execute(parser:FieldNode fieldNode, parser:RootOperationType operationType) {
+        __Schema schema = self.schema;
         any|error result;
-        __Schema schema;
         Engine engine;
         Context context;
         lock {
             result = self.getResult();
-            schema = self.schema;
             engine = self.engine;
             context = self.context;
         }
         Field 'field = getFieldObject(fieldNode, operationType, schema, engine, result);
 
         anydata resolvedResult = engine.resolve(context, 'field);
-        resolvedResult = resolvedResult is ErrorDetail ? () : resolvedResult.cloneReadOnly();
+        resolvedResult = resolvedResult is ErrorDetail ? () : resolvedResult;
         self.addData(fieldNode.getAlias(), resolvedResult);
     }
 
@@ -172,12 +175,12 @@ isolated class ExecutorVisitor {
             if selection is parser:FieldNode {
                 path.push(selection.getName());
                 self.addData(selection.getAlias(), ());
+                ErrorDetail errorDetail = {
+                    message: err.message(),
+                    locations: [selection.getLocation()],
+                    path: path
+                };
                 lock {
-                    ErrorDetail errorDetail = {
-                        message: err.message(),
-                        locations: [selection.getLocation()],
-                        path: path
-                    };
                     self.context.addError(errorDetail);
                 }
             }
