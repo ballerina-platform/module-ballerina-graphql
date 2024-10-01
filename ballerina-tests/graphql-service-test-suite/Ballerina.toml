@@ -1,0 +1,10 @@
+[package]
+org = "ballerina"
+name = "graphql_service_test_suite"
+version = "1.14.1"
+
+[[dependency]]
+org = "ballerina"
+name = "graphql_test_common"
+repository = "local"
+version = "1.14.1"
