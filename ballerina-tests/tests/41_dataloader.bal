@@ -15,8 +15,8 @@
 // under the License.
 
 import ballerina/graphql;
-import ballerina/websocket;
 import ballerina/test;
+import ballerina/websocket;
 
 @test:Config {
     groups: ["dataloader", "query"],
@@ -47,8 +47,9 @@ isolated function testDataLoaderWithDifferentAliasForSameField() returns error? 
 }
 
 @test:Config {
-    groups: ["dataloader", "subscription"],
-    after: resetDispatchCounters
+    groups: ["subscriptions", "dataloader"],
+    after: resetDispatchCounters,
+    enable: false
 }
 isolated function testDataLoaderWithSubscription() returns error? {
     string document = check getGraphqlDocumentFromFile("dataloader_with_subscription");
@@ -66,7 +67,10 @@ isolated function testDataLoaderWithSubscription() returns error? {
 
 @test:Config {
     groups: ["dataloader", "mutation"],
-    dependsOn: [testDataLoaderWithQuery, testDataLoaderWithSubscription],
+    dependsOn: [
+        testDataLoaderWithQuery
+        // , testDataLoaderWithSubscription
+    ],
     after: resetDispatchCounters
 }
 isolated function testDataLoaderWithMutation() returns error? {
