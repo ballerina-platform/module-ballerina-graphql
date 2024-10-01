@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-// import ballerina/graphql;
+import ballerina/graphql;
 import ballerina/graphql_test_common as common;
 import ballerina/test;
 import ballerina/websocket;
@@ -503,221 +503,221 @@ import ballerina/io;
 
 // }
 
-@test:Config {
-    groups: ["subscriptions", "multiplexing"]
-}
-isolated function testSubscriptionMultiplexing() returns error? {
-    io:println("start testSubscriptionMultiplexing");
-
-    string document = string `subscription { refresh }`;
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient);
-    check common:sendSubscriptionMessage(wsClient, document, "1");
-    check common:sendSubscriptionMessage(wsClient, document, "2");
-
-    boolean subscriptionOneDisabled = false;
-    map<int> subscriptions = {"1": 0, "2": 0};
-    while true {
-        json actualPayload = check common:readMessageExcludingPingMessages(wsClient);
-        string subscriptionId = check actualPayload.id;
-        subscriptions[subscriptionId] = subscriptions.get(subscriptionId) + 1;
-        if subscriptionOneDisabled && subscriptionId == "1" {
-            test:assertFail("Subscription one already unsubscirbed. No further data should be sent by ther server.");
-        }
-        if subscriptionId == "1" && subscriptions.get(subscriptionId) == 3 {
-            subscriptionOneDisabled = true;
-            check wsClient->writeMessage({'type: common:WS_COMPLETE, id: subscriptionId});
-        }
-        if subscriptionId == "2" && subscriptions.get(subscriptionId) == 10 {
-            check wsClient->writeMessage({'type: common:WS_COMPLETE, id: subscriptionId});
-            break;
-        }
-        json payload = {data: {refresh: "data"}};
-        json expectedPayload = {'type: common:WS_NEXT, id: subscriptionId, payload: payload};
-        test:assertEquals(actualPayload, expectedPayload);
-    }
-    io:println("end testSubscriptionMultiplexing");
-
-}
-
-@test:Config {
-    groups: ["subscriptions", "recrods", "service"]
-}
-isolated function testConnectionClousureWhenPongNotRecived() returns error? {
-    io:println("start testConnectionClousureWhenPongNotRecived");
-
-    string url = "ws://localhost:9091/reviews";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient);
-    json|error response;
-    while true {
-        response = wsClient->readMessage();
-        if response is json {
-            test:assertTrue(response.'type == common:WS_PING);
-            continue;
-        }
-        break;
-    }
-    test:assertTrue(response is error, "Expected connection clousure error");
-    test:assertEquals((<error>response).message(), "Request timeout: Status code: 4408");
-    io:println("end testConnectionClousureWhenPongNotRecived");
-
-}
-
-@test:Config {
-    groups: ["request_validation", "websocket", "subscriptions"]
-}
-isolated function testInvalidWebSocketRequestWithEmptyQuery() returns error? {
-    io:println("start testInvalidWebSocketRequestWithEmptyQuery");
-
-    string document = "";
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient);
-    check common:sendSubscriptionMessage(wsClient, document);
-    json expectedMsgPayload = {errors: [{message: "An empty query is found"}]};
-    check common:validateErrorMessage(wsClient, expectedMsgPayload);
-    io:println("end testInvalidWebSocketRequestWithEmptyQuery");
-
-}
-
-@test:Config {
-    groups: ["request_validation", "websocket", "subscriptions"]
-}
-isolated function testInvalidWebSocketRequestWithInvalidQuery() returns error? {
-    io:println("start testInvalidWebSocketRequestWithInvalidQuery");
-
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient);
-    json payload = {query: 2};
-    check wsClient->writeMessage({"type": common:WS_SUBSCRIBE, id: "1", payload: payload});
-    string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the" +
-        " 'graphql-transport-ws' subprotocol: Status code: 1003";
-    common:validateConnectionClousureWithError(wsClient, expectedErrorMsg);
-    io:println("end testInvalidWebSocketRequestWithInvalidQuery");
-
-}
-
-@test:Config {
-    groups: ["request_validation", "websocket", "subscriptions"]
-}
-isolated function testInvalidWebSocketRequestWithoutQuery() returns error? {
-    io:println("start testInvalidWebSocketRequestWithoutQuery");
-
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient);
-    check wsClient->writeMessage({"type": common:WS_SUBSCRIBE, id: "1", payload: {}});
-    string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the" +
-        " 'graphql-transport-ws' subprotocol: Status code: 1003";
-    common:validateConnectionClousureWithError(wsClient, expectedErrorMsg);
-    io:println("end testInvalidWebSocketRequestWithoutQuery");
-
-}
-
-@test:Config {
-    groups: ["request_validation", "websocket", "subscriptions"]
-}
-isolated function testInvalidVariableInWebSocketPayload() returns error? {
-    io:println("start testInvalidVariableInWebSocketPayload");
-
-    string document = check common:getGraphqlDocumentFromFile("subscriptions_with_variable_values");
-    json variables = [];
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient);
-    check common:sendSubscriptionMessage(wsClient, document, variables = variables);
-    string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the" +
-        " 'graphql-transport-ws' subprotocol: Status code: 1003";
-    common:validateConnectionClousureWithError(wsClient, expectedErrorMsg);
-    io:println("end testInvalidVariableInWebSocketPayload");
-
-}
-
-@test:Config {
-    groups: ["request_validation", "websocket", "subscriptions"]
-}
-isolated function testEmptyWebSocketPayload() returns error? {
-    io:println("start testEmptyWebSocketPayload");
-
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    string payload = "";
-    check wsClient->writeMessage(payload);
-    string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the" +
-        " 'graphql-transport-ws' subprotocol: Status code: 1003";
-    common:validateConnectionClousureWithError(wsClient, expectedErrorMsg);
-    io:println("end testEmptyWebSocketPayload");
-
-}
-
-@test:Config {
-    groups: ["request_validation", "websocket", "subscriptions"]
-}
-isolated function testInvalidWebSocketPayload() returns error? {
-    io:println("start testInvalidWebSocketPayload");
-
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:Client wsClient = check new (url, {subProtocols: [GRAPHQL_TRANSPORT_WS]});
-    json payload = {payload: {query: ()}};
-    check wsClient->writeMessage(payload);
-    string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the"
-        + " 'graphql-transport-ws' subprotocol: Status code: 1003";
-    common:validateConnectionClousureWithError(wsClient, expectedErrorMsg);
-
-    io:println("end testInvalidWebSocketPayload");
-
-}
-
 // @test:Config {
-//     groups: ["listener", "subscriptions"]
+//     groups: ["subscriptions", "multiplexing"]
 // }
-// function testAttachServiceWithSubscriptionToHttp2BasedListener() returns error? {
-//     io:println("start testAttachServiceWithSubscriptionToHttp2BasedListener");
+// isolated function testSubscriptionMultiplexing() returns error? {
+//     io:println("start testSubscriptionMultiplexing");
 
-//     graphql:Error? result = http2BasedListener.attach(subscriptionService);
-//     test:assertTrue(result is graphql:Error);
-//     graphql:Error err = <graphql:Error>result;
-//     string expecctedMessage = string `Websocket listener initialization failed due to the incompatibility of ` +
-//                             string `provided HTTP(version 2.0) listener`;
-//     test:assertEquals(err.message(), expecctedMessage);
-
-//     io:println("end testAttachServiceWithSubscriptionToHttp2BasedListener");
-
-// }
-
-// @test:Config {
-//     groups: ["listener", "subscriptions"]
-// }
-// function testAttachServiceWithSubscriptionToHttp1BasedListener() returns error? {
-//     io:println("start testAttachServiceWithSubscriptionToHttp1BasedListener");
-
-//     string document = string `subscription { messages }`;
-//     string url = "ws://localhost:9091/service_with_http1";
+//     string document = string `subscription { refresh }`;
+//     string url = "ws://localhost:9091/subscriptions";
 //     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-//     websocket:Client wsClient1 = check new (url, config);
-//     check common:initiateGraphqlWsConnection(wsClient1);
-//     check common:sendSubscriptionMessage(wsClient1, document, "1");
+//     websocket:Client wsClient = check new (url, config);
+//     check common:initiateGraphqlWsConnection(wsClient);
+//     check common:sendSubscriptionMessage(wsClient, document, "1");
+//     check common:sendSubscriptionMessage(wsClient, document, "2");
 
-//     websocket:Client wsClient2 = check new (url, config);
-//     check common:initiateGraphqlWsConnection(wsClient2);
-//     check common:sendSubscriptionMessage(wsClient2, document, "2");
-
-//     foreach int i in 1 ..< 4 {
-//         json expectedMsgPayload = {data: {messages: i}};
-//         check common:validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
-//         check common:validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
+//     boolean subscriptionOneDisabled = false;
+//     map<int> subscriptions = {"1": 0, "2": 0};
+//     while true {
+//         json actualPayload = check common:readMessageExcludingPingMessages(wsClient);
+//         string subscriptionId = check actualPayload.id;
+//         subscriptions[subscriptionId] = subscriptions.get(subscriptionId) + 1;
+//         if subscriptionOneDisabled && subscriptionId == "1" {
+//             test:assertFail("Subscription one already unsubscirbed. No further data should be sent by ther server.");
+//         }
+//         if subscriptionId == "1" && subscriptions.get(subscriptionId) == 3 {
+//             subscriptionOneDisabled = true;
+//             check wsClient->writeMessage({'type: common:WS_COMPLETE, id: subscriptionId});
+//         }
+//         if subscriptionId == "2" && subscriptions.get(subscriptionId) == 10 {
+//             check wsClient->writeMessage({'type: common:WS_COMPLETE, id: subscriptionId});
+//             break;
+//         }
+//         json payload = {data: {refresh: "data"}};
+//         json expectedPayload = {'type: common:WS_NEXT, id: subscriptionId, payload: payload};
+//         test:assertEquals(actualPayload, expectedPayload);
 //     }
-
-//     io:println("end testAttachServiceWithSubscriptionToHttp1BasedListener");
+//     io:println("end testSubscriptionMultiplexing");
 
 // }
+
+// @test:Config {
+//     groups: ["subscriptions", "recrods", "service"]
+// }
+// isolated function testConnectionClousureWhenPongNotRecived() returns error? {
+//     io:println("start testConnectionClousureWhenPongNotRecived");
+
+//     string url = "ws://localhost:9091/reviews";
+//     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+//     websocket:Client wsClient = check new (url, config);
+//     check common:initiateGraphqlWsConnection(wsClient);
+//     json|error response;
+//     while true {
+//         response = wsClient->readMessage();
+//         if response is json {
+//             test:assertTrue(response.'type == common:WS_PING);
+//             continue;
+//         }
+//         break;
+//     }
+//     test:assertTrue(response is error, "Expected connection clousure error");
+//     test:assertEquals((<error>response).message(), "Request timeout: Status code: 4408");
+//     io:println("end testConnectionClousureWhenPongNotRecived");
+
+// }
+
+// @test:Config {
+//     groups: ["request_validation", "websocket", "subscriptions"]
+// }
+// isolated function testInvalidWebSocketRequestWithEmptyQuery() returns error? {
+//     io:println("start testInvalidWebSocketRequestWithEmptyQuery");
+
+//     string document = "";
+//     string url = "ws://localhost:9091/subscriptions";
+//     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+//     websocket:Client wsClient = check new (url, config);
+//     check common:initiateGraphqlWsConnection(wsClient);
+//     check common:sendSubscriptionMessage(wsClient, document);
+//     json expectedMsgPayload = {errors: [{message: "An empty query is found"}]};
+//     check common:validateErrorMessage(wsClient, expectedMsgPayload);
+//     io:println("end testInvalidWebSocketRequestWithEmptyQuery");
+
+// }
+
+// @test:Config {
+//     groups: ["request_validation", "websocket", "subscriptions"]
+// }
+// isolated function testInvalidWebSocketRequestWithInvalidQuery() returns error? {
+//     io:println("start testInvalidWebSocketRequestWithInvalidQuery");
+
+//     string url = "ws://localhost:9091/subscriptions";
+//     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+//     websocket:Client wsClient = check new (url, config);
+//     check common:initiateGraphqlWsConnection(wsClient);
+//     json payload = {query: 2};
+//     check wsClient->writeMessage({"type": common:WS_SUBSCRIBE, id: "1", payload: payload});
+//     string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the" +
+//         " 'graphql-transport-ws' subprotocol: Status code: 1003";
+//     common:validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+//     io:println("end testInvalidWebSocketRequestWithInvalidQuery");
+
+// }
+
+// @test:Config {
+//     groups: ["request_validation", "websocket", "subscriptions"]
+// }
+// isolated function testInvalidWebSocketRequestWithoutQuery() returns error? {
+//     io:println("start testInvalidWebSocketRequestWithoutQuery");
+
+//     string url = "ws://localhost:9091/subscriptions";
+//     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+//     websocket:Client wsClient = check new (url, config);
+//     check common:initiateGraphqlWsConnection(wsClient);
+//     check wsClient->writeMessage({"type": common:WS_SUBSCRIBE, id: "1", payload: {}});
+//     string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the" +
+//         " 'graphql-transport-ws' subprotocol: Status code: 1003";
+//     common:validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+//     io:println("end testInvalidWebSocketRequestWithoutQuery");
+
+// }
+
+// @test:Config {
+//     groups: ["request_validation", "websocket", "subscriptions"]
+// }
+// isolated function testInvalidVariableInWebSocketPayload() returns error? {
+//     io:println("start testInvalidVariableInWebSocketPayload");
+
+//     string document = check common:getGraphqlDocumentFromFile("subscriptions_with_variable_values");
+//     json variables = [];
+//     string url = "ws://localhost:9091/subscriptions";
+//     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+//     websocket:Client wsClient = check new (url, config);
+//     check common:initiateGraphqlWsConnection(wsClient);
+//     check common:sendSubscriptionMessage(wsClient, document, variables = variables);
+//     string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the" +
+//         " 'graphql-transport-ws' subprotocol: Status code: 1003";
+//     common:validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+//     io:println("end testInvalidVariableInWebSocketPayload");
+
+// }
+
+// @test:Config {
+//     groups: ["request_validation", "websocket", "subscriptions"]
+// }
+// isolated function testEmptyWebSocketPayload() returns error? {
+//     io:println("start testEmptyWebSocketPayload");
+
+//     string url = "ws://localhost:9091/subscriptions";
+//     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+//     websocket:Client wsClient = check new (url, config);
+//     string payload = "";
+//     check wsClient->writeMessage(payload);
+//     string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the" +
+//         " 'graphql-transport-ws' subprotocol: Status code: 1003";
+//     common:validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+//     io:println("end testEmptyWebSocketPayload");
+
+// }
+
+// @test:Config {
+//     groups: ["request_validation", "websocket", "subscriptions"]
+// }
+// isolated function testInvalidWebSocketPayload() returns error? {
+//     io:println("start testInvalidWebSocketPayload");
+
+//     string url = "ws://localhost:9091/subscriptions";
+//     websocket:Client wsClient = check new (url, {subProtocols: [GRAPHQL_TRANSPORT_WS]});
+//     json payload = {payload: {query: ()}};
+//     check wsClient->writeMessage(payload);
+//     string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the"
+//         + " 'graphql-transport-ws' subprotocol: Status code: 1003";
+//     common:validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+
+//     io:println("end testInvalidWebSocketPayload");
+
+// }
+
+@test:Config {
+    groups: ["listener", "subscriptions"]
+}
+function testAttachServiceWithSubscriptionToHttp2BasedListener() returns error? {
+    io:println("start testAttachServiceWithSubscriptionToHttp2BasedListener");
+
+    graphql:Error? result = http2BasedListener.attach(subscriptionService);
+    test:assertTrue(result is graphql:Error);
+    graphql:Error err = <graphql:Error>result;
+    string expecctedMessage = string `Websocket listener initialization failed due to the incompatibility of ` +
+                            string `provided HTTP(version 2.0) listener`;
+    test:assertEquals(err.message(), expecctedMessage);
+
+    io:println("end testAttachServiceWithSubscriptionToHttp2BasedListener");
+
+}
+
+@test:Config {
+    groups: ["listener", "subscriptions"]
+}
+function testAttachServiceWithSubscriptionToHttp1BasedListener() returns error? {
+    io:println("start testAttachServiceWithSubscriptionToHttp1BasedListener");
+
+    string document = string `subscription { messages }`;
+    string url = "ws://localhost:9091/service_with_http1";
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient1 = check new (url, config);
+    check common:initiateGraphqlWsConnection(wsClient1);
+    check common:sendSubscriptionMessage(wsClient1, document, "1");
+
+    websocket:Client wsClient2 = check new (url, config);
+    check common:initiateGraphqlWsConnection(wsClient2);
+    check common:sendSubscriptionMessage(wsClient2, document, "2");
+
+    foreach int i in 1 ..< 4 {
+        json expectedMsgPayload = {data: {messages: i}};
+        check common:validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
+        check common:validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
+    }
+
+    io:println("end testAttachServiceWithSubscriptionToHttp1BasedListener");
+
+}
