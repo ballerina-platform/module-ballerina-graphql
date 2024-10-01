@@ -78,7 +78,7 @@ task initializeVariables {
         groupParams = "--groups ${project.findProperty('groups')}"
     }
     // Temporarily disable subscription tests
-    disableGroups = "--disable-groups subscriptions"
+    disableGroups = "--disable-groups subscriptions "
     if (project.hasProperty("disable")) {
         disableGroups += "${project.findProperty("disable")}"
     }
