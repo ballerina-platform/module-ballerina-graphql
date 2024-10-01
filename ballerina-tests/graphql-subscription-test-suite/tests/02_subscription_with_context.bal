@@ -25,7 +25,7 @@ import ballerina/io;
 isolated function testContextWithSubscriptions() returns error? {
     io:println("start testContextWithSubscriptions");
 
-    string url = "ws://localhost:9092/context";
+    string url = "ws://localhost:9091/context";
     string document = string `subscription { messages }`;
     websocket:ClientConfiguration configs = {
         customHeaders: {
@@ -50,7 +50,7 @@ isolated function testContextWithSubscriptions() returns error? {
 isolated function testContextWithInvalidScopeInSubscriptions() returns error? {
     io:println("start testContextWithInvalidScopeInSubscriptions");
 
-    string url = "ws://localhost:9092/context";
+    string url = "ws://localhost:9091/context";
     string document = string `subscription { messages }`;
     websocket:ClientConfiguration configs = {
         customHeaders: {

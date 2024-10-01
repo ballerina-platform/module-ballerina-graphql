@@ -83,7 +83,7 @@ service /subscriptions on subscriptionListener {
     }
 }
 
-service /reviews on wrappedListener {
+service /reviews on subscriptionListener {
     resource function get greet() returns string {
         return "Welcome!";
     }
@@ -111,7 +111,7 @@ graphql:Service subscriptionService = service object {
     }
 };
 
-isolated service /service_with_http1 on wrappedListener {
+isolated service /service_with_http1 on subscriptionListener {
     isolated resource function get greet() returns string {
         return "welcome!";
     }
@@ -130,7 +130,7 @@ isolated service /service_with_http1 on wrappedListener {
         return context;
     }
 }
-service /context on wrappedListener {
+service /context on subscriptionListener {
     isolated resource function get greet() returns string {
         return "welcome!";
     }

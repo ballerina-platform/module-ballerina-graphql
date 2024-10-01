@@ -470,7 +470,7 @@ isolated function testResolverReturingStreamOfRecordsWithServiceObjects() return
     io:println("start testResolverReturingStreamOfRecordsWithServiceObjects");
 
     string document = "subscription { live { product { id } score } }";
-    string url = "ws://localhost:9092/reviews";
+    string url = "ws://localhost:9091/reviews";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
     check common:initiateGraphqlWsConnection(wsClient);
@@ -489,7 +489,7 @@ isolated function testResolverReturingStreamOfRecordsWithMapOfServiceObjects() r
     io:println("start testResolverReturingStreamOfRecordsWithMapOfServiceObjects");
 
     string document = string `subscription { accountUpdates { details(key: "acc1") { name } } }`;
-    string url = "ws://localhost:9092/reviews";
+    string url = "ws://localhost:9091/reviews";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
     check common:initiateGraphqlWsConnection(wsClient);
@@ -548,7 +548,7 @@ isolated function testSubscriptionMultiplexing() returns error? {
 isolated function testConnectionClousureWhenPongNotRecived() returns error? {
     io:println("start testConnectionClousureWhenPongNotRecived");
 
-    string url = "ws://localhost:9092/reviews";
+    string url = "ws://localhost:9091/reviews";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
     check common:initiateGraphqlWsConnection(wsClient);
@@ -702,7 +702,7 @@ function testAttachServiceWithSubscriptionToHttp1BasedListener() returns error? 
     io:println("start testAttachServiceWithSubscriptionToHttp1BasedListener");
 
     string document = string `subscription { messages }`;
-    string url = "ws://localhost:9092/service_with_http1";
+    string url = "ws://localhost:9091/service_with_http1";
     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient1 = check new (url, config);
     check common:initiateGraphqlWsConnection(wsClient1);
