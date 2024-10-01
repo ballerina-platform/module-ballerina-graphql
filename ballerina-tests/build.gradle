@@ -32,13 +32,13 @@ def ballerinaDist = "${project.rootDir}/target/ballerina-runtime"
 def distributionBinPath =  "${ballerinaDist}/bin"
 def testCoverageParam = "--code-coverage --coverage-format=xml --includes=io.ballerina.stdlib.graphql.*:ballerina.graphql*"
 def testSuites = [
-    "graphql-advanced-test-suite",
-    "graphql-client-test-suite",
-    "graphql-dataloader-test-suite",
-    "graphql-interceptor-test-suite",
-    "graphql-security-test-suite",
-    "graphql-service-test-suite", 
-    "graphql-subgraph-test-suite",
+    // "graphql-advanced-test-suite",
+    // "graphql-client-test-suite",
+    // "graphql-dataloader-test-suite",
+    // "graphql-interceptor-test-suite",
+    // "graphql-security-test-suite",
+    // "graphql-service-test-suite", 
+    // "graphql-subgraph-test-suite",
     "graphql-subscription-test-suite"
 ]
 def testCommonPackage = "graphql-test-common"

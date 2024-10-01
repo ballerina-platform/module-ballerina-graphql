@@ -17,11 +17,14 @@
 import ballerina/graphql_test_common as common;
 import ballerina/test;
 import ballerina/websocket;
+import ballerina/io;
 
 @test:Config {
     groups: ["context", "subscriptions"]
 }
 isolated function testContextWithSubscriptions() returns error? {
+    io:println("start testContextWithSubscriptions");
+
     string url = "ws://localhost:9092/context";
     string document = string `subscription { messages }`;
     websocket:ClientConfiguration configs = {
@@ -37,12 +40,16 @@ isolated function testContextWithSubscriptions() returns error? {
         json expectedMsgPayload = {data: {messages: i}};
         check common:validateNextMessage(wsClient, expectedMsgPayload);
     }
+    io:println("end testContextWithSubscriptions");
+
 }
 
 @test:Config {
     groups: ["context", "subscriptions"]
 }
 isolated function testContextWithInvalidScopeInSubscriptions() returns error? {
+    io:println("start testContextWithInvalidScopeInSubscriptions");
+
     string url = "ws://localhost:9092/context";
     string document = string `subscription { messages }`;
     websocket:ClientConfiguration configs = {
@@ -62,4 +69,6 @@ isolated function testContextWithInvalidScopeInSubscriptions() returns error? {
         }
     ];
     check common:validateErrorMessage(wsClient, expectedErrorPayload);
+    io:println("end testContextWithInvalidScopeInSubscriptions");
+
 }
