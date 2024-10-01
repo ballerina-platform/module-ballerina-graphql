@@ -78,7 +78,7 @@ function dataProviderListener() returns string[][] {
 }
 
 @test:Config {
-    groups: ["listener"]
+    groups: ["subscriptions", "listener"]
 }
 function testAttachServiceWithSubscriptionToHttp2BasedListener() returns error? {
     graphql:Error? result = http2BasedListener.attach(subscriptionService);

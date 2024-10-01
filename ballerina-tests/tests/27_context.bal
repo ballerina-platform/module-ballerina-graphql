@@ -296,7 +296,7 @@ isolated function testContextWithAdditionalParametersInNestedObjectWithInvalidSc
 }
 
 @test:Config {
-    groups: ["context"]
+    groups: ["context", "subscriptions"]
 }
 isolated function testContextWithSubscriptions() returns error? {
     string url = "ws://localhost:9092/context";
