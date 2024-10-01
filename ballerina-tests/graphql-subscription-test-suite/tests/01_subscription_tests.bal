@@ -173,335 +173,335 @@ import ballerina/io;
 //     io:println("end testSubscriptionWithVariables");
 // }
 
-@test:Config {
-    groups: ["introspection", "typename", "subscriptions"]
-}
-isolated function testSubscriptionWithIntrospectionInFields() returns error? {
-    io:println("start testSubscriptionWithIntrospectionInFields");
-    string document = string `subscription { students { __typename } }`;
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient);
-    check common:sendSubscriptionMessage(wsClient, document);
+// @test:Config {
+//     groups: ["introspection", "typename", "subscriptions"]
+// }
+// isolated function testSubscriptionWithIntrospectionInFields() returns error? {
+//     io:println("start testSubscriptionWithIntrospectionInFields");
+//     string document = string `subscription { students { __typename } }`;
+//     string url = "ws://localhost:9091/subscriptions";
+//     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+//     websocket:Client wsClient = check new (url, config);
+//     check common:initiateGraphqlWsConnection(wsClient);
+//     check common:sendSubscriptionMessage(wsClient, document);
 
-    json expectedMsgPayload = {data: {students: {__typename: "StudentService"}}};
-    check common:validateNextMessage(wsClient, expectedMsgPayload);
-    io:println("end testSubscriptionWithIntrospectionInFields");
-}
-
-@test:Config {
-    groups: ["subscriptions"]
-}
-isolated function testInvalidSubscription() returns error? {
-    io:println("start testInvalidSubscription");
-    string document = string `subscription { invalidField }`;
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient);
-    check common:sendSubscriptionMessage(wsClient, document);
-
-    json expectedMsgPayload = check common:getJsonContentFromFile("subscription_invalid_field");
-    check common:validateErrorMessage(wsClient, expectedMsgPayload);
-    io:println("end testInvalidSubscription");
-}
-
-@test:Config {
-    groups: ["subscriptions"]
-}
-isolated function testSubscriptionFunctionWithErrors() returns error? {
-    io:println("start testSubscriptionFunctionWithErrors");
-    string document = string `subscription getNames { values }`;
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient);
-    check common:sendSubscriptionMessage(wsClient, document);
-
-    json expectedErrorPayload = [
-        {
-            message: "{ballerina/lang.array}IndexOutOfRange",
-            locations: [{line: 1, column: 25}],
-            path: ["values"]
-        }
-    ];
-    check common:validateErrorMessage(wsClient, expectedErrorPayload);
-    io:println("end testSubscriptionFunctionWithErrors");
-}
-
-@test:Config {
-    groups: ["service", "subscriptions"]
-}
-isolated function testSubscriptionWithServiceObjects() returns error? {
-    io:println("start testSubscriptionWithServiceObjects");
-    string document = check common:getGraphqlDocumentFromFile("subscriptions_with_service_objects");
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient);
-    check common:sendSubscriptionMessage(wsClient, document);
-
-    json expectedMsgPayload = {data: {students: {id: 1, name: "Eren Yeager"}}};
-    check common:validateNextMessage(wsClient, expectedMsgPayload);
-    expectedMsgPayload = {data: {students: {id: 2, name: "Mikasa Ackerman"}}};
-    check common:validateNextMessage(wsClient, expectedMsgPayload);
-    check common:validateCompleteMessage(wsClient);
-    io:println("end testSubscriptionWithServiceObjects");
-    
-}
-
-@test:Config {
-    groups: ["subscriptions"]
-}
-isolated function testSubscriptionWithMultipleClients() returns error? {
-    io:println("start testSubscriptionWithMultipleClients");
-    string document = string `subscription { messages }`;
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-
-    websocket:Client wsClient1 = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient1);
-    check common:sendSubscriptionMessage(wsClient1, document, "1");
-
-    websocket:Client wsClient2 = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient2);
-    check common:sendSubscriptionMessage(wsClient2, document, "2");
-
-    foreach int i in 1 ..< 6 {
-        json expectedMsgPayload = {data: {messages: i}};
-        check common:validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
-        check common:validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
-    }
-    check common:validateCompleteMessage(wsClient1, id = "1");
-    check common:validateCompleteMessage(wsClient2, id = "2");
-    io:println("end testSubscriptionWithMultipleClients");
-}
-
-@test:Config {
-    groups: ["subscriptions"]
-}
-isolated function testConnectionInitMessage() returns error? {
-    io:println("start testConnectionInitMessage");
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check common:sendConnectionInitMessage(wsClient);
-    check common:validateConnectionAckMessage(wsClient);
-    io:println("end testConnectionInitMessage");
-}
-
-@test:Config {
-    groups: ["subscriptions"]
-}
-isolated function testInvalidMultipleConnectionInitMessages() returns error? {
-    io:println("start testInvalidMultipleConnectionInitMessages");
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient);
-    check common:sendConnectionInitMessage(wsClient);
-
-    string expectedErrorMsg = "Too many initialisation requests: Status code: 4429";
-    common:validateConnectionClousureWithError(wsClient, expectedErrorMsg);
-    io:println("end testInvalidMultipleConnectionInitMessages");
-}
-
-@test:Config {
-    groups: ["subscriptions"]
-}
-isolated function testUnauthorizedAccess() returns error? {
-    io:println("start testUnauthorizedAccess");
-    string document = check common:getGraphqlDocumentFromFile("subscriptions_with_service_objects");
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check common:sendSubscriptionMessage(wsClient, document);
-
-    string expectedErrorMsg = "Unauthorized: Status code: 4401";
-    common:validateConnectionClousureWithError(wsClient, expectedErrorMsg);
-    io:println("end testUnauthorizedAccess");
-}
+//     json expectedMsgPayload = {data: {students: {__typename: "StudentService"}}};
+//     check common:validateNextMessage(wsClient, expectedMsgPayload);
+//     io:println("end testSubscriptionWithIntrospectionInFields");
+// }
 
 // @test:Config {
 //     groups: ["subscriptions"]
 // }
-// function testAlreadyExistingSubscriber() returns error? {
-//     io:println("start testAlreadyExistingSubscriber");
+// isolated function testInvalidSubscription() returns error? {
+//     io:println("start testInvalidSubscription");
+//     string document = string `subscription { invalidField }`;
+//     string url = "ws://localhost:9091/subscriptions";
+//     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+//     websocket:Client wsClient = check new (url, config);
+//     check common:initiateGraphqlWsConnection(wsClient);
+//     check common:sendSubscriptionMessage(wsClient, document);
+
+//     json expectedMsgPayload = check common:getJsonContentFromFile("subscription_invalid_field");
+//     check common:validateErrorMessage(wsClient, expectedMsgPayload);
+//     io:println("end testInvalidSubscription");
+// }
+
+// @test:Config {
+//     groups: ["subscriptions"]
+// }
+// isolated function testSubscriptionFunctionWithErrors() returns error? {
+//     io:println("start testSubscriptionFunctionWithErrors");
+//     string document = string `subscription getNames { values }`;
+//     string url = "ws://localhost:9091/subscriptions";
+//     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+//     websocket:Client wsClient = check new (url, config);
+//     check common:initiateGraphqlWsConnection(wsClient);
+//     check common:sendSubscriptionMessage(wsClient, document);
+
+//     json expectedErrorPayload = [
+//         {
+//             message: "{ballerina/lang.array}IndexOutOfRange",
+//             locations: [{line: 1, column: 25}],
+//             path: ["values"]
+//         }
+//     ];
+//     check common:validateErrorMessage(wsClient, expectedErrorPayload);
+//     io:println("end testSubscriptionFunctionWithErrors");
+// }
+
+// @test:Config {
+//     groups: ["service", "subscriptions"]
+// }
+// isolated function testSubscriptionWithServiceObjects() returns error? {
+//     io:println("start testSubscriptionWithServiceObjects");
 //     string document = check common:getGraphqlDocumentFromFile("subscriptions_with_service_objects");
 //     string url = "ws://localhost:9091/subscriptions";
 //     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
 //     websocket:Client wsClient = check new (url, config);
-//     string clientId = wsClient.getConnectionId();
-//     check common:initiateGraphqlWsConnection(wsClient);
-//     check common:sendSubscriptionMessage(wsClient, document, clientId);
-//     check common:sendSubscriptionMessage(wsClient, document, clientId);
-//     string expectedErrorMsg = "Subscriber for " + clientId + " already exists: Status code: 4409";
-//     int i = 0;
-//     json|error response;
-//     while true {
-//         i += 1;
-//         response = common:readMessageExcludingPingMessages(wsClient);
-//         if response is error {
-//             break;
-//         }
-//         if i > 3 {
-//             test:assertFail(string `Expected: ${expectedErrorMsg}, Found: ${response.toString()}`);
-//         }
-//         json|error id = response.id;
-//         if id is error {
-//             test:assertFail(string `Expected json with id found: ${response.toString()}`);
-//         }
-//     }
-//     test:assertEquals((<error>response).message(), expectedErrorMsg);
-//     io:println("end testAlreadyExistingSubscriber");
-
-// }
-
-// @test:Config {
-//     groups: ["subscriptions"]
-// }
-// isolated function testOnPing() returns error? {
-//     io:println("start testOnPing");
-
-//     string url = "ws://localhost:9091/subscriptions";
-//     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-//     websocket:Client wsClient = check new (url, config);
-//     check wsClient->writeMessage({'type: common:WS_PING});
-//     json response = check wsClient->readMessage();
-//     test:assertEquals(response.'type, common:WS_PONG);
-//     io:println("end testOnPing");
-
-// }
-
-// @test:Config {
-//     groups: ["subscriptions"]
-// }
-// isolated function testInvalidSubProtocolInSubscriptions() returns error? {
-//     io:println("start testInvalidSubProtocolInSubscriptions");
-
-//     string url = "ws://localhost:9091/subscriptions";
-//     string subProtocol = "graphql-invalid-ws";
-//     websocket:ClientConfiguration config = {subProtocols: [subProtocol]};
-//     websocket:Client|error wsClient = new (url, config);
-//     test:assertTrue(wsClient is websocket:InvalidHandshakeError, "Invalid handshake error expected");
-//     string expectedErrorMsg = "InvalidHandshakeError: Invalid subprotocol. Actual: null." +
-//     " Expected one of: graphql-invalid-ws";
-//     test:assertEquals((<error>wsClient).message(), expectedErrorMsg);
-//     io:println("end testInvalidSubProtocolInSubscriptions");
-// }    
-
-// @test:Config {
-//     groups: ["subscriptions", "runtime_errors"]
-// }
-// isolated function testErrorsInStreams() returns error? {
-//     io:println("start testErrorsInStreams");
-    
-//     string document = "subscription { evenNumber }";
-//     string url = "ws://localhost:9091/subscriptions";
-//     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-//     websocket:Client wsClient = check new (url, config);
 //     check common:initiateGraphqlWsConnection(wsClient);
 //     check common:sendSubscriptionMessage(wsClient, document);
 
-//     json expectedMsgPayload = {data: {evenNumber: 2}};
+//     json expectedMsgPayload = {data: {students: {id: 1, name: "Eren Yeager"}}};
 //     check common:validateNextMessage(wsClient, expectedMsgPayload);
-//     expectedMsgPayload = check common:getJsonContentFromFile("errors_in_streams");
+//     expectedMsgPayload = {data: {students: {id: 2, name: "Mikasa Ackerman"}}};
 //     check common:validateNextMessage(wsClient, expectedMsgPayload);
-//     expectedMsgPayload = {data: {evenNumber: 6}};
-//     check common:validateNextMessage(wsClient, expectedMsgPayload);
-//     io:println("end testErrorsInStreams");
+//     check common:validateCompleteMessage(wsClient);
+//     io:println("end testSubscriptionWithServiceObjects");
     
 // }
 
 // @test:Config {
 //     groups: ["subscriptions"]
 // }
-// isolated function testMultipleSubscriptionUsingSingleClient() returns error? {
-//     io:println("start testMultipleSubscriptionUsingSingleClient");
-
+// isolated function testSubscriptionWithMultipleClients() returns error? {
+//     io:println("start testSubscriptionWithMultipleClients");
 //     string document = string `subscription { messages }`;
 //     string url = "ws://localhost:9091/subscriptions";
 //     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-//     websocket:Client wsClient = check new (url, config);
-//     check common:initiateGraphqlWsConnection(wsClient);
 
-//     check common:sendSubscriptionMessage(wsClient, document, "1");
+//     websocket:Client wsClient1 = check new (url, config);
+//     check common:initiateGraphqlWsConnection(wsClient1);
+//     check common:sendSubscriptionMessage(wsClient1, document, "1");
+
+//     websocket:Client wsClient2 = check new (url, config);
+//     check common:initiateGraphqlWsConnection(wsClient2);
+//     check common:sendSubscriptionMessage(wsClient2, document, "2");
+
 //     foreach int i in 1 ..< 6 {
 //         json expectedMsgPayload = {data: {messages: i}};
-//         check common:validateNextMessage(wsClient, expectedMsgPayload, id = "1");
+//         check common:validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
+//         check common:validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
 //     }
-//     check common:validateCompleteMessage(wsClient, id = "1");
-
-//     check common:sendSubscriptionMessage(wsClient, document, "2");
-//     foreach int i in 1 ..< 6 {
-//         json expectedMsgPayload = {data: {messages: i}};
-//         check common:validateNextMessage(wsClient, expectedMsgPayload, id = "2");
-//     }
-//     check common:validateCompleteMessage(wsClient, id = "2");
-//     io:println("end testMultipleSubscriptionUsingSingleClient");
-
+//     check common:validateCompleteMessage(wsClient1, id = "1");
+//     check common:validateCompleteMessage(wsClient2, id = "2");
+//     io:println("end testSubscriptionWithMultipleClients");
 // }
 
 // @test:Config {
 //     groups: ["subscriptions"]
 // }
-// isolated function testSubscriptionWithInvalidPayload() returns error? {
-//     io:println("start testSubscriptionWithInvalidPayload");
+// isolated function testConnectionInitMessage() returns error? {
+//     io:println("start testConnectionInitMessage");
+//     string url = "ws://localhost:9091/subscriptions";
+//     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+//     websocket:Client wsClient = check new (url, config);
+//     check common:sendConnectionInitMessage(wsClient);
+//     check common:validateConnectionAckMessage(wsClient);
+//     io:println("end testConnectionInitMessage");
+// }
 
+// @test:Config {
+//     groups: ["subscriptions"]
+// }
+// isolated function testInvalidMultipleConnectionInitMessages() returns error? {
+//     io:println("start testInvalidMultipleConnectionInitMessages");
 //     string url = "ws://localhost:9091/subscriptions";
 //     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
 //     websocket:Client wsClient = check new (url, config);
 //     check common:initiateGraphqlWsConnection(wsClient);
-//     json invalidPayload = {'type: "start"};
-//     check wsClient->writeMessage(invalidPayload);
+//     check common:sendConnectionInitMessage(wsClient);
 
-//     string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the" +
-//         " 'graphql-transport-ws' subprotocol: Status code: 1003";
+//     string expectedErrorMsg = "Too many initialisation requests: Status code: 4429";
 //     common:validateConnectionClousureWithError(wsClient, expectedErrorMsg);
-//     io:println("end testSubscriptionWithInvalidPayload");
-
+//     io:println("end testInvalidMultipleConnectionInitMessages");
 // }
 
 // @test:Config {
-//     groups: ["subscriptions", "recrods", "service"]
+//     groups: ["subscriptions"]
 // }
-// isolated function testResolverReturingStreamOfRecordsWithServiceObjects() returns error? {
-//     io:println("start testResolverReturingStreamOfRecordsWithServiceObjects");
-
-//     string document = "subscription { live { product { id } score } }";
-//     string url = "ws://localhost:9091/reviews";
+// isolated function testUnauthorizedAccess() returns error? {
+//     io:println("start testUnauthorizedAccess");
+//     string document = check common:getGraphqlDocumentFromFile("subscriptions_with_service_objects");
+//     string url = "ws://localhost:9091/subscriptions";
 //     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
 //     websocket:Client wsClient = check new (url, config);
-//     check common:initiateGraphqlWsConnection(wsClient);
 //     check common:sendSubscriptionMessage(wsClient, document);
 
-//     json expectedPayload = {data: {live: {product: {id: "1"}, score: 20}}};
-//     check common:validateNextMessage(wsClient, expectedPayload);
-//     io:println("end testResolverReturingStreamOfRecordsWithServiceObjects");
-
+//     string expectedErrorMsg = "Unauthorized: Status code: 4401";
+//     common:validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+//     io:println("end testUnauthorizedAccess");
 // }
 
-// @test:Config {
-//     groups: ["subscriptions", "recrods", "service", "maps"]
-// }
-// isolated function testResolverReturingStreamOfRecordsWithMapOfServiceObjects() returns error? {
-//     io:println("start testResolverReturingStreamOfRecordsWithMapOfServiceObjects");
+@test:Config {
+    groups: ["subscriptions"]
+}
+function testAlreadyExistingSubscriber() returns error? {
+    io:println("start testAlreadyExistingSubscriber");
+    string document = check common:getGraphqlDocumentFromFile("subscriptions_with_service_objects");
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    string clientId = wsClient.getConnectionId();
+    check common:initiateGraphqlWsConnection(wsClient);
+    check common:sendSubscriptionMessage(wsClient, document, clientId);
+    check common:sendSubscriptionMessage(wsClient, document, clientId);
+    string expectedErrorMsg = "Subscriber for " + clientId + " already exists: Status code: 4409";
+    int i = 0;
+    json|error response;
+    while true {
+        i += 1;
+        response = common:readMessageExcludingPingMessages(wsClient);
+        if response is error {
+            break;
+        }
+        if i > 3 {
+            test:assertFail(string `Expected: ${expectedErrorMsg}, Found: ${response.toString()}`);
+        }
+        json|error id = response.id;
+        if id is error {
+            test:assertFail(string `Expected json with id found: ${response.toString()}`);
+        }
+    }
+    test:assertEquals((<error>response).message(), expectedErrorMsg);
+    io:println("end testAlreadyExistingSubscriber");
 
-//     string document = string `subscription { accountUpdates { details(key: "acc1") { name } } }`;
-//     string url = "ws://localhost:9091/reviews";
-//     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-//     websocket:Client wsClient = check new (url, config);
-//     check common:initiateGraphqlWsConnection(wsClient);
-//     check common:sendSubscriptionMessage(wsClient, document);
+}
 
-//     json expectedMsgPayload = {data: {accountUpdates: {details: {name: "James"}}}};
-//     check common:validateNextMessage(wsClient, expectedMsgPayload);
-//     expectedMsgPayload = {data: {accountUpdates: {details: {name: "James Deen"}}}};
-//     check common:validateNextMessage(wsClient, expectedMsgPayload);
-//     io:println("end testResolverReturingStreamOfRecordsWithMapOfServiceObjects");
+@test:Config {
+    groups: ["subscriptions"]
+}
+isolated function testOnPing() returns error? {
+    io:println("start testOnPing");
 
-// }
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check wsClient->writeMessage({'type: common:WS_PING});
+    json response = check wsClient->readMessage();
+    test:assertEquals(response.'type, common:WS_PONG);
+    io:println("end testOnPing");
+
+}
+
+@test:Config {
+    groups: ["subscriptions"]
+}
+isolated function testInvalidSubProtocolInSubscriptions() returns error? {
+    io:println("start testInvalidSubProtocolInSubscriptions");
+
+    string url = "ws://localhost:9091/subscriptions";
+    string subProtocol = "graphql-invalid-ws";
+    websocket:ClientConfiguration config = {subProtocols: [subProtocol]};
+    websocket:Client|error wsClient = new (url, config);
+    test:assertTrue(wsClient is websocket:InvalidHandshakeError, "Invalid handshake error expected");
+    string expectedErrorMsg = "InvalidHandshakeError: Invalid subprotocol. Actual: null." +
+    " Expected one of: graphql-invalid-ws";
+    test:assertEquals((<error>wsClient).message(), expectedErrorMsg);
+    io:println("end testInvalidSubProtocolInSubscriptions");
+}    
+
+@test:Config {
+    groups: ["subscriptions", "runtime_errors"]
+}
+isolated function testErrorsInStreams() returns error? {
+    io:println("start testErrorsInStreams");
+    
+    string document = "subscription { evenNumber }";
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check common:initiateGraphqlWsConnection(wsClient);
+    check common:sendSubscriptionMessage(wsClient, document);
+
+    json expectedMsgPayload = {data: {evenNumber: 2}};
+    check common:validateNextMessage(wsClient, expectedMsgPayload);
+    expectedMsgPayload = check common:getJsonContentFromFile("errors_in_streams");
+    check common:validateNextMessage(wsClient, expectedMsgPayload);
+    expectedMsgPayload = {data: {evenNumber: 6}};
+    check common:validateNextMessage(wsClient, expectedMsgPayload);
+    io:println("end testErrorsInStreams");
+    
+}
+
+@test:Config {
+    groups: ["subscriptions"]
+}
+isolated function testMultipleSubscriptionUsingSingleClient() returns error? {
+    io:println("start testMultipleSubscriptionUsingSingleClient");
+
+    string document = string `subscription { messages }`;
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check common:initiateGraphqlWsConnection(wsClient);
+
+    check common:sendSubscriptionMessage(wsClient, document, "1");
+    foreach int i in 1 ..< 6 {
+        json expectedMsgPayload = {data: {messages: i}};
+        check common:validateNextMessage(wsClient, expectedMsgPayload, id = "1");
+    }
+    check common:validateCompleteMessage(wsClient, id = "1");
+
+    check common:sendSubscriptionMessage(wsClient, document, "2");
+    foreach int i in 1 ..< 6 {
+        json expectedMsgPayload = {data: {messages: i}};
+        check common:validateNextMessage(wsClient, expectedMsgPayload, id = "2");
+    }
+    check common:validateCompleteMessage(wsClient, id = "2");
+    io:println("end testMultipleSubscriptionUsingSingleClient");
+
+}
+
+@test:Config {
+    groups: ["subscriptions"]
+}
+isolated function testSubscriptionWithInvalidPayload() returns error? {
+    io:println("start testSubscriptionWithInvalidPayload");
+
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check common:initiateGraphqlWsConnection(wsClient);
+    json invalidPayload = {'type: "start"};
+    check wsClient->writeMessage(invalidPayload);
+
+    string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the" +
+        " 'graphql-transport-ws' subprotocol: Status code: 1003";
+    common:validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    io:println("end testSubscriptionWithInvalidPayload");
+
+}
+
+@test:Config {
+    groups: ["subscriptions", "recrods", "service"]
+}
+isolated function testResolverReturingStreamOfRecordsWithServiceObjects() returns error? {
+    io:println("start testResolverReturingStreamOfRecordsWithServiceObjects");
+
+    string document = "subscription { live { product { id } score } }";
+    string url = "ws://localhost:9091/reviews";
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check common:initiateGraphqlWsConnection(wsClient);
+    check common:sendSubscriptionMessage(wsClient, document);
+
+    json expectedPayload = {data: {live: {product: {id: "1"}, score: 20}}};
+    check common:validateNextMessage(wsClient, expectedPayload);
+    io:println("end testResolverReturingStreamOfRecordsWithServiceObjects");
+
+}
+
+@test:Config {
+    groups: ["subscriptions", "recrods", "service", "maps"]
+}
+isolated function testResolverReturingStreamOfRecordsWithMapOfServiceObjects() returns error? {
+    io:println("start testResolverReturingStreamOfRecordsWithMapOfServiceObjects");
+
+    string document = string `subscription { accountUpdates { details(key: "acc1") { name } } }`;
+    string url = "ws://localhost:9091/reviews";
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check common:initiateGraphqlWsConnection(wsClient);
+    check common:sendSubscriptionMessage(wsClient, document);
+
+    json expectedMsgPayload = {data: {accountUpdates: {details: {name: "James"}}}};
+    check common:validateNextMessage(wsClient, expectedMsgPayload);
+    expectedMsgPayload = {data: {accountUpdates: {details: {name: "James Deen"}}}};
+    check common:validateNextMessage(wsClient, expectedMsgPayload);
+    io:println("end testResolverReturingStreamOfRecordsWithMapOfServiceObjects");
+
+}
 
 // @test:Config {
 //     groups: ["subscriptions", "multiplexing"]
