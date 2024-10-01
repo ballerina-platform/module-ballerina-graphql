@@ -1,0 +1,8 @@
+{
+  "errors": [
+    {
+      "message": "Field \"profileDetail.name\" of required type \"String!\" was not provided.",
+      "locations": [{ "line": 2, "column": 17 }]
+    }
+  ]
+}

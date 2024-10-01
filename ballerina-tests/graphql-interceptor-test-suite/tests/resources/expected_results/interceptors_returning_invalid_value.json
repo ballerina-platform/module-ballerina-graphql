@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "message": "Invalid return type in Interceptor \"NullReturn1\". Expected type String!",
+      "locations": [{ "line": 2, "column": 3 }],
+      "path": ["name"]
+    },
+    {
+      "message": "Invalid return type in Interceptor \"NullReturn2\". Expected type Int!",
+      "locations": [{ "line": 3, "column": 3 }],
+      "path": ["age"]
+    }
+  ],
+  "data": null
+}

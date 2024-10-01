@@ -1,0 +1,4 @@
+[package]
+org = "ballerina"
+name = "@package.name@"
+version = "@toml.version@"

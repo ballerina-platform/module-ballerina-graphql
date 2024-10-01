@@ -1,7 +1,0 @@
-query getData {
-    sherlock: profile {
-        address {
-            hometown: city
-        }
-    }
-}

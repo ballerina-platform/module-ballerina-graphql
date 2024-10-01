@@ -1,0 +1,8 @@
+{
+  "errors": [
+    {
+      "message": "Variable \"days\" of type \"[Weekday]\" used in position expecting type \"[Weekday!]!\".",
+      "locations": [{ "line": 2, "column": 27 }]
+    }
+  ]
+}

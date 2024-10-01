@@ -1,7 +1,0 @@
-query {
-    stringArrayReturnRecord(stringId: ["Hello", "World"]) {
-        __typename
-        id
-        name
-    }
-}

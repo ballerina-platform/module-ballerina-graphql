@@ -1,0 +1,13 @@
+query A {
+  enemies {
+    name
+    isMarried
+  }
+}
+
+mutation B {
+  removeEnemy(name: "Enemy1", enableEvict: false) {
+    name
+    isMarried
+  }
+}

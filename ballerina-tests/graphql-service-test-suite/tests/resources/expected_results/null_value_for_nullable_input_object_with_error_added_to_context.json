@@ -1,0 +1,12 @@
+{
+  "errors": [
+    {
+      "message": "Data not found",
+      "locations": [{ "line": 2, "column": 3 }],
+      "path": ["name"]
+    }
+  ],
+  "data": {
+    "name": null
+  }
+}

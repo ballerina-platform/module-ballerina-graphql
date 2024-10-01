@@ -1,0 +1,3 @@
+($day:Date!) {
+    isHoliday(date: $day)
+}

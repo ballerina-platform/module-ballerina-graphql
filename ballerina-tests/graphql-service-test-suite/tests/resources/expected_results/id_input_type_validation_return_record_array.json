@@ -1,0 +1,9 @@
+{
+  "data": {
+    "stringArrayReturnRecordArray": [
+      { "__typename": "PersonId", "id": 789, "name": "Beth Match" },
+      { "__typename": "PersonId", "id": 678, "name": "Jo March" },
+      { "__typename": "PersonId", "id": 543, "name": "Amy March" }
+    ]
+  }
+}

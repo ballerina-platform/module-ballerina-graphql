@@ -1,0 +1,26 @@
+query A {
+  authors(ids: [1, 2, 3]) {
+    name
+    books {
+      id
+      title
+    }
+  }
+}
+
+mutation B {
+  harari: updateAuthorName(id: 1, name: "Yual Noah Harari", enableEvict: true) {
+    name
+    books {
+      id
+      title
+    }
+  }
+  manson: updateAuthorName(id: 2, name: "Mark Manson") {
+    name
+    books {
+      id
+      title
+    }
+  }
+}

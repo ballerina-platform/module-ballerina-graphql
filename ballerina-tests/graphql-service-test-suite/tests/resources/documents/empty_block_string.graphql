@@ -1,0 +1,6 @@
+{
+  sendEmail(
+    message: """
+    """
+  )
+}

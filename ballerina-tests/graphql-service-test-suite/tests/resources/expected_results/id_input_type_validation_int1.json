@@ -1,0 +1,9 @@
+{
+  "data": {
+    "intIdReturnRecord": {
+      "__typename": "Student5",
+      "id": 2,
+      "name": "Jennifer Flackett"
+    }
+  }
+}

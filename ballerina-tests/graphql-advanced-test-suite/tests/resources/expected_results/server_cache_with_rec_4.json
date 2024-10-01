@@ -1,0 +1,9 @@
+{
+  "data": {
+    "friends": [
+      { "name": "Skyler", "age": 45 },
+      { "name": "Walter White Jr.", "age": 25 },
+      { "name": "Elliott Schwartz", "age": 51 }
+    ]
+  }
+}

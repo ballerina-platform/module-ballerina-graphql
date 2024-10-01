@@ -1,0 +1,3 @@
+query {
+  stringId(stringId: "hello")
+}

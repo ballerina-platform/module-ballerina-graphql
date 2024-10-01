@@ -1,0 +1,8 @@
+{
+  "data": {
+    "books": [
+      { "name": "Nineteen Eighty-Four", "author": "George Orwell" },
+      { "name": "The Magic of Reality", "author": "Richard Dawkins" }
+    ]
+  }
+}

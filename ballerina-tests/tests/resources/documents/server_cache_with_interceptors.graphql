@@ -1,7 +1,0 @@
-query A {
-    enemy
-}
-
-mutation B {
-    updateEnemy(name: "Snape", enableEvict: false)
-}

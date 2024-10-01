@@ -1,7 +1,0 @@
-query {
-    intIdReturnRecord(intId: 67) {
-        __typename
-        id
-        name
-    }
-}

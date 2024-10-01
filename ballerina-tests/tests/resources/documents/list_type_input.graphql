@@ -1,3 +1,0 @@
-query {
-    concat(words: ["Hello!", "This", "is", "Ballerina", "GraphQL"])
-}

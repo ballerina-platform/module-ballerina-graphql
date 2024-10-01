@@ -1,3 +1,0 @@
-($prices:[[Decimal!]!]!) {
-    getTotalInDecimal(prices:$prices)
-}

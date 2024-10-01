@@ -1,0 +1,8 @@
+{
+  "data": {
+    "search": [
+      { "__typename": "StudentService", "name": "Jesse Pinkman" },
+      { "subject": "Chemistry" }
+    ]
+  }
+}

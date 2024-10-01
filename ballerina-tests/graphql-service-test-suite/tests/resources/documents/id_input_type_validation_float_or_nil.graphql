@@ -1,0 +1,3 @@
+query {
+  floatId1(floatId: "6.0")
+}

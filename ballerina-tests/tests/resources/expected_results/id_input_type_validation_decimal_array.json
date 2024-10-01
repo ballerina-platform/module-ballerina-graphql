@@ -1,9 +1,0 @@
-{
-    "data": {
-        "decimalArrayReturnRecord": {
-            "__typename": "Student5",
-            "id": 452,
-            "name": "Edward MacDell"
-        }
-    }
-}

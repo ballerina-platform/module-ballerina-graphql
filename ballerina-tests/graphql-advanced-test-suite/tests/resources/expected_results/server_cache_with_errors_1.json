@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "message": "Invalid argument type",
+      "locations": [{ "line": 2, "column": 3 }],
+      "path": ["isAdult"]
+    }
+  ],
+  "data": null
+}

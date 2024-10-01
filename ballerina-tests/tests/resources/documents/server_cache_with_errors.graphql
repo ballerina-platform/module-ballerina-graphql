@@ -1,7 +1,0 @@
-query A {
-    isAdult(age:null)
-}
-
-query B {
-    isAdult(age:1)
-}

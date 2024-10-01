@@ -1,8 +1,0 @@
-query A {
-    greet
-    name(id:1)
-}
-
-mutation B {
-    updateName(name: "Heisenberg", enableEvict: false)
-}

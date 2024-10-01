@@ -1,0 +1,17 @@
+{
+  "data": {
+    "__schema": {
+      "queryType": {
+        "kind": "OBJECT",
+        "fields": [
+          { "name": "detective" },
+          { "name": "teacher" },
+          { "name": "student" },
+          { "name": "profile" },
+          { "name": "people" },
+          { "name": "students" }
+        ]
+      }
+    }
+  }
+}

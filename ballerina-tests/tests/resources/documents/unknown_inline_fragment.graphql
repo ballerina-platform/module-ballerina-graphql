@@ -1,5 +1,0 @@
-query {
-    ...on on {
-        name
-    }
-}

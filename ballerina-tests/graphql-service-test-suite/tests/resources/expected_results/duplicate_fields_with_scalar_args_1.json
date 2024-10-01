@@ -1,0 +1,18 @@
+{
+  "errors": [
+    {
+      "message": "Field(s) \"greet\" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.",
+      "locations": [
+        { "line": 2, "column": 3 },
+        { "line": 3, "column": 3 }
+      ]
+    },
+    {
+      "message": "Field(s) \"name\" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.",
+      "locations": [
+        { "line": 4, "column": 3 },
+        { "line": 5, "column": 3 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+($val:Decimal!) {
+    convertDecimalToFloat(value:$val)
+}

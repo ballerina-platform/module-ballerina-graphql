@@ -1,7 +1,0 @@
-{
-    profile(id: 1) {
-        __type(name: "Person") {
-            kind
-        }
-    }
-}

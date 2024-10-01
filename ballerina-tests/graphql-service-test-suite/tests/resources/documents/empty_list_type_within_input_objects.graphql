@@ -1,0 +1,11 @@
+query {
+  getMovie(
+    tvSeries: {
+      name: "Breaking Bad"
+      episodes: [{ title: "Cancer Man", newCharacters: [] }]
+    }
+  ) {
+    movieName
+    director
+  }
+}

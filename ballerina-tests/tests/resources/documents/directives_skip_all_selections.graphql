@@ -1,5 +1,0 @@
-query getData {
-    profile(id: 1) @skip(if: true) {
-        name
-    }
-}

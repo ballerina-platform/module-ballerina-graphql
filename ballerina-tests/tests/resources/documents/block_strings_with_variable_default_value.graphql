@@ -1,5 +1,0 @@
-($block: String = """
-        Hello,
-            GraphQL!,""" ){
-    sendEmail(message: $block) 
-}

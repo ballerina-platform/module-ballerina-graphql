@@ -1,3 +1,0 @@
-($weight:Weight!) {
-    weightInPounds (weight:$weight)
-}

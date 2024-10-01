@@ -1,9 +1,0 @@
-{
-    "data": {
-        "addFriend": {
-            "name": "Badger",
-            "age": 26,
-            "isMarried": false
-        }
-    }
-}

@@ -1,6 +1,0 @@
-query ($tvSeries: TvSeries!) {
-    getMovie(tvSeries: $tvSeries ) {
-        movieName,
-        director
-    }
-}

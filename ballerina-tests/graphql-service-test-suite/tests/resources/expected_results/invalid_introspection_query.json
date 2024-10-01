@@ -1,0 +1,8 @@
+{
+  "errors": [
+    {
+      "message": "Cannot query field \"greet\" on type \"__Schema\".",
+      "locations": [{ "line": 3, "column": 5 }]
+    }
+  ]
+}

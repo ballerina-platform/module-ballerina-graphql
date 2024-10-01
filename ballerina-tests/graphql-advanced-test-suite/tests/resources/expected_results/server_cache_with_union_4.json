@@ -1,0 +1,9 @@
+{
+  "data": {
+    "getServices": [
+      { "name": "Jesse Pinkman", "age": 30 },
+      { "name": "Gandalf", "age": 68 },
+      { "name": "Jake", "age": 22 }
+    ]
+  }
+}

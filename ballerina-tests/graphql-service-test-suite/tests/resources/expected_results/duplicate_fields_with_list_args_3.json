@@ -1,0 +1,21 @@
+{
+  "errors": [
+    {
+      "message": "Field(s) \"getTotal\" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.",
+      "locations": [
+        { "line": 141, "column": 3 },
+        { "line": 143, "column": 3 },
+        { "line": 144, "column": 3 },
+        { "line": 145, "column": 3 }
+      ]
+    },
+    {
+      "message": "Field(s) \"total\" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.",
+      "locations": [
+        { "line": 146, "column": 3 },
+        { "line": 147, "column": 3 },
+        { "line": 148, "column": 3 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+query A {
+  getServices(isEnemy: true) {
+    ... on EnemyService {
+      name
+      age
+    }
+  }
+}
+
+mutation B {
+  addEnemy(name: "Gandalf", age: 68, isMarried: false, enableEvict: false) {
+    name
+    age
+  }
+}

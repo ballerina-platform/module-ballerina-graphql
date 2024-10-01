@@ -1,3 +1,0 @@
-($items:[Item!]!) {
-    getSubTotal(items: $items)
-}

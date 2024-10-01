@@ -1,0 +1,12 @@
+{
+  "errors": [
+    {
+      "message": "Field(s) \"concat\" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.",
+      "locations": [
+        { "line": 127, "column": 3 },
+        { "line": 129, "column": 3 },
+        { "line": 130, "column": 3 }
+      ]
+    }
+  ]
+}

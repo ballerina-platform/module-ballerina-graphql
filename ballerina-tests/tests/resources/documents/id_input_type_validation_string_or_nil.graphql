@@ -1,3 +1,0 @@
-query {
-    stringId1(stringId: "hello")
-}

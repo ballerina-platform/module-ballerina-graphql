@@ -1,9 +1,0 @@
-query {
-    company {
-        workers(key: "id3") {
-            contacts(key: "home") {
-                number
-            }
-        }
-    }
-}

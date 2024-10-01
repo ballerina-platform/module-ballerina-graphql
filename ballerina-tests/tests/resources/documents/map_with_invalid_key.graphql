@@ -1,8 +1,0 @@
-query {
-    languages {
-        backend: name(key: "backend")
-        desktop: name(key: "desktop")
-        frontend: name(key: "frontend")
-        deploy: name(key: "deployment")
-    }
-}

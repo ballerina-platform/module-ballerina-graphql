@@ -1,8 +1,0 @@
-{
-    "data": {
-        "teacher": {
-            "name": "Walter White",
-            "__typename": "TeacherService"
-        }
-    }
-}

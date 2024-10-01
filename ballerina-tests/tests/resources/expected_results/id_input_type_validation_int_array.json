@@ -1,9 +1,0 @@
-{
-    "data": {
-        "intArrayReturnRecord": {
-            "__typename": "Student5",
-            "id": 333,
-            "name": "Antoni Porowski"
-        }
-    }
-}

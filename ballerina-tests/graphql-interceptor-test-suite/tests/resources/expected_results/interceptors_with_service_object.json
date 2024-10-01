@@ -1,0 +1,13 @@
+{
+  "data": {
+    "teacher": {
+      "id": 3,
+      "name": "Minerva McGonagall",
+      "subject": "Transfiguration"
+    },
+    "student": {
+      "id": 45,
+      "name": "Ron Weasley"
+    }
+  }
+}

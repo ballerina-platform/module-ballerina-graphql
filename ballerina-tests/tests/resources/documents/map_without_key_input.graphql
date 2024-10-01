@@ -1,7 +1,0 @@
-query {
-    company {
-        workers {
-            name
-        }
-    }
-}

@@ -1,3 +1,0 @@
-query {
-    intId1(intId: 56)
-}

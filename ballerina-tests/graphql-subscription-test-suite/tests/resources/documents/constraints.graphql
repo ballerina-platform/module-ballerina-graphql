@@ -1,0 +1,12 @@
+subscription Sub {
+  movie(
+    movie: {
+      name: "Saving Private Ryan"
+      downloads: 12
+      imdb: 1.0
+      reviews: []
+    }
+  ) {
+    stars
+  }
+}

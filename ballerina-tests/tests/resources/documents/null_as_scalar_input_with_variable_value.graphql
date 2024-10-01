@@ -1,5 +1,0 @@
-($id:Int) {
-    profile(id: $id) {
-        name
-    }
-}

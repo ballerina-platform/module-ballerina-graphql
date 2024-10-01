@@ -1,5 +1,0 @@
-{
-    searchProfile(profileDetail:{age: 34}) {
-        name
-    }
-}

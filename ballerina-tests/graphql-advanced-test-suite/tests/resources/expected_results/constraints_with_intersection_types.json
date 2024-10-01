@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "message": "Input validation failed in the field \"movies\": Validation failed for '$[0].downloads:minValue','$[0].imdb:minValue','$[0].name:minLength','$[0].reviews:length','$[1].imdb:minValue','$[1].name:maxLength','$[2].downloads:minValue','$[2].name:maxLength','$[2].reviews:length' constraint(s).",
+      "locations": [{ "line": 17, "column": 3 }],
+      "path": ["movies"]
+    }
+  ],
+  "data": null
+}

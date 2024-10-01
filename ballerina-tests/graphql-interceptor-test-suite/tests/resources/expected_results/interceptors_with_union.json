@@ -1,0 +1,13 @@
+{
+  "data": {
+    "profile1": {
+      "id": 3,
+      "name": "Minerva McGonagall"
+    },
+    "profile2": {
+      "id": 4,
+      "name": "Minerva McGonagall",
+      "subject": "Black Magic"
+    }
+  }
+}

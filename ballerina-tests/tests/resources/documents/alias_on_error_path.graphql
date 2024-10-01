@@ -1,7 +1,0 @@
-query {
-	user: profile{
-        name_fields: name{
-            username: surname
-        }
-    }
-}

@@ -1,3 +1,0 @@
-($weight:Float = 4) {
-    weightInPounds(weightInKg: $weight)
-}

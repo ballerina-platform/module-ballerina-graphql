@@ -1,3 +1,0 @@
-query GetMonth($month: Month!) {
-    month(month: $month)
-}

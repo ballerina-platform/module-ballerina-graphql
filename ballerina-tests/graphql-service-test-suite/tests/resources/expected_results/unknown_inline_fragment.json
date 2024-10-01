@@ -1,0 +1,8 @@
+{
+  "errors": [
+    {
+      "message": "Unknown type \"on\".",
+      "locations": [{ "line": 2, "column": 10 }]
+    }
+  ]
+}

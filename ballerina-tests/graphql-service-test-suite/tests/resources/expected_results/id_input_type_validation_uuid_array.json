@@ -1,0 +1,9 @@
+{
+  "data": {
+    "uuidArrayReturnRecord": {
+      "__typename": "Student5",
+      "id": 678,
+      "name": "Andy Garcia"
+    }
+  }
+}

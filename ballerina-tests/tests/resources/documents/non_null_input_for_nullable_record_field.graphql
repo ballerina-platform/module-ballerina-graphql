@@ -1,5 +1,0 @@
-{
-    accountNumber(
-        account: { number: 123456, contact: { number: "07123456789"} }
-    )
-}

@@ -1,0 +1,11 @@
+{
+  teacher {
+    id
+    name
+    subject
+  }
+  student {
+    id
+    name
+  }
+}
