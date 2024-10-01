@@ -100,17 +100,6 @@ service /reviews on subscriptionListener {
     }
 }
 
-graphql:Service subscriptionService = service object {
-    isolated resource function get name() returns string {
-        return "Walter White";
-    }
-
-    isolated resource function subscribe messages() returns stream<int, error?> {
-        int[] intArray = [1, 2, 3, 4, 5];
-        return intArray.toStream();
-    }
-};
-
 isolated service /service_with_http1 on subscriptionListener {
     isolated resource function get greet() returns string {
         return "welcome!";
@@ -154,3 +143,14 @@ service /constraints on subscriptionListener {
         return movie.reviews.toStream();
     }
 }
+
+graphql:Service subscriptionService = service object {
+    isolated resource function get name() returns string {
+        return "Walter White";
+    }
+
+    isolated resource function subscribe messages() returns stream<int, error?> {
+        int[] intArray = [1, 2, 3, 4, 5];
+        return intArray.toStream();
+    }
+};
