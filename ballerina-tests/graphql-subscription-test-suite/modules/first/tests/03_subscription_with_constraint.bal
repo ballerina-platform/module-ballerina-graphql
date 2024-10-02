@@ -19,6 +19,8 @@ import ballerina/test;
 import ballerina/websocket;
 import ballerina/io;
 
+const GRAPHQL_TRANSPORT_WS = "graphql-transport-ws";
+
 @test:Config {
     groups: ["constraints", "subscriptions"]
 }
