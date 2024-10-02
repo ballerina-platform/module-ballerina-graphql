@@ -59,31 +59,6 @@ isolated function testSubscriptionMultiplexing() returns error? {
 
 }
 
-// @test:Config {
-//     groups: ["subscriptions", "recrods", "service"]
-// }
-// isolated function testConnectionClousureWhenPongNotRecived() returns error? {
-//     io:println("start testConnectionClousureWhenPongNotRecived");
-
-//     string url = "ws://localhost:9091/reviews";
-//     websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
-//     websocket:Client wsClient = check new (url, config);
-//     check common:initiateGraphqlWsConnection(wsClient);
-//     json|error response;
-//     while true {
-//         response = wsClient->readMessage();
-//         if response is json {
-//             test:assertTrue(response.'type == common:WS_PING);
-//             continue;
-//         }
-//         break;
-//     }
-//     test:assertTrue(response is error, "Expected connection clousure error");
-//     test:assertEquals((<error>response).message(), "Request timeout: Status code: 4408");
-//     io:println("end testConnectionClousureWhenPongNotRecived");
-
-// }
-
 @test:Config {
     groups: ["request_validation", "websocket", "subscriptions"]
 }
@@ -195,3 +170,18 @@ isolated function testInvalidWebSocketPayload() returns error? {
 
 }
 
+@test:Config {
+    groups: ["subscriptions"]
+}
+isolated function testUnauthorizedAccess() returns error? {
+    io:println("start testUnauthorizedAccess");
+    string document = check common:getGraphqlDocumentFromFile("subscriptions_with_service_objects");
+    string url = "ws://localhost:9091/subscriptions";
+    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:Client wsClient = check new (url, config);
+    check common:sendSubscriptionMessage(wsClient, document);
+
+    string expectedErrorMsg = "Unauthorized: Status code: 4401";
+    common:validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    io:println("end testUnauthorizedAccess");
+}
