@@ -113,7 +113,8 @@ dependencies = [
 	{org = "ballerina", name = "websocket"}
 ]
 modules = [
-	{org = "ballerina", packageName = "graphql_subscription_test_suite", moduleName = "graphql_subscription_test_suite"}
+	{org = "ballerina", packageName = "graphql_subscription_test_suite", moduleName = "graphql_subscription_test_suite"},
+	{org = "ballerina", packageName = "graphql_subscription_test_suite", moduleName = "graphql_subscription_test_suite.one"}
 ]
 
 [[package]]
