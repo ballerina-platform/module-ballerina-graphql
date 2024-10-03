@@ -53,7 +53,7 @@ isolated function testDataLoaderWithDifferentAliasForSameField() returns error? 
 }
 isolated function testDataLoaderWithSubscription() returns error? {
     string document = check common:getGraphqlDocumentFromFile("dataloader_with_subscription");
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new ("ws://localhost:9090/dataloader", config);
     check common:initiateGraphqlWsConnection(wsClient);
     check common:sendSubscriptionMessage(wsClient, document, "1");

@@ -258,7 +258,6 @@ final readonly & TaskTable tasks = table [
 ];
 
 // WebSocket Sub Protocols
-const GRAPHQL_TRANSPORT_WS = "graphql-transport-ws";
 const WS_SUB_PROTOCOL = "Sec-WebSocket-Protocol";
 
 const int DEFAULT_INT_VALUE = 20;

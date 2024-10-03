@@ -14,18 +14,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public const CONTENT_TYPE_TEXT_HTML = "text/html";
-public const CONTENT_TYPE_TEXT_PLAIN = "text/plain";
-public const CONTENT_TYPE_APPLICATION_JSON = "application/json";
+import ballerina/graphql;
+import ballerina/http;
 
-// WebSocket Message types
-public const WS_INIT = "connection_init";
-public const WS_ACK = "connection_ack";
-public const WS_PING = "ping";
-public const WS_PONG = "pong";
-public const WS_SUBSCRIBE = "subscribe";
-public const WS_NEXT = "next";
-public const WS_ERROR = "error";
-public const WS_COMPLETE = "complete";
+listener http:Listener http2Listener = new http:Listener(9090);
+listener graphql:Listener http2BasedListener = new (http2Listener);
 
-public const GRAPHQL_TRANSPORT_WS = "graphql-transport-ws";
+listener graphql:Listener subscriptionListener = new (9091);

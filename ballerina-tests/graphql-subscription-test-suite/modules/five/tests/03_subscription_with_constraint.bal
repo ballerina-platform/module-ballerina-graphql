@@ -24,7 +24,7 @@ import ballerina/websocket;
 isolated function testSubscriptionWithConstraints() returns error? {
     string document = check common:getGraphqlDocumentFromFile("constraints");
     string url = "ws://localhost:9091/constraints";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
     check common:initiateGraphqlWsConnection(wsClient);
     check common:sendSubscriptionMessage(wsClient, document, operationName = "Sub");
@@ -38,7 +38,7 @@ isolated function testSubscriptionWithConstraints() returns error? {
 isolated function testMultipleSubscriptionClientsWithConstraints() returns error? {
     string document = check common:getGraphqlDocumentFromFile("constraints");
     string url = "ws://localhost:9091/constraints";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient1 = check new (url, config);
     check common:initiateGraphqlWsConnection(wsClient1);
     check common:sendSubscriptionMessage(wsClient1, document, "1", operationName = "Sub");

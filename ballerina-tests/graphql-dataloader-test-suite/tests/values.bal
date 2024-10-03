@@ -14,8 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-const GRAPHQL_TRANSPORT_WS = "graphql-transport-ws";
-
 const AUTHOR_LOADER = "authorLoader";
 const AUTHOR_UPDATE_LOADER = "authorUpdateLoader";
 const BOOK_LOADER = "bookLoader";
