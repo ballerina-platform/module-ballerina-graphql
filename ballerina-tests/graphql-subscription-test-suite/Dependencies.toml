@@ -114,7 +114,11 @@ dependencies = [
 ]
 modules = [
 	{org = "ballerina", packageName = "graphql_subscription_test_suite", moduleName = "graphql_subscription_test_suite"},
-	{org = "ballerina", packageName = "graphql_subscription_test_suite", moduleName = "graphql_subscription_test_suite.one"}
+	{org = "ballerina", packageName = "graphql_subscription_test_suite", moduleName = "graphql_subscription_test_suite.five"},
+	{org = "ballerina", packageName = "graphql_subscription_test_suite", moduleName = "graphql_subscription_test_suite.four"},
+	{org = "ballerina", packageName = "graphql_subscription_test_suite", moduleName = "graphql_subscription_test_suite.one"},
+	{org = "ballerina", packageName = "graphql_subscription_test_suite", moduleName = "graphql_subscription_test_suite.three"},
+	{org = "ballerina", packageName = "graphql_subscription_test_suite", moduleName = "graphql_subscription_test_suite.two"}
 ]
 
 [[package]]
