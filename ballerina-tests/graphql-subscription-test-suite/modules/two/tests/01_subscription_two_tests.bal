@@ -119,8 +119,7 @@ isolated function testConnectionInitMessage() returns error? {
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
-    check common:sendConnectionInitMessage(wsClient);
-    check common:validateConnectionAckMessage(wsClient);
+    check common:initiateGraphqlWsConnection(wsClient);
 }
 
 @test:Config {

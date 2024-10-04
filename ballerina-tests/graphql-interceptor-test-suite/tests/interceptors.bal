@@ -703,114 +703,12 @@ readonly service class TableInterceptor2 {
     }
 }
 
-readonly service class Multiplication {
-    *graphql:Interceptor;
-
-    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        var result = context.resolve('field);
-        if result is int {
-            return result * 5;
-        }
-        return result;
-    }
-}
-
-readonly service class Subtraction {
-    *graphql:Interceptor;
-
-    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        var result = context.resolve('field);
-        if result is int {
-            return result - 5;
-        }
-        return result;
-    }
-}
-
-readonly service class InterceptAuthor {
-    *graphql:Interceptor;
-
-    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        var result = context.resolve('field);
-        if 'field.getName() == "author" {
-            return "Athur Conan Doyle";
-        }
-        return result;
-    }
-}
-
-readonly service class InterceptBook {
+readonly service class City {
     *graphql:Interceptor;
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
         _ = context.resolve('field);
-        Book b = {name: "A Game of Thrones", author: "George R.R. Martin"};
-        return b;
-    }
-}
-
-readonly service class InterceptStudentName {
-    *graphql:Interceptor;
-
-    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        var result = context.resolve('field);
-        if 'field.getName() == "name" {
-            return "Harry Potter";
-        }
-        return result;
-    }
-}
-
-readonly service class InterceptStudent {
-    *graphql:Interceptor;
-
-    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        _ = context.resolve('field);
-        return {id: 4, name: "Ron Weasley"};
-    }
-}
-
-readonly service class InterceptUnionType1 {
-    *graphql:Interceptor;
-
-    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        var result = context.resolve('field);
-        if 'field.getName() == "subject" {
-            return "Physics";
-        }
-        if 'field.getName() == "id" {
-            return 100;
-        }
-        return result;
-    }
-}
-
-readonly service class InterceptUnionType2 {
-    *graphql:Interceptor;
-
-    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        _ = context.resolve('field);
-        return {id: 0, name: "Walter White", subject: "Chemistry"};
-    }
-}
-
-readonly service class ReturnBeforeResolver {
-    *graphql:Interceptor;
-
-    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        return 1;
-    }
-}
-
-@graphql:InterceptorConfig {
-    global: false
-}
-readonly service class DestructiveModification {
-    *graphql:Interceptor;
-
-    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        _ = context.resolve('field);
-        return "Ballerina";
+        return "New York";
     }
 }
 
@@ -820,15 +718,6 @@ readonly service class Street {
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
         _ = context.resolve('field);
         return "Street 3";
-    }
-}
-
-readonly service class City {
-    *graphql:Interceptor;
-
-    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
-        _ = context.resolve('field);
-        return "New York";
     }
 }
 
@@ -865,25 +754,5 @@ readonly service class LogSubfields {
             }
         }
         return context.resolve('field);
-    }
-}
-
-readonly service class AuthorInterceptor {
-    *graphql:Interceptor;
-
-    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata {
-        var data = context.resolve('field);
-        // Return only the first author
-        return ('field.getName() == "authors" && data is anydata[]) ? [data[0]] : data;
-    }
-}
-
-readonly service class BookInterceptor {
-    *graphql:Interceptor;
-
-    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata {
-        var books = context.resolve('field);
-        // Return only the first book
-        return (books is anydata[]) ? [books[0]] : books;
     }
 }
