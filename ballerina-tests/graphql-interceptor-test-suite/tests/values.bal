@@ -14,8 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-const GRAPHQL_TRANSPORT_WS = "graphql-transport-ws";
-
 final readonly & Person p2 = {
     name: "Walter White",
     age: 50,

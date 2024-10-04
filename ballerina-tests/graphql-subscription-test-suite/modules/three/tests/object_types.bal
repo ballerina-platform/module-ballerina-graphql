@@ -14,10 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/lang.runtime;
-
-public type PeopleService StudentService|TeacherService;
-
 public distinct isolated service class StudentService {
     private final int id;
     private final string name;
@@ -36,54 +32,6 @@ public distinct isolated service class StudentService {
     }
 }
 
-public distinct isolated service class TeacherService {
-    private final int id;
-    private string name;
-    private string subject;
-
-    public isolated function init(int id, string name, string subject) {
-        self.id = id;
-        self.name = name;
-        self.subject = subject;
-    }
-
-    isolated resource function get id() returns int {
-        return self.id;
-    }
-
-    isolated resource function get name() returns string {
-        lock {
-            return self.name;
-        }
-    }
-
-    isolated function setName(string name) {
-        lock {
-            self.name = name;
-        }
-    }
-
-    isolated resource function get subject() returns string {
-        lock {
-            return self.subject;
-        }
-    }
-
-    isolated function setSubject(string subject) {
-        lock {
-            self.subject = subject;
-        }
-    }
-
-    isolated resource function get holidays() returns Weekday[] {
-        return [SATURDAY, SUNDAY];
-    }
-
-    isolated resource function get school() returns School {
-        return new School("CHEM");
-    }
-}
-
 class EvenNumberGenerator {
     private int i = 0;
 
@@ -96,37 +44,6 @@ class EvenNumberGenerator {
             return;
         }
         return {value: self.i};
-    }
-}
-
-class RefreshData {
-    public isolated function next() returns record {|string value;|}? {
-        // emit data every one second
-        runtime:sleep(1);
-        return {value: "data"};
-    }
-}
-
-public distinct isolated service class School {
-    private string name;
-
-    public isolated function init(string name) {
-        self.name = name;
-    }
-
-    isolated resource function get name() returns string {
-        lock {
-            return self.name;
-        }
-    }
-
-    # Get the opening days of the school.
-    # + return - The set of the weekdays the school is open
-    # # Deprecated
-    # School is now online.
-    @deprecated
-    isolated resource function get openingDays() returns Weekday[] {
-        return [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY];
     }
 }
 

@@ -14,18 +14,32 @@
 // specific language governing permissions and limitations
 // under the License.
 
-public const CONTENT_TYPE_TEXT_HTML = "text/html";
-public const CONTENT_TYPE_TEXT_PLAIN = "text/plain";
-public const CONTENT_TYPE_APPLICATION_JSON = "application/json";
+public service class AccountDetails {
+    final string name;
+    final int createdYear;
 
-// WebSocket Message types
-public const WS_INIT = "connection_init";
-public const WS_ACK = "connection_ack";
-public const WS_PING = "ping";
-public const WS_PONG = "pong";
-public const WS_SUBSCRIBE = "subscribe";
-public const WS_NEXT = "next";
-public const WS_ERROR = "error";
-public const WS_COMPLETE = "complete";
+    function init(string name, int createdYear) {
+        self.name = name;
+        self.createdYear = createdYear;
+    }
 
-public const GRAPHQL_TRANSPORT_WS = "graphql-transport-ws";
+    resource function get name() returns string {
+        return self.name;
+    }
+
+    resource function get createdYear() returns int {
+        return self.createdYear;
+    }
+}
+
+public service class Product {
+    private final string id;
+
+    function init(string id) {
+        self.id = id;
+    }
+
+    resource function get id() returns string {
+        return self.id;
+    }
+}

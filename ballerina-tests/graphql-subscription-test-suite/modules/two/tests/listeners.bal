@@ -14,14 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-const GRAPHQL_TRANSPORT_WS = "graphql-transport-ws";
+import ballerina/graphql;
 
-table<Review> reviews = table [
-    {product: new ("1"), score: 20, description: "Product 01"},
-    {product: new ("2"), score: 20, description: "Product 02"},
-    {product: new ("3"), score: 20, description: "Product 03"},
-    {product: new ("4"), score: 20, description: "Product 04"},
-    {product: new ("5"), score: 20, description: "Product 05"}
-];
-
-public string[] namesArray = ["Walter", "Skyler"];
+listener graphql:Listener subscriptionListener = new (9091);

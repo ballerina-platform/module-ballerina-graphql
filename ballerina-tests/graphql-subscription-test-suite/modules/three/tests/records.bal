@@ -14,44 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/constraint;
-
-public type MovieDetails record {|
-    @constraint:String {
-        minLength: 1,
-        maxLength: 10
-    }
-    string name;
-
-    @constraint:Int {
-        minValue: 18
-    }
-    int downloads;
-
-    @constraint:Float {
-        minValue: 1.5
-    }
-    float imdb;
-
-    @constraint:Array {
-        length: 1
-    }
-    Reviews?[] reviews;
-|};
-
-public type Reviews readonly & record {|
-    @constraint:Array {
-        maxLength: 2
-    }
-    string[] comments;
-
-    @constraint:Int {
-        minValueExclusive: 0,
-        maxValueExclusive: 6
-    }
-    int stars;
-|};
-
 public type Review record {|
     Product product;
     int score;

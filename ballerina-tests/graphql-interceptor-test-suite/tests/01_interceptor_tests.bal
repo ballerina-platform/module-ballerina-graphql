@@ -97,7 +97,7 @@ function dataProviderInterceptors() returns string[][] {
 isolated function testInterceptorsWithSubscriptionReturningScalar() returns error? {
     string document = string `subscription { messages }`;
     string url = "ws://localhost:9091/subscription_interceptor1";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient1 = check new (url, config);
     check common:initiateGraphqlWsConnection(wsClient1);
     check common:sendSubscriptionMessage(wsClient1, document, "1");
@@ -119,7 +119,7 @@ isolated function testInterceptorsWithSubscriptionReturningScalar() returns erro
 isolated function testInterceptorsWithSubscriptionReturningRecord() returns error? {
     string document = check common:getGraphqlDocumentFromFile("interceptors_with_subscription_return_records");
     string url = "ws://localhost:9091/subscription_interceptor2";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient1 = check new (url, config);
     check common:initiateGraphqlWsConnection(wsClient1);
     check common:sendSubscriptionMessage(wsClient1, document, operationName = "A");
@@ -141,7 +141,7 @@ isolated function testInterceptorsWithSubscriptionReturningRecord() returns erro
 isolated function testInterceptorsWithSubscriptionAndFragments() returns error? {
     string document = check common:getGraphqlDocumentFromFile("interceptors_with_fragments_and_subscription");
     string url = "ws://localhost:9091/subscription_interceptor3";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient1 = check new (url, config);
     check common:initiateGraphqlWsConnection(wsClient1);
     check common:sendSubscriptionMessage(wsClient1, document, operationName = "getStudents");
@@ -163,7 +163,7 @@ isolated function testInterceptorsWithSubscriptionAndFragments() returns error? 
 isolated function testInterceptorsWithUnionTypeSubscription() returns error? {
     string document = check common:getGraphqlDocumentFromFile("interceptors_with_subscription_return_union_type");
     string url = "ws://localhost:9091/subscription_interceptor4";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient1 = check new (url, config);
     check common:initiateGraphqlWsConnection(wsClient1);
     check common:sendSubscriptionMessage(wsClient1, document, operationName = "unionTypes1");
@@ -206,7 +206,7 @@ isolated function testInterceptorsWithUnionTypeSubscription() returns error? {
 isolated function testInterceptorsReturnBeforeResolverWithSubscription() returns error? {
     string document = string `subscription { messages }`;
     string url = "ws://localhost:9091/subscription_interceptor5";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient1 = check new (url, config);
     check common:initiateGraphqlWsConnection(wsClient1);
     check common:sendSubscriptionMessage(wsClient1, document, "1");
@@ -228,7 +228,7 @@ isolated function testInterceptorsReturnBeforeResolverWithSubscription() returns
 isolated function testInterceptorsDestructiveModificationWithSubscription() returns error? {
     string document = string `subscription { messages }`;
     string url = "ws://localhost:9091/subscription_interceptor6";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient1 = check new (url, config);
     check common:initiateGraphqlWsConnection(wsClient1);
     check common:sendSubscriptionMessage(wsClient1, document, "1");
@@ -276,7 +276,7 @@ isolated function testInterceptorsDestructiveModificationWithSubscription() retu
 isolated function testInterceptorsWithSubscribersRunSimultaniously1() returns error? {
     final string document = string `subscription { messages }`;
     string url = "ws://localhost:9091/subscription_interceptor1";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
     final websocket:Client wsClient1 = check new (url, config);
     check common:initiateGraphqlWsConnection(wsClient1);
 
@@ -315,7 +315,7 @@ isolated function testInterceptorsWithSubscribersRunSimultaniously1() returns er
 isolated function testInterceptorsWithSubscribersRunSimultaniously2() returns error? {
     final string document = check common:getGraphqlDocumentFromFile("interceptors_with_subscription_return_union_type");
     string url = "ws://localhost:9091/subscription_interceptor4";
-    websocket:ClientConfiguration config = {subProtocols: [GRAPHQL_TRANSPORT_WS]};
+    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
     final websocket:Client wsClient1 = check new (url, config);
     check common:initiateGraphqlWsConnection(wsClient1);
 

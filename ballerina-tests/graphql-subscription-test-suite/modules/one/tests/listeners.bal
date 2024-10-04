@@ -15,12 +15,5 @@
 // under the License.
 
 import ballerina/graphql;
-import ballerina/http;
-
-listener http:Listener http2Listener = new http:Listener(9090);
-listener graphql:Listener http2BasedListener = new (http2Listener);
 
 listener graphql:Listener subscriptionListener = new (9091);
-
-listener http:Listener httpListener = new (9092, httpVersion = http:HTTP_1_1);
-listener graphql:Listener wrappedListener = new (httpListener);

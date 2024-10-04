@@ -22,13 +22,13 @@ import ballerina/websocket;
     groups: ["context", "subscriptions"]
 }
 isolated function testContextWithSubscriptions() returns error? {
-    string url = "ws://localhost:9092/context";
+    string url = "ws://localhost:9091/context";
     string document = string `subscription { messages }`;
     websocket:ClientConfiguration configs = {
         customHeaders: {
             "scope": "admin"
         },
-        subProtocols: [GRAPHQL_TRANSPORT_WS]
+        subProtocols: [common:GRAPHQL_TRANSPORT_WS]
     };
     websocket:Client wsClient = check new (url, configs);
     check common:initiateGraphqlWsConnection(wsClient);
@@ -43,13 +43,13 @@ isolated function testContextWithSubscriptions() returns error? {
     groups: ["context", "subscriptions"]
 }
 isolated function testContextWithInvalidScopeInSubscriptions() returns error? {
-    string url = "ws://localhost:9092/context";
+    string url = "ws://localhost:9091/context";
     string document = string `subscription { messages }`;
     websocket:ClientConfiguration configs = {
         customHeaders: {
             "scope": "user"
         },
-        subProtocols: [GRAPHQL_TRANSPORT_WS]
+        subProtocols: [common:GRAPHQL_TRANSPORT_WS]
     };
     websocket:Client wsClient = check new (url, configs);
     check common:initiateGraphqlWsConnection(wsClient);
