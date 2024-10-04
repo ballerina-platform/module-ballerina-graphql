@@ -114,7 +114,7 @@ isolated function testSubscriptionWithMultipleClients() returns error? {
 
 @test:Config {
     groups: ["subscriptions"],
-    enabled: false
+    enable: false
 }
 isolated function testConnectionInitMessage() returns error? {
     string url = "ws://localhost:9091/subscriptions";
