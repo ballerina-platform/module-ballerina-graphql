@@ -105,8 +105,7 @@ dependencies = [
 	{org = "ballerina", name = "graphql_test_common"},
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "log"},
-	{org = "ballerina", name = "test"},
-	{org = "ballerina", name = "websocket"}
+	{org = "ballerina", name = "test"}
 ]
 modules = [
 	{org = "ballerina", packageName = "graphql_interceptor_test_suite", moduleName = "graphql_interceptor_test_suite"}
@@ -419,8 +418,5 @@ dependencies = [
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "oauth2"},
 	{org = "ballerina", name = "time"}
-]
-modules = [
-	{org = "ballerina", packageName = "websocket", moduleName = "websocket"}
 ]
 
