@@ -17,11 +17,13 @@
 import ballerina/graphql_test_common as common;
 import ballerina/test;
 import ballerina/websocket;
+import ballerina/io;
 
 @test:Config {
     groups: ["introspection", "typename", "subscriptions"]
 }
 isolated function testSubscriptionWithIntrospectionInFields() returns error? {
+io:println("testSubscriptionWithIntrospectionInFields")
     string document = string `subscription { students { __typename } }`;
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -37,6 +39,7 @@ isolated function testSubscriptionWithIntrospectionInFields() returns error? {
     groups: ["subscriptions"]
 }
 isolated function testInvalidSubscription() returns error? {
+io:println("testInvalidSubscription")
     string document = string `subscription { invalidField }`;
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -52,6 +55,7 @@ isolated function testInvalidSubscription() returns error? {
     groups: ["subscriptions"]
 }
 isolated function testSubscriptionFunctionWithErrors() returns error? {
+io:println("testSubscriptionFunctionWithErrors")
     string document = string `subscription getNames { values }`;
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -73,6 +77,7 @@ isolated function testSubscriptionFunctionWithErrors() returns error? {
     groups: ["service", "subscriptions"]
 }
 isolated function testSubscriptionWithServiceObjects() returns error? {
+io:println("testSubscriptionWithServiceObjects")
     string document = check common:getGraphqlDocumentFromFile("subscriptions_with_service_objects");
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -91,6 +96,7 @@ isolated function testSubscriptionWithServiceObjects() returns error? {
     groups: ["subscriptions"]
 }
 isolated function testSubscriptionWithMultipleClients() returns error? {
+io:println("testSubscriptionWithMultipleClients")
     string document = string `subscription { messages }`;
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -117,6 +123,7 @@ isolated function testSubscriptionWithMultipleClients() returns error? {
     enable: false
 }
 isolated function testConnectionInitMessage() returns error? {
+io:println("testConnectionInitMessage")
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
@@ -128,6 +135,7 @@ isolated function testConnectionInitMessage() returns error? {
     groups: ["subscriptions"]
 }
 isolated function testInvalidMultipleConnectionInitMessages() returns error? {
+io:println("testInvalidMultipleConnectionInitMessages")
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
@@ -142,6 +150,7 @@ isolated function testInvalidMultipleConnectionInitMessages() returns error? {
     groups: ["subscriptions"]
 }
 isolated function testUnauthorizedAccess() returns error? {
+io:println("testUnauthorizedAccess")
     string document = check common:getGraphqlDocumentFromFile("subscriptions_with_service_objects");
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};

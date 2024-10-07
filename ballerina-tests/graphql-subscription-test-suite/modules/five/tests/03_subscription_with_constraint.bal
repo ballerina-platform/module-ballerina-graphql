@@ -17,11 +17,13 @@
 import ballerina/graphql_test_common as common;
 import ballerina/test;
 import ballerina/websocket;
+import ballerina/io;
 
 @test:Config {
     groups: ["constraints", "subscriptions"]
 }
 isolated function testSubscriptionWithConstraints() returns error? {
+io:println("testSubscriptionWithConstraints")
     string document = check common:getGraphqlDocumentFromFile("constraints");
     string url = "ws://localhost:9091/constraints";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -36,6 +38,7 @@ isolated function testSubscriptionWithConstraints() returns error? {
     groups: ["constraints", "subscriptions"]
 }
 isolated function testMultipleSubscriptionClientsWithConstraints() returns error? {
+io:println("testMultipleSubscriptionClientsWithConstraints")
     string document = check common:getGraphqlDocumentFromFile("constraints");
     string url = "ws://localhost:9091/constraints";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};

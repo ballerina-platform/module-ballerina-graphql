@@ -18,11 +18,13 @@
 import ballerina/graphql_test_common as common;
 import ballerina/test;
 import ballerina/websocket;
+import ballerina/io;
 
 @test:Config {
     groups: ["subscriptions", "multiplexing"]
 }
 isolated function testSubscriptionMultiplexing() returns error? {
+io:println("testSubscriptionMultiplexing")
     string document = string `subscription { refresh }`;
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -58,6 +60,7 @@ isolated function testSubscriptionMultiplexing() returns error? {
     groups: ["request_validation", "websocket", "subscriptions"]
 }
 isolated function testInvalidWebSocketRequestWithEmptyQuery() returns error? {
+io:println("testInvalidWebSocketRequestWithEmptyQuery")
     string document = "";
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -72,6 +75,7 @@ isolated function testInvalidWebSocketRequestWithEmptyQuery() returns error? {
     groups: ["request_validation", "websocket", "subscriptions"]
 }
 isolated function testInvalidWebSocketRequestWithInvalidQuery() returns error? {
+io:println("testInvalidWebSocketRequestWithInvalidQuery")
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
@@ -87,6 +91,7 @@ isolated function testInvalidWebSocketRequestWithInvalidQuery() returns error? {
     groups: ["request_validation", "websocket", "subscriptions"]
 }
 isolated function testInvalidWebSocketRequestWithoutQuery() returns error? {
+io:println("testInvalidWebSocketRequestWithoutQuery")
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
@@ -101,6 +106,7 @@ isolated function testInvalidWebSocketRequestWithoutQuery() returns error? {
     groups: ["request_validation", "websocket", "subscriptions"]
 }
 isolated function testInvalidVariableInWebSocketPayload() returns error? {
+io:println("testInvalidVariableInWebSocketPayload")
     string document = check common:getGraphqlDocumentFromFile("subscriptions_with_variable_values");
     json variables = [];
     string url = "ws://localhost:9091/subscriptions";
@@ -117,6 +123,7 @@ isolated function testInvalidVariableInWebSocketPayload() returns error? {
     groups: ["request_validation", "websocket", "subscriptions"]
 }
 isolated function testEmptyWebSocketPayload() returns error? {
+io:println("testEmptyWebSocketPayload")
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
@@ -131,6 +138,7 @@ isolated function testEmptyWebSocketPayload() returns error? {
     groups: ["request_validation", "websocket", "subscriptions"]
 }
 isolated function testInvalidWebSocketPayload() returns error? {
+io:println("testInvalidWebSocketPayload")
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client wsClient = check new (url, {subProtocols: [common:GRAPHQL_TRANSPORT_WS]});
     json payload = {payload: {query: ()}};

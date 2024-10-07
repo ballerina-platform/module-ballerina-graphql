@@ -17,11 +17,13 @@
 import ballerina/graphql_test_common as common;
 import ballerina/test;
 import ballerina/websocket;
+import ballerina/io;
 
 @test:Config {
     groups: ["subscriptions", "service"]
 }
 isolated function testConnectionClousureWhenPongNotRecived() returns error? {
+io:println("testConnectionClousureWhenPongNotRecived")
     string url = "ws://localhost:9091/subscription_interceptor1";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);

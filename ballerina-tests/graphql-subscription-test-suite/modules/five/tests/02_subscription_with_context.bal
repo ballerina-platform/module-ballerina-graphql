@@ -17,11 +17,13 @@
 import ballerina/graphql_test_common as common;
 import ballerina/test;
 import ballerina/websocket;
+import ballerina/io;
 
 @test:Config {
     groups: ["context", "subscriptions"]
 }
 isolated function testContextWithSubscriptions() returns error? {
+io:println("testContextWithSubscriptions")
     string url = "ws://localhost:9091/context";
     string document = string `subscription { messages }`;
     websocket:ClientConfiguration configs = {
@@ -43,6 +45,7 @@ isolated function testContextWithSubscriptions() returns error? {
     groups: ["context", "subscriptions"]
 }
 isolated function testContextWithInvalidScopeInSubscriptions() returns error? {
+io:println("testContextWithInvalidScopeInSubscriptions")
     string url = "ws://localhost:9091/context";
     string document = string `subscription { messages }`;
     websocket:ClientConfiguration configs = {

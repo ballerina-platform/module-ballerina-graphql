@@ -18,11 +18,13 @@ import ballerina/graphql;
 import ballerina/graphql_test_common as common;
 import ballerina/test;
 import ballerina/websocket;
+import ballerina/io;
 
 @test:Config {
     groups: ["listener", "subscriptions"]
 }
 function testAttachServiceWithSubscriptionToHttp2BasedListener() returns error? {
+io:println("testAttachServiceWithSubscriptionToHttp2BasedListener")
     graphql:Error? result = http2BasedListener.attach(subscriptionService);
     test:assertTrue(result is graphql:Error);
     graphql:Error err = <graphql:Error>result;
@@ -35,6 +37,7 @@ function testAttachServiceWithSubscriptionToHttp2BasedListener() returns error? 
     groups: ["listener", "subscriptions"]
 }
 function testAttachServiceWithSubscriptionToHttp1BasedListener() returns error? {
+io:println("testAttachServiceWithSubscriptionToHttp1BasedListener")
     string document = string `subscription { messages }`;
     string url = "ws://localhost:9091/service_with_http1";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};

@@ -17,11 +17,13 @@
 import ballerina/graphql_test_common as common;
 import ballerina/test;
 import ballerina/websocket;
+import ballerina/io;
 
 @test:Config {
     groups: ["interceptors", "subscriptions"]
 }
 isolated function testInterceptorsWithSubscriptionReturningScalar() returns error? {
+io:println("testInterceptorsWithSubscriptionReturningScalar")
     string document = string `subscription { messages }`;
     string url = "ws://localhost:9091/subscription_interceptor1";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -44,6 +46,7 @@ isolated function testInterceptorsWithSubscriptionReturningScalar() returns erro
     groups: ["interceptors", "subscriptions", "records"]
 }
 isolated function testInterceptorsWithSubscriptionReturningRecord() returns error? {
+io:println("testInterceptorsWithSubscriptionReturningRecord")
     string document = check common:getGraphqlDocumentFromFile("interceptors_with_subscription_return_records");
     string url = "ws://localhost:9091/subscription_interceptor2";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -66,6 +69,7 @@ isolated function testInterceptorsWithSubscriptionReturningRecord() returns erro
     groups: ["interceptors", "fragments", "subscriptions"]
 }
 isolated function testInterceptorsWithSubscriptionAndFragments() returns error? {
+io:println("testInterceptorsWithSubscriptionAndFragments")
     string document = check common:getGraphqlDocumentFromFile("interceptors_with_fragments_and_subscription");
     string url = "ws://localhost:9091/subscription_interceptor3";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -88,6 +92,7 @@ isolated function testInterceptorsWithSubscriptionAndFragments() returns error? 
     groups: ["interceptors", "union", "subscriptions"]
 }
 isolated function testInterceptorsWithUnionTypeSubscription() returns error? {
+io:println("testInterceptorsWithUnionTypeSubscription")
     string document = check common:getGraphqlDocumentFromFile("interceptors_with_subscription_return_union_type");
     string url = "ws://localhost:9091/subscription_interceptor4";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -131,6 +136,7 @@ isolated function testInterceptorsWithUnionTypeSubscription() returns error? {
     groups: ["interceptors", "subscriptions"]
 }
 isolated function testInterceptorsReturnBeforeResolverWithSubscription() returns error? {
+io:println("testInterceptorsReturnBeforeResolverWithSubscription")
     string document = string `subscription { messages }`;
     string url = "ws://localhost:9091/subscription_interceptor5";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -153,6 +159,7 @@ isolated function testInterceptorsReturnBeforeResolverWithSubscription() returns
     groups: ["interceptors", "subscriptions"]
 }
 isolated function testInterceptorsDestructiveModificationWithSubscription() returns error? {
+io:println("testInterceptorsDestructiveModificationWithSubscription")
     string document = string `subscription { messages }`;
     string url = "ws://localhost:9091/subscription_interceptor6";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -201,6 +208,7 @@ isolated function testInterceptorsDestructiveModificationWithSubscription() retu
     groups: ["interceptors", "subscriptions"]
 }
 isolated function testInterceptorsWithSubscribersRunSimultaniously1() returns error? {
+io:println("testInterceptorsWithSubscribersRunSimultaniously1")
     final string document = string `subscription { messages }`;
     string url = "ws://localhost:9091/subscription_interceptor1";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -240,6 +248,7 @@ isolated function testInterceptorsWithSubscribersRunSimultaniously1() returns er
     groups: ["interceptors", "union", "subscriptions"]
 }
 isolated function testInterceptorsWithSubscribersRunSimultaniously2() returns error? {
+io:println("testInterceptorsWithSubscribersRunSimultaniously2")
     final string document = check common:getGraphqlDocumentFromFile("interceptors_with_subscription_return_union_type");
     string url = "ws://localhost:9091/subscription_interceptor4";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
