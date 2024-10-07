@@ -1,7 +1,0 @@
-query {
-    details(id: 3) {
-        information {
-            name
-        }
-    }
-}

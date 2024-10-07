@@ -1,6 +1,0 @@
-query ( $p1:ProfileDetail, $p2:ProfileDetail!){
-    searchProfile(profileDetail:[$p1, $p2]){
-        age
-        name
-   }
-}

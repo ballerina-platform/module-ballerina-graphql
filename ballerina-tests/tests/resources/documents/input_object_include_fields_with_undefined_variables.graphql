@@ -1,5 +1,0 @@
-query getBook($authorAge:Int) {
-    book(info: {bookName: $bName, edition: 6, author: {name: "Arthur Conan Doyle", age: $authorAge}}) {
-        name
-    }
-}

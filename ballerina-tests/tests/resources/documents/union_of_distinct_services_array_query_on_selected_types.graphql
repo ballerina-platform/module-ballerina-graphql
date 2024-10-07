@@ -1,7 +1,0 @@
-query {
-    search {
-        ... on TeacherService {
-            name
-        }
-    }
-}

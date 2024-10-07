@@ -1,3 +1,0 @@
-query {
-    isIncludeHoliday(days: [MONDAY, FRIDAY, TUESDAY, SATURDAY])
-}

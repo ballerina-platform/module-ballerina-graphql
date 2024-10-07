@@ -1,3 +1,0 @@
-($weight:WeightInKg!) {
-    convertKgToGram (weight:$weight)
-}

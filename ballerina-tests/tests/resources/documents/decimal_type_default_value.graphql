@@ -1,3 +1,0 @@
-($val:Decimal! = 2.3332414141451451411231341451) {
-    convertDecimalToFloat(value:$val)
-}

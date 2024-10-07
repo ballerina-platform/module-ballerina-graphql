@@ -1,3 +1,0 @@
-query ($words: [String] = ["Hello!", "This", "is", Ballerina, true]) {
-    concat(words: $words)
-}

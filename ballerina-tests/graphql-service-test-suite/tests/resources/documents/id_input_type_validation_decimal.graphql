@@ -1,0 +1,3 @@
+query {
+  decimalId(decimalId: "45.0")
+}

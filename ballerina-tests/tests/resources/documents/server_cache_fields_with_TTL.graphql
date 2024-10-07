@@ -1,7 +1,0 @@
-query A {
-    friend
-}
-
-mutation B($name: String!) {
-    updateFriend(name: $name)
-}

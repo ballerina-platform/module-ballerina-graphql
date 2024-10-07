@@ -1,6 +1,0 @@
-query ($tvSeries: TvSeries = { name: "Breaking Bad", episodes: [{title:"Cancer Man", newCharacters: ["Sherlock"]}] }) {
-    getMovie(tvSeries: $tvSeries) {
-        movieName,
-        director
-    }
-}

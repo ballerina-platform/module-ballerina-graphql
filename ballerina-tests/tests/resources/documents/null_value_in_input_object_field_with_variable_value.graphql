@@ -1,5 +1,0 @@
-($author: Author) {
-    book(author: $author) {
-        name
-    }
-}

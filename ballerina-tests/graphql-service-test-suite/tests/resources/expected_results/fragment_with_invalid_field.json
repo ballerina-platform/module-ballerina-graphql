@@ -1,0 +1,8 @@
+{
+  "errors": [
+    {
+      "message": "Cannot query field \"invalid\" on type \"Person\".",
+      "locations": [{ "line": 7, "column": 5 }]
+    }
+  ]
+}

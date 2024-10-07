@@ -1,0 +1,12 @@
+{
+  "errors": [
+    {
+      "message": "tvSeries: In element #0:String cannot represent non String value: true",
+      "locations": [{ "line": 8, "column": 43 }]
+    },
+    {
+      "message": "tvSeries: In element #0:String cannot represent non String value: 4",
+      "locations": [{ "line": 8, "column": 49 }]
+    }
+  ]
+}

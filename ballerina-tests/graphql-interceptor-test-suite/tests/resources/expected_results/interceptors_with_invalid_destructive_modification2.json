@@ -1,0 +1,20 @@
+{
+  "errors": [
+    {
+      "message": "Invalid return type in Interceptor \"InvalidInterceptor8\". Expected type [String!]!",
+      "locations": [{ "line": 2, "column": 3 }],
+      "path": ["friends"]
+    },
+    {
+      "message": "Invalid return type in Interceptor \"InvalidInterceptor4\". Expected type [String!]!",
+      "locations": [{ "line": 2, "column": 3 }],
+      "path": ["friends"]
+    },
+    {
+      "message": "Invalid return type in Interceptor \"InvalidInterceptor3\". Expected type [String!]!",
+      "locations": [{ "line": 2, "column": 3 }],
+      "path": ["friends"]
+    }
+  ],
+  "data": null
+}

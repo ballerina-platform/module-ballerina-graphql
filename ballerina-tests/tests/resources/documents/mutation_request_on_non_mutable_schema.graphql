@@ -1,5 +1,0 @@
-mutation {
-    setName(name: "Heisenberg") {
-        name
-    }
-}

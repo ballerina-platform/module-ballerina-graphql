@@ -1,3 +1,0 @@
-query ($words: [Int] = ["Hello!", "This", "is", "Ballerina", "GraphQL"]) {
-    concat(words: $words)
-}

@@ -1,7 +1,0 @@
-query {
-    services {
-        ... on TeacherService {
-            name
-        }
-    }
-}

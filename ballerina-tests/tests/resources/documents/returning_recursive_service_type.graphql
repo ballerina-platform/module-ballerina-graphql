@@ -1,5 +1,0 @@
-query {
-    trail(id: "blue-bird") {
-        name
-    }
-}

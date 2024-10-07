@@ -1,0 +1,13 @@
+{
+  userProfile: profile {
+    name
+    userName: name
+    homeAddress: address {
+      number
+      streetName: street
+    }
+  }
+  contactDetails: contact {
+    number
+  }
+}

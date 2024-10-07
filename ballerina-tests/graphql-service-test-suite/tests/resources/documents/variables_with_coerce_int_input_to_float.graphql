@@ -1,0 +1,3 @@
+($weight:Float!) {
+    weightInPounds(weightInKg:$weight)
+}

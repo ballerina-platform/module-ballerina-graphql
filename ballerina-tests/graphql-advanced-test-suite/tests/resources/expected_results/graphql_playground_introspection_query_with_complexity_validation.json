@@ -1,0 +1,8 @@
+{
+  "errors": [
+    {
+      "message": "The operation IntrospectionQuery exceeds the maximum query complexity threshold. Maximum allowed complexity: 20, actual complexity: 50",
+      "locations": [{ "line": 1, "column": 1 }]
+    }
+  ]
+}

@@ -1,8 +1,0 @@
-{
-    cities(
-        addresses: [
-            { number: "308", street: "Negra Arroyo Lane", city: "Albequerque" },
-            { number: "Unknown", street: "Unknown", city: "Hogwarts" }
-        ]
-    )
-}

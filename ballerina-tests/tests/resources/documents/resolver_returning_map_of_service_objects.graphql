@@ -1,7 +1,0 @@
-query {
-    account {
-        details(key: "acc1") {
-            name
-        }
-    }
-}

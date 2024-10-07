@@ -1,0 +1,33 @@
+{
+  "errors": [
+    {
+      "message": "Access denied!",
+      "locations": [{ "line": 3, "column": 3 }],
+      "path": ["age"]
+    },
+    {
+      "message": "This field is not accessible!",
+      "locations": [{ "line": 5, "column": 5 }],
+      "path": ["address", "city"]
+    },
+    {
+      "message": "Access denied!",
+      "locations": [{ "line": 6, "column": 5 }],
+      "path": ["address", "street"]
+    },
+    {
+      "message": "Access denied!",
+      "locations": [{ "line": 7, "column": 5 }],
+      "path": ["address", "number"]
+    }
+  ],
+  "data": {
+    "name": "Walter",
+    "age": null,
+    "address": {
+      "city": null,
+      "street": null,
+      "number": null
+    }
+  }
+}

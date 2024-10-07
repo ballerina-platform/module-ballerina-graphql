@@ -1,9 +1,0 @@
-{
-    name,
-    age,
-    address {
-        city,
-        street, 
-        number
-    }
-}

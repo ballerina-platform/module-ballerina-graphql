@@ -1,0 +1,5 @@
+{
+  "data": {
+    "profiles": [{ "name": "John" }, { "name": "Doe" }, { "name": "Jane" }]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  profile1(id: 4) {
+    ... on StudentService {
+      id
+      name
+    }
+  }
+  profile2(id: 4) {
+    ... on TeacherService {
+      id
+      name
+      subject
+    }
+  }
+}

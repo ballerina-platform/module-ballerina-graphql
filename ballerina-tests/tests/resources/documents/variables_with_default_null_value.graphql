@@ -1,3 +1,0 @@
-($day:Weekday = null) {
-    isHoliday(weekday: $day)
-}

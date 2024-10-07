@@ -1,0 +1,84 @@
+{
+  "data": {
+    "__schema": {
+      "types": [
+        { "name": "link__Purpose", "kind": "ENUM" },
+        { "name": "__TypeKind", "kind": "ENUM" },
+        { "name": "Query", "kind": "OBJECT" },
+        { "name": "__Type", "kind": "OBJECT" },
+        { "name": "__EnumValue", "kind": "OBJECT" },
+        { "name": "Moon", "kind": "OBJECT" },
+        { "name": "ReviewData", "kind": "OBJECT" },
+        { "name": "Satellite", "kind": "OBJECT" },
+        { "name": "String", "kind": "SCALAR" },
+        { "name": "Int", "kind": "SCALAR" },
+        { "name": "_Entity", "kind": "UNION" },
+        { "name": "FieldSet", "kind": "SCALAR" },
+        { "name": "Decimal", "kind": "SCALAR" },
+        { "name": "Star", "kind": "OBJECT" },
+        { "name": "_Service", "kind": "OBJECT" },
+        { "name": "Planet", "kind": "OBJECT" },
+        { "name": "Boolean", "kind": "SCALAR" },
+        { "name": "ProductData", "kind": "OBJECT" },
+        { "name": "_Any", "kind": "SCALAR" },
+        { "name": "__Field", "kind": "OBJECT" },
+        { "name": "__Schema", "kind": "OBJECT" },
+        { "name": "__DirectiveLocation", "kind": "ENUM" },
+        { "name": "link__Import", "kind": "SCALAR" },
+        { "name": "__InputValue", "kind": "OBJECT" },
+        { "name": "__Directive", "kind": "OBJECT" }
+      ]
+    },
+    "Query": {
+      "name": "Query",
+      "fields": [
+        { "name": "greet", "args": [] },
+        { "name": "_service", "args": [] },
+        {
+          "name": "_entities",
+          "args": [
+            {
+              "name": "representations",
+              "type": {
+                "kind": "NON_NULL",
+                "ofType": {
+                  "kind": "LIST",
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "_Any",
+                      "ofType": null
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "_Entity": {
+      "name": "_Entity",
+      "possibleTypes": [
+        { "name": "ProductData" },
+        { "name": "Moon" },
+        { "name": "Star" },
+        { "name": "Satellite" },
+        { "name": "Planet" }
+      ]
+    },
+    "Service": {
+      "name": "_Service",
+      "fields": [
+        {
+          "name": "sdl",
+          "type": {
+            "kind": "NON_NULL",
+            "ofType": { "kind": "SCALAR", "name": "String" }
+          }
+        }
+      ]
+    }
+  }
+}

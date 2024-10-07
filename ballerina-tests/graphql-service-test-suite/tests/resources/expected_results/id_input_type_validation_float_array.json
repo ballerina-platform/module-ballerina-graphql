@@ -1,0 +1,9 @@
+{
+  "data": {
+    "floatArrayReturnRecord": {
+      "__typename": "Student5",
+      "id": 422,
+      "name": "Elliot Birch"
+    }
+  }
+}

@@ -1,7 +1,10 @@
 [package]
 org = "ballerina"
-name = "graphql_tests"
+name = "@package.name@"
 version = "@toml.version@"
 
-[build-options]
-observabilityIncluded = true
+[[dependency]]
+org = "ballerina"
+name = "@test.common@"
+repository = "local"
+version = "@toml.version@"

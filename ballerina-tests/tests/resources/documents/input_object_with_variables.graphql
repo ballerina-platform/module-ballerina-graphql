@@ -1,5 +1,0 @@
-($profile: ProfileDetail!) {
-    searchProfile(profileDetail:$profile) {
-        name
-    }
-}

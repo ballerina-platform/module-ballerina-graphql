@@ -1,5 +1,0 @@
-query getBook($bName: String!) {
-    book(info: {bookName: $bName, edition: 6, author: {name: "Arthur Conan Doyle", address: "London"}, movie:{movieName: "Sherlock", year:2005}}) {
-        name
-    }
-}

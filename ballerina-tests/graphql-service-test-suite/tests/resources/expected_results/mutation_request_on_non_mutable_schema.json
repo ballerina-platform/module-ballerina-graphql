@@ -1,0 +1,8 @@
+{
+  "errors": [
+    {
+      "message": "Schema is not configured for mutations.",
+      "locations": [{ "line": 1, "column": 1 }]
+    }
+  ]
+}

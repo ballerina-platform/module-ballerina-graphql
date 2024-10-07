@@ -1,0 +1,12 @@
+query A {
+  searchEnemy(enemyInput: { name: "Enemy6", age: 14 }) {
+    name
+    age
+  }
+}
+
+mutation B {
+  removeEnemy(name: "Enemy6", enableEvict: false) {
+    name
+  }
+}

@@ -1,0 +1,3 @@
+($userName:String!, $userName:Int!) {
+    greet (name: $userName)
+}

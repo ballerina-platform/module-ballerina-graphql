@@ -1,0 +1,9 @@
+{
+  "data": {
+    "stringArrayReturnRecord": {
+      "__typename": "Student5",
+      "id": 212,
+      "name": "Andrew Glouberman"
+    }
+  }
+}

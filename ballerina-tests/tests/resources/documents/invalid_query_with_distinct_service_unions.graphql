@@ -1,5 +1,0 @@
-query {
-    profile(id: 200) {
-        name
-    }
-}

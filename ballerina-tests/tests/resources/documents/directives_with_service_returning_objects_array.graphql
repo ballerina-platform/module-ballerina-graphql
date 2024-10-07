@@ -1,7 +1,0 @@
-{
-    searchVehicles(keyword: "vehicle") {
-        ...on Vehicle {
-            id @skip(if: true)
-        }
-    }
-}

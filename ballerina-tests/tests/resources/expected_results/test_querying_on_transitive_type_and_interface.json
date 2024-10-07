@@ -1,9 +1,0 @@
-{
-    "data": {
-        "animal": {
-            "name": "LARA",
-            "sex": "female",
-            "isAggressive": false
-        }
-    }
-}

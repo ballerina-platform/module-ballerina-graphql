@@ -1,0 +1,4 @@
+[package]
+org = "ballerina"
+name = "graphql_test_common"
+version = "1.14.1"

@@ -1,9 +1,0 @@
-query SimpleQuery {
-    device(id: 2) {
-        brand
-        model
-        ... on Phone {
-            os
-        }
-    }
-}

@@ -1,3 +1,0 @@
-($day:Weekday = SNDAY) {
-    isHoliday(weekday: $day)
-}

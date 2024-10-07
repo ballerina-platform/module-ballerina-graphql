@@ -1,7 +1,0 @@
-query {
-    stringArrayReturnRecordArray(stringIds: ["One", "Two", "Three"]) {
-        __typename
-        id
-        name
-    }
-}

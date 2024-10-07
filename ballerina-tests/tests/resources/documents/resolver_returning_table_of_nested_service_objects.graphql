@@ -1,8 +1,0 @@
-{
-    all {
-        product {
-            id
-        }
-        score
-    }
-}

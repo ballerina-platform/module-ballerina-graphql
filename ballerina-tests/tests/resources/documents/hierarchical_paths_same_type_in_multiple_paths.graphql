@@ -1,9 +1,0 @@
-{
-    profile {
-        name {
-            address {
-                street
-            }
-        }
-    }
-}

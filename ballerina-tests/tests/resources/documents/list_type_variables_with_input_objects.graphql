@@ -1,5 +1,0 @@
-query ($tvSeries: [TvSeries!]!) {
-    getSuggestions(tvSeries: $tvSeries) {
-        movieName
-    }
-}

@@ -1,9 +1,0 @@
-{
-    "data": {
-        "uuidReturnRecord": {
-            "__typename": "Student5",
-            "id": 2678,
-            "name": "Abuela Alvarez"
-        }
-    }
-}

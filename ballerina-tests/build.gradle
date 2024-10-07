@@ -27,10 +27,21 @@ def packageName = "graphql"
 def packageOrg = "ballerina"
 def tomlVersion = stripBallerinaExtensionVersion("${project.version}")
 def ballerinaTomlFilePlaceHolder = new File("${project.rootDir}/build-config/resources/BallerinaTest.toml")
-def ballerinaTomlFile = new File("$project.projectDir/Ballerina.toml")
+def testCommonTomlFilePlaceHolder = new File("${project.rootDir}/build-config/resources/BallerinaTestCommon.toml")
 def ballerinaDist = "${project.rootDir}/target/ballerina-runtime"
 def distributionBinPath =  "${ballerinaDist}/bin"
 def testCoverageParam = "--code-coverage --coverage-format=xml --includes=io.ballerina.stdlib.graphql.*:ballerina.graphql*"
+def testSuites = [
+    "graphql-advanced-test-suite",
+    "graphql-client-test-suite",
+    "graphql-dataloader-test-suite",
+    "graphql-interceptor-test-suite",
+    "graphql-security-test-suite",
+    "graphql-service-test-suite", 
+    "graphql-subgraph-test-suite",
+    "graphql-subscription-test-suite"
+]
+def testCommonPackage = "graphql-test-common"
 
 def stripBallerinaExtensionVersion(String extVersion) {
     if (extVersion.matches(project.ext.timestampedVersionRegex)) {
@@ -47,20 +58,36 @@ def stripBallerinaExtensionVersion(String extVersion) {
 }
 
 task updateTomlFiles {
-    doLast {
-        def newBallerinaToml = ballerinaTomlFilePlaceHolder.text.replace("@toml.version@", tomlVersion)
-        ballerinaTomlFile.text = newBallerinaToml
+     doLast {
+        testSuites.each { testPackage ->
+            def ballerinaTomlFile =  new File("${project.projectDir}/${testPackage}/Ballerina.toml")
+            def newBallerinaToml = ballerinaTomlFilePlaceHolder.text.replace("@project.version@", project.version)
+            newBallerinaToml = newBallerinaToml.replace("@toml.version@", tomlVersion)
+            newBallerinaToml = newBallerinaToml.replace("@test.common@", testCommonPackage.replaceAll("-", "_"))
+            newBallerinaToml = newBallerinaToml.replace("@package.name@", testPackage.replaceAll("-", "_"))
+            ballerinaTomlFile.text = newBallerinaToml
+        }
     }
+    def ballerinaTomlFile =  new File("${project.projectDir}/${testCommonPackage}/Ballerina.toml")
+    def newBallerinaToml = testCommonTomlFilePlaceHolder.text.replace("@project.version@", project.version)
+    newBallerinaToml = newBallerinaToml.replace("@toml.version@", tomlVersion)
+    newBallerinaToml = newBallerinaToml.replace("@package.name@", testCommonPackage.replaceAll("-", "_"))
+    ballerinaTomlFile.text = newBallerinaToml
 }
 
 task commitTomlFiles {
     doLast {
+        def files = "${project.projectDir}/${testCommonPackage}/Ballerina.toml ${project.projectDir}/${testCommonPackage}/Dependencies.toml "
+        testSuites.each{ testPackage ->
+            files += "${project.projectDir}/${testPackage}/Ballerina.toml ${project.projectDir}/${testPackage}/Dependencies.toml "
+        }
+
         project.exec {
             ignoreExitValue true
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "git commit -m \"[Automated] Update the native jar versions\" Ballerina.toml Dependencies.toml"
+                commandLine 'cmd', '/c', "git commit -m \"[Automated] Update the native jar versions\" ${files}"
             } else {
-                commandLine 'sh', '-c', "git commit -m '[Automated] Update the native jar versions' Ballerina.toml Dependencies.toml"
+                commandLine 'sh', '-c', "git commit -m '[Automated] Update the native jar versions' ${files}"
             }
         }
     }
@@ -72,15 +99,14 @@ def debugParams = ""
 def balJavaDebugParam = ""
 def graalvmFlag = ""
 def testParams = ""
+def skipTests = false
 
 task initializeVariables {
     if (project.hasProperty("groups")) {
         groupParams = "--groups ${project.findProperty('groups')}"
     }
-    // Temporarily disable subscription tests
-    disableGroups = "--disable-groups subscriptions "
     if (project.hasProperty("disable")) {
-        disableGroups += "${project.findProperty("disable")}"
+        disableGroups = "--disable-groups ${project.findProperty("disable")}"
     }
     if (project.hasProperty("debug")) {
         debugParams = "--debug ${project.findProperty("debug")}"
@@ -99,24 +125,56 @@ task initializeVariables {
             }
         } else {
             testParams = "--skip-tests"
+            skipTests = true
+        }
+    }
+}
+
+task publishTestCommonPackageToLocal {
+    dependsOn(":${packageName}-${packageOrg}:build")
+    dependsOn(updateTomlFiles)
+    doLast {
+        if (!skipTests) {
+            exec {
+                workingDir "${project.projectDir}/${testCommonPackage}"
+                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                    commandLine 'cmd', '/c', "${distributionBinPath}/bal.bat pack && exit  %%ERRORLEVEL%%"
+                } else {
+                    commandLine 'sh', '-c', "${distributionBinPath}/bal pack"
+                }
+            }
+            exec {
+                workingDir "${project.projectDir}/${testCommonPackage}"
+                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                    commandLine 'cmd', '/c', "${distributionBinPath}/bal.bat push --repository=local" +
+                            " && exit %%ERRORLEVEL%%"
+                } else {
+                    commandLine 'sh', '-c', "${distributionBinPath}/bal push --repository=local"
+                }
+            }
         }
     }
 }
 
 task ballerinaTest {
+    dependsOn(publishTestCommonPackageToLocal)
     dependsOn(":${packageName}-${packageOrg}:build")
     dependsOn(updateTomlFiles)
     dependsOn(initializeVariables)
     finalizedBy(commitTomlFiles)
 
     doLast {
-        exec {
-            workingDir project.projectDir
-            environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
-            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "${balJavaDebugParam} ${distributionBinPath}/bal.bat test ${graalvmFlag} ${testParams} --offline ${groupParams} ${disableGroups} ${debugParams} && exit %%ERRORLEVEL%%"
-            } else {
-                commandLine 'sh', '-c', "${balJavaDebugParam} ${distributionBinPath}/bal test ${graalvmFlag} ${testParams} --offline ${groupParams} ${disableGroups} ${debugParams}"
+        testSuites.each { testPackage ->
+        if (!skipTests) {
+                exec {
+                    workingDir "${project.projectDir}/${testPackage}"
+                    environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+                    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                        commandLine 'cmd', '/c', "${balJavaDebugParam} ${distributionBinPath}/bal.bat test ${graalvmFlag} ${testParams} --offline ${groupParams} ${disableGroups} ${debugParams} && exit %%ERRORLEVEL%%"
+                    } else {
+                        commandLine 'sh', '-c', "BALLERINA_MAX_POOL_SIZE=500 ${balJavaDebugParam} ${distributionBinPath}/bal test ${graalvmFlag} ${testParams} --offline ${groupParams} ${disableGroups} ${debugParams}"
+                    }
+                }
             }
         }
     }
@@ -127,7 +185,21 @@ test {
 }
 
 clean {
-    delete("${projectDir}/target")
+    delete "${project.projectDir}/${testCommonPackage}/target"
+
+    testSuites.each { testPackage ->
+        delete "${project.projectDir}/${testPackage}/target"
+    }
+}
+
+task deleteDependencyTomlFile {
+    if (project.hasProperty("deleteDependencies")) {
+        delete "${project.projectDir}/${testCommonPackage}/Dependencies.toml"
+
+        testSuites.each { testPackage ->
+            delete "${project.projectDir}/${testPackage}/Dependencies.toml"
+        }
+    }
 }
 
 build.dependsOn ":${packageName}-ballerina:build"

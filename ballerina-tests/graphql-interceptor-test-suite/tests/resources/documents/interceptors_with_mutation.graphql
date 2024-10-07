@@ -1,0 +1,9 @@
+mutation {
+  setName(name: "Heisenberg") {
+    name
+  }
+  setAge(age: 14) {
+    name
+    age
+  }
+}

@@ -1,0 +1,8 @@
+{
+  employees {
+    name
+  }
+  oldEmployees {
+    name
+  }
+}

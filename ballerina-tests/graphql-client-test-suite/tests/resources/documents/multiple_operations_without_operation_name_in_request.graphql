@@ -1,0 +1,11 @@
+query getDetective {
+  detective {
+    name
+  }
+}
+
+query getAge {
+  teacher {
+    age
+  }
+}

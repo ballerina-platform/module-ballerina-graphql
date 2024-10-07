@@ -1,3 +1,0 @@
-query ($days:[Weekday] = [MONDAY, FRIDAY, TUESDAY, SATURDAY]) {
-    isIncludeHoliday(days: $days)
-}

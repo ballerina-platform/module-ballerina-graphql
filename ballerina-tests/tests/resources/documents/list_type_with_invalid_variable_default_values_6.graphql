@@ -1,3 +1,0 @@
-query ($prices: [[Float!]!] = null) {
-    getTotal(prices: $prices)
-}

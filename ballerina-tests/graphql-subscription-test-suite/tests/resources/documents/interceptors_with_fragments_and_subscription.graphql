@@ -1,0 +1,29 @@
+subscription getStudents {
+  ...personFieldsA
+}
+
+subscription getNewStudents {
+  ...personFieldsB
+}
+
+fragment personFieldsA on Subscription {
+  ...studentFieldsA
+}
+
+fragment studentFieldsA on Subscription {
+  students {
+    id
+    name
+  }
+}
+
+fragment personFieldsB on Subscription {
+  ...studentFieldsB
+}
+
+fragment studentFieldsB on Subscription {
+  newStudents {
+    id
+    name
+  }
+}

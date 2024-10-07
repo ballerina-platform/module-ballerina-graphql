@@ -1,8 +1,0 @@
-{
-    __type {
-        kind
-        fields {
-            name
-        }
-    }
-}
