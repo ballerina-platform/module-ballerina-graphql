@@ -13,8 +13,6 @@ The tests for the Ballerina GraphQL module are organized into multiple test suit
 
 ### Test Structure
 
-### Test Structure
-
 - **Listeners**: Test listeners are defined in the `<suite>/tests/listeners.bal` file.
 - **Services**: Test services are defined in the `<suite>/tests/services.bal` file.
 - **Records, Object Types, and Values**: Ballerina records, object types, and values are defined in the corresponding Ballerina files:
