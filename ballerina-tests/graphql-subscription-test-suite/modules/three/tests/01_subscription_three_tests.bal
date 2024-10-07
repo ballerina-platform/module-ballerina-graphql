@@ -23,7 +23,7 @@ import ballerina/io;
     groups: ["subscriptions"]
 }
 function testAlreadyExistingSubscriber() returns error? {
-io:println("testAlreadyExistingSubscriber")
+io:println("testAlreadyExistingSubscriber");
     string document = check common:getGraphqlDocumentFromFile("subscriptions_with_service_objects");
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -56,7 +56,7 @@ io:println("testAlreadyExistingSubscriber")
     groups: ["subscriptions"]
 }
 isolated function testOnPing() returns error? {
-io:println("testOnPing")
+io:println("testOnPing");
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
@@ -69,7 +69,7 @@ io:println("testOnPing")
     groups: ["subscriptions"]
 }
 isolated function testInvalidSubProtocolInSubscriptions() returns error? {
-io:println("testInvalidSubProtocolInSubscriptions")
+io:println("testInvalidSubProtocolInSubscriptions");
     string url = "ws://localhost:9091/subscriptions";
     string subProtocol = "graphql-invalid-ws";
     websocket:ClientConfiguration config = {subProtocols: [subProtocol]};
@@ -84,7 +84,7 @@ io:println("testInvalidSubProtocolInSubscriptions")
     groups: ["subscriptions", "runtime_errors"]
 }
 isolated function testErrorsInStreams() returns error? {
-io:println("testErrorsInStreams")
+io:println("testErrorsInStreams");
     string document = "subscription { evenNumber }";
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -104,7 +104,7 @@ io:println("testErrorsInStreams")
     groups: ["subscriptions"]
 }
 isolated function testMultipleSubscriptionUsingSingleClient() returns error? {
-io:println("testMultipleSubscriptionUsingSingleClient")
+io:println("testMultipleSubscriptionUsingSingleClient");
     string document = string `subscription { messages }`;
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -130,7 +130,7 @@ io:println("testMultipleSubscriptionUsingSingleClient")
     groups: ["subscriptions"]
 }
 isolated function testSubscriptionWithInvalidPayload() returns error? {
-io:println("testSubscriptionWithInvalidPayload")
+io:println("testSubscriptionWithInvalidPayload");
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
     websocket:Client wsClient = check new (url, config);
@@ -147,7 +147,7 @@ io:println("testSubscriptionWithInvalidPayload")
     groups: ["subscriptions", "recrods", "service"]
 }
 isolated function testResolverReturingStreamOfRecordsWithServiceObjects() returns error? {
-io:println("testResolverReturingStreamOfRecordsWithServiceObjects")
+io:println("testResolverReturingStreamOfRecordsWithServiceObjects");
     string document = "subscription { live { product { id } score } }";
     string url = "ws://localhost:9092/reviews";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -163,7 +163,7 @@ io:println("testResolverReturingStreamOfRecordsWithServiceObjects")
     groups: ["subscriptions", "recrods", "service", "maps"]
 }
 isolated function testResolverReturingStreamOfRecordsWithMapOfServiceObjects() returns error? {
-io:println("testResolverReturingStreamOfRecordsWithMapOfServiceObjects")
+io:println("testResolverReturingStreamOfRecordsWithMapOfServiceObjects");
     string document = string `subscription { accountUpdates { details(key: "acc1") { name } } }`;
     string url = "ws://localhost:9092/reviews";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};

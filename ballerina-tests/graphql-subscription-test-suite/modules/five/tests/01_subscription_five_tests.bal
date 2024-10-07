@@ -24,7 +24,7 @@ import ballerina/io;
     groups: ["listener", "subscriptions"]
 }
 function testAttachServiceWithSubscriptionToHttp2BasedListener() returns error? {
-io:println("testAttachServiceWithSubscriptionToHttp2BasedListener")
+io:println("testAttachServiceWithSubscriptionToHttp2BasedListener");
     graphql:Error? result = http2BasedListener.attach(subscriptionService);
     test:assertTrue(result is graphql:Error);
     graphql:Error err = <graphql:Error>result;
@@ -37,7 +37,7 @@ io:println("testAttachServiceWithSubscriptionToHttp2BasedListener")
     groups: ["listener", "subscriptions"]
 }
 function testAttachServiceWithSubscriptionToHttp1BasedListener() returns error? {
-io:println("testAttachServiceWithSubscriptionToHttp1BasedListener")
+io:println("testAttachServiceWithSubscriptionToHttp1BasedListener");
     string document = string `subscription { messages }`;
     string url = "ws://localhost:9091/service_with_http1";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};

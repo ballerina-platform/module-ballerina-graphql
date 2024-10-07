@@ -23,7 +23,7 @@ import ballerina/io;
     groups: ["subscriptions"]
 }
 isolated function testSubscription() returns error? {
-io:println("testSubscription")
+io:println("testSubscription");
     string document = string `subscription { name }`;
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -41,7 +41,7 @@ io:println("testSubscription")
     groups: ["subscriptions"]
 }
 isolated function testSubscriptionWithoutSubProtocol() returns error? {
-io:println("testSubscriptionWithoutSubProtocol")
+io:println("testSubscriptionWithoutSubProtocol");
     string url = "ws://localhost:9091/subscriptions";
     websocket:Client|error wsClient = new (url);
     string expectedErrorMsg = "InvalidHandshakeError: Invalid handshake response getStatus: 400 Bad Request";
@@ -53,7 +53,7 @@ io:println("testSubscriptionWithoutSubProtocol")
     groups: ["subscriptions"]
 }
 isolated function testSubscriptionsWithMultipleOperations() returns error? {
-io:println("testSubscriptionsWithMultipleOperations")
+io:println("testSubscriptionsWithMultipleOperations");
     string document = check common:getGraphqlDocumentFromFile("subscriptions_with_multiple_operations");
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -83,7 +83,7 @@ io:println("testSubscriptionsWithMultipleOperations")
     groups: ["records", "subscriptions"]
 }
 isolated function testSubscriptionWithRecords() returns error? {
-io:println("testSubscriptionWithRecords")
+io:println("testSubscriptionWithRecords");
     string document = check common:getGraphqlDocumentFromFile("subscriptions_with_records");
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -101,7 +101,7 @@ io:println("testSubscriptionWithRecords")
     groups: ["subscriptions"]
 }
 isolated function testQueryWithSameSubscriptionFieldName() returns error? {
-io:println("testQueryWithSameSubscriptionFieldName")
+io:println("testQueryWithSameSubscriptionFieldName");
     string document = string `query { name }`;
     string url = "http://localhost:9091/subscriptions";
     json actualPayload = check common:getJsonPayloadFromService(url, document);
@@ -113,7 +113,7 @@ io:println("testQueryWithSameSubscriptionFieldName")
     groups: ["fragments", "subscriptions"]
 }
 isolated function testSubscriptionWithFragments() returns error? {
-io:println("testSubscriptionWithFragments")
+io:println("testSubscriptionWithFragments");
     string document = check common:getGraphqlDocumentFromFile("subscriptions_with_fragments");
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -131,7 +131,7 @@ io:println("testSubscriptionWithFragments")
     groups: ["union", "subscriptions"]
 }
 isolated function testSubscriptionWithUnionType() returns error? {
-io:println("testSubscriptionWithUnionType")
+io:println("testSubscriptionWithUnionType");
     string document = check common:getGraphqlDocumentFromFile("subscriptions_with_union_type");
     string url = "ws://localhost:9091/subscriptions";
     websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
@@ -149,7 +149,7 @@ io:println("testSubscriptionWithUnionType")
     groups: ["variables", "subscriptions"]
 }
 isolated function testSubscriptionWithVariables() returns error? {
-io:println("testSubscriptionWithVariables")
+io:println("testSubscriptionWithVariables");
     string document = check common:getGraphqlDocumentFromFile("subscriptions_with_variable_values");
     json variables = {"value": 4};
     string url = "ws://localhost:9091/subscriptions";

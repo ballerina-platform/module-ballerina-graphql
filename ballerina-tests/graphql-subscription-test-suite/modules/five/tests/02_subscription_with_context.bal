@@ -23,7 +23,7 @@ import ballerina/io;
     groups: ["context", "subscriptions"]
 }
 isolated function testContextWithSubscriptions() returns error? {
-io:println("testContextWithSubscriptions")
+io:println("testContextWithSubscriptions");
     string url = "ws://localhost:9091/context";
     string document = string `subscription { messages }`;
     websocket:ClientConfiguration configs = {
@@ -45,7 +45,7 @@ io:println("testContextWithSubscriptions")
     groups: ["context", "subscriptions"]
 }
 isolated function testContextWithInvalidScopeInSubscriptions() returns error? {
-io:println("testContextWithInvalidScopeInSubscriptions")
+io:println("testContextWithInvalidScopeInSubscriptions");
     string url = "ws://localhost:9091/context";
     string document = string `subscription { messages }`;
     websocket:ClientConfiguration configs = {
