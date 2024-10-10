@@ -15,18 +15,12 @@
 // under the License.
 
 isolated class ValueTreeBuilder {
-    private final Context context;
-    private final Data placeholderTree;
 
-    isolated function init(Context context, Data placeholderTree) {
-        self.context = context;
-        self.placeholderTree = placeholderTree.clone();
+    isolated function init() {
     }
 
-    isolated function build() returns Data {
-        lock {
-            return <Data>self.buildValueTree(self.context, self.placeholderTree).clone();
-        }
+    isolated function build(Context context, Data placeholderTree) returns Data {
+        return <Data>self.buildValueTree(context, placeholderTree);
     }
 
     isolated function buildValueTree(Context context, anydata partialValue) returns anydata {

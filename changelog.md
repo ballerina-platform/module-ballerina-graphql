@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Changed
+- [[#4122] Introduce Parallel Execution for GraphQL Resolvers](https://github.com/ballerina-platform/ballerina-library/issues/4122)
+
 
 ## [1.11.2] - 2024-06-28
 

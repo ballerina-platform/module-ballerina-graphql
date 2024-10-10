@@ -286,7 +286,7 @@ isolated class Engine {
             }
         }
 
-        (readonly & Interceptor)? interceptor = context.getNextInterceptor('field);
+        (readonly & Interceptor)? interceptor = 'field.getNextInterceptor(self);
         __Type fieldType = 'field.getFieldType();
         ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone(),
                                                    'field.getCacheConfig(), 'field.getParentArgHashes());
@@ -380,12 +380,10 @@ isolated class Engine {
 
     isolated function getHierarchicalResult(Context context, Field 'field, parser:FieldNode fieldNode, map<anydata> result) {
         string[] resourcePath = 'field.getResourcePath();
-        (string|int)[] path = 'field.getPath().clone();
-        path.push(fieldNode.getName());
+        readonly & (string|int)[] path = [...'field.getPath(), fieldNode.getName()];
         __Type parentType = 'field.getFieldType();
         __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
         Field selectionField = new (fieldNode, fieldType, 'field.getServiceObject(), path = path, resourcePath = resourcePath);
-        context.resetInterceptorCount();
         anydata fieldValue = self.resolve(context, selectionField);
         result[fieldNode.getAlias()] = fieldValue is ErrorDetail ? () : fieldValue;
         _ = resourcePath.pop();
