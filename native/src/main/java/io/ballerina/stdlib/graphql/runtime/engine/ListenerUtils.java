@@ -155,7 +155,7 @@ public final class ListenerUtils {
     }
 
     public static void createAndStartObserverContext(Environment environment, BObject context, BString serviceName,
-                                             BString operationType, BString operationName, BString moduleName,
+                                                     BString operationType, BString operationName, BString moduleName,
                                                      BString fileName, int startLine, int startColumn) {
         ObserverContext observerContext = new GraphqlObserverContext(operationName.getValue(), serviceName.getValue());
         observerContext.setManuallyClosed(true);
@@ -196,7 +196,7 @@ public final class ListenerUtils {
             environment.setStrandLocal(KEY_OBSERVER_CONTEXT, parentContext);
         }
     }
-  
+
     public static void stopObserverContextWithError(Environment environment, BObject context, BError error) {
         ObserverContext observerContext = (ObserverContext) context.getNativeData(KEY_OBSERVER_CONTEXT);
         if (observerContext != null && observerContext.isManuallyClosed()) {
