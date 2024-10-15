@@ -57,7 +57,7 @@ isolated function getFieldNodesFromDocumentFile(string fileName) returns parser:
     return fieldNodes;
 }
 
-isolated function getField(parser:FieldNode fieldNode, __Type fieldType, __Type parentType, string[] path,
+isolated function getField(parser:FieldNode fieldNode, __Type fieldType, __Type parentType, readonly & string[] path,
         ServerCacheConfig? cacheConfig = ()) returns Field {
     return new (fieldNode, fieldType, parentType, path = path, cacheConfig = cacheConfig);
 }

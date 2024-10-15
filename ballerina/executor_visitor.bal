@@ -15,6 +15,7 @@
 // under the License.
 
 import graphql.parser;
+
 import ballerina/jballerina.java;
 
 isolated class ExecutorVisitor {
@@ -22,17 +23,16 @@ isolated class ExecutorVisitor {
 
     private final readonly & __Schema schema;
     private final Engine engine; // This field needed to be accessed from the native code
-    private Data data;
-    private Context context;
+    private final Context context;
     private any|error result; // The value of this field is set using setResult method
 
     isolated function init(Engine engine, readonly & __Schema schema, Context context, any|error result = ()) {
         self.engine = engine;
         self.schema = schema;
         self.context = context;
-        self.data = {};
         self.result = ();
         self.setResult(result);
+        self.initializeDataMap();
     }
 
     public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {}
@@ -41,6 +41,14 @@ isolated class ExecutorVisitor {
         string[] path = [];
         if operationNode.getName() != parser:ANONYMOUS_OPERATION {
             path.push(operationNode.getName());
+        }
+        service object {} serviceObject;
+        lock {
+            serviceObject = self.engine.getService();
+        }
+        if operationNode.getKind() != parser:OPERATION_MUTATION && serviceObject is isolated service object {} {
+            map<anydata> dataMap = {[OPERATION_TYPE] : operationNode.getKind(), [PATH] : path};
+            return self.visitSelectionsParallelly(operationNode, dataMap.cloneReadOnly());
         }
         foreach parser:SelectionNode selection in operationNode.getSelections() {
             if selection is parser:FieldNode {
@@ -54,31 +62,26 @@ isolated class ExecutorVisitor {
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
         parser:RootOperationType operationType = self.getOperationTypeFromData(data);
         boolean isIntrospection = true;
-        lock {
-            if fieldNode.getName() == SCHEMA_FIELD {
-            IntrospectionExecutor introspectionExecutor = new(self.schema);
-            self.data[fieldNode.getAlias()] = introspectionExecutor.getSchemaIntrospection(fieldNode);
-            } else if fieldNode.getName() == TYPE_FIELD {
-                IntrospectionExecutor introspectionExecutor = new(self.schema);
-                self.data[fieldNode.getAlias()] = introspectionExecutor.getTypeIntrospection(fieldNode);
-            } else if fieldNode.getName() == TYPE_NAME_FIELD {
-                if operationType == parser:OPERATION_QUERY {
-                    self.data[fieldNode.getAlias()] = QUERY_TYPE_NAME;
-                } else if operationType == parser:OPERATION_MUTATION {
-                    self.data[fieldNode.getAlias()] = MUTATION_TYPE_NAME;
-                } else {
-                    self.data[fieldNode.getAlias()] = SUBSCRIPTION_TYPE_NAME;
-                }
+        if fieldNode.getName() == SCHEMA_FIELD {
+            IntrospectionExecutor introspectionExecutor = new (self.schema);
+            self.addData(fieldNode.getAlias(), introspectionExecutor.getSchemaIntrospection(fieldNode));
+        } else if fieldNode.getName() == TYPE_FIELD {
+            IntrospectionExecutor introspectionExecutor = new (self.schema);
+            self.addData(fieldNode.getAlias(), introspectionExecutor.getTypeIntrospection(fieldNode));
+        } else if fieldNode.getName() == TYPE_NAME_FIELD {
+            if operationType == parser:OPERATION_QUERY {
+                self.addData(fieldNode.getAlias(), QUERY_TYPE_NAME);
+            } else if operationType == parser:OPERATION_MUTATION {
+                self.addData(fieldNode.getAlias(), MUTATION_TYPE_NAME);
             } else {
-                isIntrospection = false;
+                self.addData(fieldNode.getAlias(), SUBSCRIPTION_TYPE_NAME);
             }
+        } else {
+            isIntrospection = false;
         }
-        isolated function (parser:FieldNode, parser:RootOperationType) execute;
-        lock {
-            execute = self.execute;
-        }
+
         if !isIntrospection {
-            execute(fieldNode, operationType);
+            self.execute(fieldNode, operationType);
         }
     }
 
@@ -87,46 +90,86 @@ isolated class ExecutorVisitor {
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         parser:RootOperationType operationType = self.getOperationTypeFromData(data);
         string[] path = self.getSelectionPathFromData(data);
+        if operationType != parser:OPERATION_MUTATION {
+            map<anydata> dataMap = {[OPERATION_TYPE] : operationType, [PATH] : path};
+            return self.visitSelectionsParallelly(fragmentNode, dataMap.cloneReadOnly());
+        }
         foreach parser:SelectionNode selection in fragmentNode.getSelections() {
-            string[] clonedPath = path.clone();
             if selection is parser:FieldNode {
-                clonedPath.push(selection.getName());
+                path.push(selection.getName());
             }
-            map<anydata> dataMap = {[OPERATION_TYPE] : operationType, [PATH] : clonedPath};
+            map<anydata> dataMap = {[OPERATION_TYPE] : operationType, [PATH] : path};
             selection.accept(self, dataMap);
         }
     }
-    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
+    }
 
-    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
+    }
 
     isolated function execute(parser:FieldNode fieldNode, parser:RootOperationType operationType) {
         any|error result;
-        __Schema schema;
+        __Schema schema = self.schema;
         Engine engine;
         Context context;
         lock {
             result = self.getResult();
-            schema = self.schema;
             engine = self.engine;
             context = self.context;
         }
         Field 'field = getFieldObject(fieldNode, operationType, schema, engine, result);
-        context.resetInterceptorCount();
         anydata resolvedResult = engine.resolve(context, 'field);
-        lock {
-            self.data[fieldNode.getAlias()] = resolvedResult is ErrorDetail ? () : resolvedResult.cloneReadOnly();
-        }
+        self.addData(fieldNode.getAlias(), resolvedResult is ErrorDetail ? () : resolvedResult);
     }
 
     isolated function getOutput() returns OutputObject {
+        Context context;
         lock {
-            if !self.context.hasPlaceholders() {
-                // Avoid rebuilding the value tree if there are no place holders
-                return getOutputObject(self.data.clone(), self.context.getErrors().clone());
+            context = self.context;
+        }
+        Data data = self.getDataMap();
+        ErrorDetail[] errors = context.getErrors();
+        if !self.context.hasPlaceholders() {
+            // Avoid rebuilding the value tree if there are no place holders
+            return getOutputObject(data, errors);
+        }
+        ValueTreeBuilder valueTreeBuilder = new ();
+        data = valueTreeBuilder.build(context, data);
+        errors = context.getErrors();
+        return getOutputObject(data, errors);
+    }
+
+    private isolated function visitSelectionsParallelly(parser:SelectionParentNode selectionParentNode,
+            readonly & anydata data = ()) {
+        parser:RootOperationType operationType = self.getOperationTypeFromData(data);
+        [parser:SelectionNode, future<()>][] selectionFutures = [];
+        string[] path = self.getSelectionPathFromData(data);
+        foreach parser:SelectionNode selection in selectionParentNode.getSelections() {
+            if selection is parser:FieldNode {
+                path.push(selection.getName());
             }
-            ValueTreeBuilder valueTreeBuilder = new (self.context, self.data);
-            return getOutputObject(valueTreeBuilder.build(), self.context.getErrors().clone());
+            map<anydata> dataMap = {[OPERATION_TYPE] : operationType, [PATH] : path};
+            future<()> 'future = start selection.accept(self, dataMap.cloneReadOnly());
+            selectionFutures.push([selection, 'future]);
+        }
+        foreach [parser:SelectionNode, future<()>] [selection, 'future] in selectionFutures {
+            error? err = wait 'future;
+            if err is () {
+                continue;
+            }
+            if selection is parser:FieldNode {
+                path.push(selection.getName());
+                self.addData(selection.getAlias(), ());
+                ErrorDetail errorDetail = {
+                    message: err.message(),
+                    locations: [selection.getLocation()],
+                    path: path
+                };
+                lock {
+                    self.context.addError(errorDetail);
+                }
+            }
         }
     }
 
@@ -141,11 +184,23 @@ isolated class ExecutorVisitor {
         return <parser:RootOperationType>dataMap[OPERATION_TYPE];
     }
 
-    private isolated function setResult(any|error result) =  @java:Method {
+    private isolated function setResult(any|error result) = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
     } external;
 
-    private isolated function getResult() returns any|error =  @java:Method {
+    isolated function initializeDataMap() = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.ExecutorVisitor"
+    } external;
+
+    private isolated function addData(string key, anydata value) = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.ExecutorVisitor"
+    } external;
+
+    private isolated function getResult() returns any|error = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
+    } external;
+
+    private isolated function getDataMap() returns Data = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.ExecutorVisitor"
     } external;
 }
