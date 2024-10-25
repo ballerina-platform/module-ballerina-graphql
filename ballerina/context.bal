@@ -43,6 +43,9 @@ public isolated class Context {
     }
 
     # Retrieves a value using the given key from the GraphQL context.
+    # ```ballerina
+    # string userId = check context.get("userId").ensureType();  
+    # ```
     #
     # + key - The key corresponding to the required value
     # + return - The value if the key is present in the context, a `graphql:Error` otherwise
@@ -55,6 +58,9 @@ public isolated class Context {
     }
 
     # Removes a value using the given key from the GraphQL context.
+    # ```ballerina
+    # string userId = check context.remove("userId").ensureType();  
+    # ```
     #
     # + key - The key corresponding to the value to be removed
     # + return - The value if the key is present in the context, a `graphql:Error` otherwise
@@ -67,6 +73,10 @@ public isolated class Context {
     }
 
     # Register a given DataLoader instance for a given key in the GraphQL context.
+    # ```ballerina
+    # dataloader:DataLoader userDataLoader = new dataloader:DefaultDataLoader(batchUsers);
+    # check context.registerDataLoader("user", userDataLoader);
+    # ```
     #
     # + key - The key for the DataLoader to be registered
     # + dataloader - The DataLoader instance to be registered
@@ -75,7 +85,9 @@ public isolated class Context {
     } external;
 
     # Retrieves a DataLoader instance using the given key from the GraphQL context.
-    #
+    # ```ballerina
+    # dataloader:DataLoader userDataLoader = check context.getDataLoader("user");
+    # ```
     # + key - The key corresponding to the required DataLoader instance
     # + return - The DataLoader instance if the key is present in the context otherwise panics
     public isolated function getDataLoader(string key) returns dataloader:DataLoader = @java:Method {
