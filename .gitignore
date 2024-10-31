@@ -48,3 +48,6 @@ velocity.log*
 graphql-ballerina/modules/graphql/
 examples/**/Dependencies.toml
 load-tests/**/Dependencies.toml
+
+# Java Logs
+java_pid*.hprof
