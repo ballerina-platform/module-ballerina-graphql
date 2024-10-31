@@ -83,6 +83,22 @@ function dataProviderInputObject() returns map<[string, json]> {
         dir: "Chris Columbus"
     };
 
+    json var8 = {
+        bName: "Harry",
+        bAuthor: {name:"J.K Rowling", age:44, address: {street: "Baker Street", city: "London"}},
+        dir: "Chris Columbus"
+    };
+
+    json var9 = {
+        bInfo: {
+            bookName: "Harry",
+            author: {name:"J.K Rowling", age:44, address: {street: "Baker Street", city: "London"}},
+            dir: "Chris Columbus",
+            movie: {movieName: "End Game", director: "Russo", episodes: [{timeDuration: 120}]},
+            edition: 6
+        }
+    };
+
     map<[string, json]> dataSet = {
         "1": ["input_object"],
         "2": ["input_object_with_missing_arguments"],
@@ -108,7 +124,9 @@ function dataProviderInputObject() returns map<[string, json]> {
         "22": ["input_object_with_unexpected_variable_values", var7],
         "23": ["input_object_variables_with_invalid_type_name", {profile:{name: "Arthur", age: 5}}],
         "24": ["input_object_with_missing_nullable_variable_value"],
-        "25": ["default_values_in_input_object_fields"]
+        "25": ["default_values_in_input_object_fields"],
+        "26": ["input_object_with_unexpected_variable_fields1", var8],
+        "27": ["input_object_with_unexpected_variable_fields2", var9]
     };
     return dataSet;
 }
