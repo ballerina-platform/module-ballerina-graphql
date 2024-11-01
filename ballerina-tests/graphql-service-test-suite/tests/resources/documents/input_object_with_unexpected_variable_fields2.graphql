@@ -1,0 +1,9 @@
+query getBook($bInfo:Info!) {
+    ...on Query {
+        book(info: $bInfo) {
+            ...on Book {
+                name
+            }
+        }
+    }
+}
