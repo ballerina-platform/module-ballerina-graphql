@@ -42,6 +42,7 @@ target
 build
 bin
 ./**/cache
+.cache/
 
 # Ballerina
 velocity.log*
