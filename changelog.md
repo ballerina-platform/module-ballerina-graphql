@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+- [[#4122] Introduce Parallel Execution for GraphQL Resolvers](https://github.com/ballerina-platform/ballerina-library/issues/4122)
+
 ### Fixed
 - [[#7317] Fix Service Crashing when Input Object Type Variable Value Includes an Additional Field](https://github.com/ballerina-platform/ballerina-library/issues/7317)
 
