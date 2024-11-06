@@ -20,6 +20,9 @@ package io.ballerina.stdlib.graphql.runtime.utils;
 
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Module;
+import io.ballerina.runtime.api.creators.ErrorCreator;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * This class includes the utility functions related to Ballerina GraphQL module.
@@ -38,5 +41,13 @@ public class ModuleUtils {
 
     public static Module getModule() {
         return module;
+    }
+
+    public static Object getResult(CompletableFuture<Object> balFuture) {
+        try {
+            return balFuture.get();
+        } catch (Throwable throwable) {
+            throw ErrorCreator.createError(throwable);
+        }
     }
 }

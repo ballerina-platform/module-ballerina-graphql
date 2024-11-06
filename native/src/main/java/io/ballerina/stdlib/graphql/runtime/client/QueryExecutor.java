@@ -19,13 +19,16 @@
 package io.ballerina.stdlib.graphql.runtime.client;
 
 import io.ballerina.runtime.api.Environment;
-import io.ballerina.runtime.api.Future;
-import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.types.ObjectType;
 import io.ballerina.runtime.api.utils.TypeUtils;
+import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTypedesc;
+
+import java.util.concurrent.CompletableFuture;
+
+import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getResult;
 
 /**
  * This class is used to execute a GraphQL document using the Ballerina GraphQL client.
@@ -55,33 +58,34 @@ public final class QueryExecutor {
     private static Object invokeClientMethod(Environment env, BObject client, BString document, Object variables,
                                              Object operationName, Object headers, BTypedesc targetType,
                                              String methodName) {
-        Object[] paramFeed = new Object[10];
+        Object[] paramFeed = new Object[5];
         paramFeed[0] = targetType;
-        paramFeed[1] = true;
-        paramFeed[2] = document;
-        paramFeed[3] = true;
-        paramFeed[4] = variables;
-        paramFeed[5] = true;
-        paramFeed[6] = operationName;
-        paramFeed[7] = true;
-        paramFeed[8] = headers;
-        paramFeed[9] = true;
+        paramFeed[1] = document;
+        paramFeed[2] = variables;
+        paramFeed[3] = operationName;
+        paramFeed[4] = headers;
         return invokeClientMethod(env, client, methodName, paramFeed);
     }
 
     private static Object invokeClientMethod(Environment env, BObject client, String methodName, Object[] paramFeed) {
-        Future balFuture = env.markAsync();
-
-        ObjectType clientType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(client));
-        if (clientType.isIsolated() && clientType.isIsolated(methodName)) {
-            env.getRuntime()
-                    .invokeMethodAsyncConcurrently(client, methodName, null, null, new QueryExecutorCallback(balFuture),
-                            null, PredefinedTypes.TYPE_NULL, paramFeed);
-        } else {
-            env.getRuntime()
-                    .invokeMethodAsyncSequentially(client, methodName, null, null, new QueryExecutorCallback(balFuture),
-                            null, PredefinedTypes.TYPE_NULL, paramFeed);
-        }
-        return null;
+        return env.yieldAndRun(() -> {
+            CompletableFuture<Object> balFuture = new CompletableFuture<>();
+            ObjectType clientType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(client));
+            QueryExecutorCallback executorCallback = new QueryExecutorCallback(balFuture);
+            Object result;
+            try {
+                if (clientType.isIsolated() && clientType.isIsolated(methodName)) {
+                    result = env.getRuntime().startIsolatedWorker(client, methodName, null, null,
+                            null, paramFeed).get();
+                } else {
+                    result = env.getRuntime().startNonIsolatedWorker(client, methodName, null, null,
+                            null, paramFeed).get();
+                }
+                executorCallback.notifySuccess(result);
+            } catch (BError bError) {
+                executorCallback.notifyFailure(bError);
+            }
+            return getResult(balFuture);
+        });
     }
 }
