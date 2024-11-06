@@ -6,7 +6,7 @@ on:
 jobs:
     call_stdlib_process_load_test_results_workflow:
         name: Run StdLib Process Load Test Results Workflow
-        uses: ballerina-platform/ballerina-library/.github/workflows/process-load-test-results-template.yml@main
+        uses: ballerina-platform/ballerina-library/.github/workflows/process-load-test-results-template.yml@java21
         with:
             results: ${{ toJson(github.event.client_payload.results) }}
         secrets:

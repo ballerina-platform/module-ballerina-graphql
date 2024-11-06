@@ -21,4 +21,5 @@ module io.ballerina.stdlib.graphql.runtime {
     requires io.ballerina.stdlib.constraint;
     requires io.ballerina.stdlib.graphql.commons;
     requires io.ballerina.lang;
+    requires jdk.jshell;
 }

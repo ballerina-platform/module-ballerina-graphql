@@ -327,11 +327,14 @@ class FieldValidatorVisitor {
         __Type argType = getOfType(inputValue.'type);
         __InputValue[]? inputFields = argType?.inputFields;
         if inputFields is __InputValue[] {
+            string[] keys = variableValues.keys();
             foreach __InputValue subInputValue in inputFields {
                 if getOfType(subInputValue.'type).name == UPLOAD {
                     return;
                 }
-                if variableValues.hasKey(subInputValue.name) {
+                int? index = keys.indexOf(subInputValue.name);
+                if index is int {
+                    _ = keys.remove(index);
                     anydata fieldValue = variableValues.get(subInputValue.name);
                     if fieldValue is Scalar {
                         if getOfType(subInputValue.'type).kind == ENUM {
@@ -368,6 +371,13 @@ class FieldValidatorVisitor {
                                          string `"${getTypeNameFromType(subInputValue.'type)}" was not provided.`;
                         self.errors.push(getErrorDetailRecord(message, location));
                     }
+                }
+            }
+            if keys.length() > 0 {
+                foreach string 'key in keys {
+                    string expectedTypeName = getOfTypeName(argType);
+                    string message = string `Input type "${expectedTypeName}" does not have a field "${'key}".`;
+                    self.errors.push(getErrorDetailRecord(message, location));
                 }
             }
         } else {
