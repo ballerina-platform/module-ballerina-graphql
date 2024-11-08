@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.graphql.runtime.observability;
 
+import io.ballerina.runtime.observability.ObservabilityConstants;
 import io.ballerina.runtime.observability.ObserverContext;
 
 /**
@@ -29,11 +30,13 @@ public class GraphqlObserverContext extends ObserverContext {
 
     private final String operationName;
     private final String serviceName;
+    private static final String PROTOCOL = "graphql";
 
     public GraphqlObserverContext(String operationName, String serviceName) {
         super();
         this.operationName = operationName;
         this.serviceName = serviceName;
+        this.addTag(ObservabilityConstants.TAG_KEY_PROTOCOL, PROTOCOL);
     }
 
     @Override
