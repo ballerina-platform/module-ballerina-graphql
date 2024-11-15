@@ -19,6 +19,7 @@
 package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.Environment;
+import io.ballerina.runtime.api.Runtime;
 import io.ballerina.runtime.api.concurrent.StrandMetadata;
 import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.types.IntersectionType;
@@ -128,16 +129,13 @@ public class Engine {
                     CompletableFuture<Object> subscriptionFutureResult = new CompletableFuture<>();
                     ExecutionCallback executionCallback = new ExecutionCallback(subscriptionFutureResult);
                     Object[] args = argumentHandler.getArguments();
-                    ObjectType objectType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(service));
                     HashMap<String, Object> properties = null;
                     if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
                         properties = getPropertiesToPropagate(environment, context);
                     }
                     try {
-                        boolean isIsolated = objectType.isIsolated() && objectType.isIsolated(resourceMethod.getName());
-                        StrandMetadata strandMetadata = new StrandMetadata(isIsolated, properties);
-                        Object result = environment.getRuntime().callMethod(service, resourceMethod.getName(),
-                                strandMetadata, args);
+                        Object result = callResourceMethod(environment.getRuntime(), service, resourceMethod.getName()
+                                , properties, args);
                         executionCallback.notifySuccess(result);
                     } catch (BError bError) {
                         executionCallback.notifyFailure(bError);
@@ -147,6 +145,14 @@ public class Engine {
             }
         }
         return null;
+    }
+
+    private static Object callResourceMethod(Runtime runtime, BObject service, String methodName,
+                                             HashMap<String, Object> properties, Object[] args) {
+        ObjectType objectType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(service));
+        boolean isIsolated = objectType.isIsolated() && objectType.isIsolated(methodName);
+        StrandMetadata strandMetadata = new StrandMetadata(isIsolated, properties);
+        return runtime.callMethod(service, methodName, strandMetadata, args);
     }
 
     public static Object executeQueryResource(Environment environment, BObject context, BObject service,
@@ -165,17 +171,14 @@ public class Engine {
         return environment.yieldAndRun(() -> {
             CompletableFuture<Object> future = new CompletableFuture<>();
             ExecutionCallback executionCallback = new ExecutionCallback(future);
-            ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
             Object[] arguments = argumentHandler.getArguments();
             HashMap<String, Object> properties = null;
             if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
                 properties = getPropertiesToPropagate(environment, context);
             }
             try {
-                boolean isIsolated = serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName());
-                StrandMetadata metadata = new StrandMetadata(isIsolated, properties);
-                Object result = environment.getRuntime().callMethod(service, resourceMethod.getName(), metadata,
-                        arguments);
+                Object result = callResourceMethod(environment.getRuntime(), service, resourceMethod.getName(),
+                        properties, arguments);
                 executionCallback.notifySuccess(result);
             } catch (BError bError) {
                 executionCallback.notifyFailure(bError);
@@ -206,10 +209,8 @@ public class Engine {
                         properties = getPropertiesToPropagate(environment, context);
                     }
                     try {
-                        boolean isIsolated = serviceType.isIsolated() && serviceType.isIsolated(remoteMethod.getName());
-                        StrandMetadata metadata = new StrandMetadata(isIsolated, properties);
-                        Object result = environment.getRuntime().callMethod(service, remoteMethod.getName(), metadata,
-                                arguments);
+                        Object result = callResourceMethod(environment.getRuntime(), service, remoteMethod.getName(),
+                                properties, arguments);
                         executionCallback.notifySuccess(result);
                     } catch (BError bError) {
                         executionCallback.notifyFailure(bError);
@@ -237,10 +238,8 @@ public class Engine {
                 properties = getPropertiesToPropagate(environment, context);
             }
             try {
-                boolean isIsolated = serviceType.isIsolated() && serviceType.isIsolated(remoteMethod.getName());
-                StrandMetadata metadata = new StrandMetadata(isIsolated, properties);
-                Object result = environment.getRuntime().callMethod(interceptor, remoteMethod.getName(), metadata,
-                        arguments);
+                Object result = callResourceMethod(environment.getRuntime(), interceptor, remoteMethod.getName(),
+                        properties, arguments);
                 executionCallback.notifySuccess(result);
             } catch (BError bError) {
                 executionCallback.notifyFailure(bError);
@@ -337,7 +336,6 @@ public class Engine {
         environment.yieldAndRun(() -> {
             CompletableFuture<Object> future = new CompletableFuture<>();
             ExecutionCallback executionCallback = new ExecutionCallback(future);
-            ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
             ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context, fieldObject, null, false);
             Object[] arguments = argumentHandler.getArguments();
             HashMap<String, Object> properties = null;
@@ -345,10 +343,8 @@ public class Engine {
                 properties = getPropertiesToPropagate(environment, context);
             }
             try {
-                boolean isIsolated = serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName());
-                StrandMetadata metadata = new StrandMetadata(isIsolated, properties);
-                Object result = environment.getRuntime().callMethod(service, resourceMethod.getName(), metadata,
-                        arguments);
+                Object result = callResourceMethod(environment.getRuntime(), service, resourceMethod.getName(),
+                        properties, arguments);
                 executionCallback.notifySuccess(result);
             } catch (BError bError) {
                 executionCallback.notifyFailure(bError);
