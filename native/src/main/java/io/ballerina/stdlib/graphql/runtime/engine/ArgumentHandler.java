@@ -19,8 +19,7 @@
 package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.Environment;
-import io.ballerina.runtime.api.PredefinedTypes;
-import io.ballerina.runtime.api.TypeTags;
+import io.ballerina.runtime.api.concurrent.StrandMetadata;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
@@ -29,8 +28,10 @@ import io.ballerina.runtime.api.types.FiniteType;
 import io.ballerina.runtime.api.types.IntersectionType;
 import io.ballerina.runtime.api.types.MethodType;
 import io.ballerina.runtime.api.types.Parameter;
+import io.ballerina.runtime.api.types.PredefinedTypes;
 import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.Type;
+import io.ballerina.runtime.api.types.TypeTags;
 import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.JsonUtils;
 import io.ballerina.runtime.api.utils.StringUtils;
@@ -53,7 +54,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
-import static io.ballerina.runtime.api.TypeTags.INTERSECTION_TAG;
+import static io.ballerina.runtime.api.types.TypeTags.INTERSECTION_TAG;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FILE_INFO_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
@@ -546,8 +547,8 @@ public final class ArgumentHandler {
             Object[] arguments = {errors, fieldNode};
             try {
                 Object result = environment.getRuntime()
-                        .startIsolatedWorker(this.responseGenerator, ADD_CONSTRAINT_ERRORS_METHOD, null,
-                                null, null, arguments).get();
+                        .callMethod(this.responseGenerator, ADD_CONSTRAINT_ERRORS_METHOD,
+                                new StrandMetadata(true, null), arguments);
                 executionCallback.notifySuccess(result);
             } catch (BError bError) {
                 executionCallback.notifyFailure(bError);
