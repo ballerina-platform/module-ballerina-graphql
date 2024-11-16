@@ -19,6 +19,7 @@
 package io.ballerina.stdlib.graphql.runtime.client;
 
 import io.ballerina.runtime.api.Environment;
+import io.ballerina.runtime.api.concurrent.StrandMetadata;
 import io.ballerina.runtime.api.types.ObjectType;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BError;
@@ -72,15 +73,10 @@ public final class QueryExecutor {
             CompletableFuture<Object> balFuture = new CompletableFuture<>();
             ObjectType clientType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(client));
             QueryExecutorCallback executorCallback = new QueryExecutorCallback(balFuture);
-            Object result;
             try {
-                if (clientType.isIsolated() && clientType.isIsolated(methodName)) {
-                    result = env.getRuntime().startIsolatedWorker(client, methodName, null, null,
-                            null, paramFeed).get();
-                } else {
-                    result = env.getRuntime().startNonIsolatedWorker(client, methodName, null, null,
-                            null, paramFeed).get();
-                }
+                boolean isIsolated = clientType.isIsolated() && clientType.isIsolated(methodName);
+                StrandMetadata metadata = new StrandMetadata(isIsolated, null);
+                Object result = env.getRuntime().callMethod(client, methodName, metadata, paramFeed);
                 executorCallback.notifySuccess(result);
             } catch (BError bError) {
                 executorCallback.notifyFailure(bError);

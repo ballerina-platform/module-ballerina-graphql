@@ -19,7 +19,8 @@
 package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.Environment;
-import io.ballerina.runtime.api.TypeTags;
+import io.ballerina.runtime.api.Runtime;
+import io.ballerina.runtime.api.concurrent.StrandMetadata;
 import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.types.IntersectionType;
 import io.ballerina.runtime.api.types.MethodType;
@@ -28,6 +29,7 @@ import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
+import io.ballerina.runtime.api.types.TypeTags;
 import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
@@ -65,10 +67,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatc
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getResult;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
-import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INTERCEPTOR_EXECUTION_STRAND;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INTERNAL_NODE;
-import static io.ballerina.stdlib.graphql.runtime.utils.Utils.REMOTE_EXECUTION_STRAND;
-import static io.ballerina.stdlib.graphql.runtime.utils.Utils.RESOURCE_EXECUTION_STRAND;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
 
 /**
@@ -130,22 +129,13 @@ public class Engine {
                     CompletableFuture<Object> subscriptionFutureResult = new CompletableFuture<>();
                     ExecutionCallback executionCallback = new ExecutionCallback(subscriptionFutureResult);
                     Object[] args = argumentHandler.getArguments();
-                    ObjectType objectType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(service));
-                    Object result;
                     HashMap<String, Object> properties = null;
                     if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
                         properties = getPropertiesToPropagate(environment, context);
                     }
                     try {
-                        if (objectType.isIsolated() && objectType.isIsolated(resourceMethod.getName())) {
-                            result = environment.getRuntime()
-                                    .startIsolatedWorker(service, resourceMethod.getName(), null,
-                                            null, properties, args).get();
-                        } else {
-                            result = environment.getRuntime()
-                                    .startNonIsolatedWorker(service, resourceMethod.getName(), null,
-                                            null, properties, args).get();
-                        }
+                        Object result = callResourceMethod(environment.getRuntime(), service, resourceMethod.getName()
+                                , properties, args);
                         executionCallback.notifySuccess(result);
                     } catch (BError bError) {
                         executionCallback.notifyFailure(bError);
@@ -155,6 +145,14 @@ public class Engine {
             }
         }
         return null;
+    }
+
+    private static Object callResourceMethod(Runtime runtime, BObject service, String methodName,
+                                             HashMap<String, Object> properties, Object[] args) {
+        ObjectType objectType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(service));
+        boolean isIsolated = objectType.isIsolated() && objectType.isIsolated(methodName);
+        StrandMetadata strandMetadata = new StrandMetadata(isIsolated, properties);
+        return runtime.callMethod(service, methodName, strandMetadata, args);
     }
 
     public static Object executeQueryResource(Environment environment, BObject context, BObject service,
@@ -173,21 +171,14 @@ public class Engine {
         return environment.yieldAndRun(() -> {
             CompletableFuture<Object> future = new CompletableFuture<>();
             ExecutionCallback executionCallback = new ExecutionCallback(future);
-            ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
             Object[] arguments = argumentHandler.getArguments();
-            Object result;
             HashMap<String, Object> properties = null;
             if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
                 properties = getPropertiesToPropagate(environment, context);
             }
             try {
-                if (serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName())) {
-                    result = environment.getRuntime().startIsolatedWorker(service, resourceMethod.getName(), null,
-                            RESOURCE_EXECUTION_STRAND, properties, arguments).get();
-                } else {
-                    result = environment.getRuntime().startNonIsolatedWorker(service, resourceMethod.getName(),
-                            null, RESOURCE_EXECUTION_STRAND, properties, arguments).get();
-                }
+                Object result = callResourceMethod(environment.getRuntime(), service, resourceMethod.getName(),
+                        properties, arguments);
                 executionCallback.notifySuccess(result);
             } catch (BError bError) {
                 executionCallback.notifyFailure(bError);
@@ -213,19 +204,13 @@ public class Engine {
                     CompletableFuture<Object> future = new CompletableFuture<>();
                     ExecutionCallback executionCallback = new ExecutionCallback(future);
                     Object[] arguments = argumentHandler.getArguments();
-                    Object result;
                     HashMap<String, Object> properties = null;
                     if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
                         properties = getPropertiesToPropagate(environment, context);
                     }
                     try {
-                        if (serviceType.isIsolated() && serviceType.isIsolated(remoteMethod.getName())) {
-                            result = environment.getRuntime().startIsolatedWorker(service, remoteMethod.getName(),
-                                    null, REMOTE_EXECUTION_STRAND, properties, arguments).get();
-                        } else {
-                            result = environment.getRuntime().startNonIsolatedWorker(service, remoteMethod.getName(),
-                                    null, REMOTE_EXECUTION_STRAND, properties, arguments).get();
-                        }
+                        Object result = callResourceMethod(environment.getRuntime(), service, remoteMethod.getName(),
+                                properties, arguments);
                         executionCallback.notifySuccess(result);
                     } catch (BError bError) {
                         executionCallback.notifyFailure(bError);
@@ -248,19 +233,13 @@ public class Engine {
             CompletableFuture<Object> future = new CompletableFuture<>();
             ExecutionCallback executionCallback = new ExecutionCallback(future);
             Object[] arguments = getInterceptorArguments(context, field);
-            Object result;
             HashMap<String, Object> properties = null;
             if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
                 properties = getPropertiesToPropagate(environment, context);
             }
             try {
-                if (serviceType.isIsolated() && serviceType.isIsolated(remoteMethod.getName())) {
-                    result = environment.getRuntime().startIsolatedWorker(interceptor, remoteMethod.getName(), null,
-                            INTERCEPTOR_EXECUTION_STRAND, properties, arguments).get();
-                } else {
-                    result = environment.getRuntime().startNonIsolatedWorker(interceptor, remoteMethod.getName(),
-                            null, INTERCEPTOR_EXECUTION_STRAND, properties, arguments).get();
-                }
+                Object result = callResourceMethod(environment.getRuntime(), interceptor, remoteMethod.getName(),
+                        properties, arguments);
                 executionCallback.notifySuccess(result);
             } catch (BError bError) {
                 executionCallback.notifyFailure(bError);
@@ -357,22 +336,15 @@ public class Engine {
         environment.yieldAndRun(() -> {
             CompletableFuture<Object> future = new CompletableFuture<>();
             ExecutionCallback executionCallback = new ExecutionCallback(future);
-            ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
             ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context, fieldObject, null, false);
             Object[] arguments = argumentHandler.getArguments();
-            Object result;
             HashMap<String, Object> properties = null;
             if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
                 properties = getPropertiesToPropagate(environment, context);
             }
             try {
-                if (serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName())) {
-                    result = environment.getRuntime().startIsolatedWorker(service, resourceMethod.getName(), null,
-                            RESOURCE_EXECUTION_STRAND, properties, arguments).get();
-                } else {
-                    result = environment.getRuntime().startNonIsolatedWorker(service, resourceMethod.getName(), null,
-                            RESOURCE_EXECUTION_STRAND, properties,  arguments).get();
-                }
+                Object result = callResourceMethod(environment.getRuntime(), service, resourceMethod.getName(),
+                        properties, arguments);
                 executionCallback.notifySuccess(result);
             } catch (BError bError) {
                 executionCallback.notifyFailure(bError);

@@ -18,7 +18,6 @@
 
 package io.ballerina.stdlib.graphql.runtime.engine;
 
-import io.ballerina.runtime.api.TypeTags;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.flags.SymbolFlags;
@@ -29,6 +28,7 @@ import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
+import io.ballerina.runtime.api.types.TypeTags;
 import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
@@ -46,7 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static io.ballerina.runtime.api.TypeTags.SERVICE_TAG;
+import static io.ballerina.runtime.api.types.TypeTags.SERVICE_TAG;
 import static io.ballerina.stdlib.graphql.runtime.engine.Engine.RESOURCE_MAP;
 import static io.ballerina.stdlib.graphql.runtime.engine.Engine.getDecodedSchema;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;

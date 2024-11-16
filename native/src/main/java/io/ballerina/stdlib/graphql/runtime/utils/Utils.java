@@ -18,11 +18,10 @@
 
 package io.ballerina.stdlib.graphql.runtime.utils;
 
-import io.ballerina.runtime.api.TypeTags;
-import io.ballerina.runtime.api.async.StrandMetadata;
 import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Type;
+import io.ballerina.runtime.api.types.TypeTags;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BObject;
@@ -51,20 +50,6 @@ public class Utils {
 
     public static final String SUBGRAPH_SUB_MODULE_NAME = "graphql.subgraph";
     public static final String PACKAGE_ORG = "ballerina";
-
-    public static final StrandMetadata RESOURCE_EXECUTION_STRAND = new StrandMetadata(getModule().getOrg(),
-                                                                                      getModule().getName(),
-                                                                                      getModule().getMajorVersion(),
-                                                                                      EXECUTE_RESOURCE_FUNCTION);
-    public static final StrandMetadata REMOTE_EXECUTION_STRAND = new StrandMetadata(getModule().getOrg(),
-                                                                                    getModule().getName(),
-                                                                                    getModule().getMajorVersion(),
-                                                                                    EXECUTE_RESOURCE_FUNCTION);
-
-    public static final StrandMetadata INTERCEPTOR_EXECUTION_STRAND = new StrandMetadata(getModule().getOrg(),
-                                                                                         getModule().getName(),
-                                                                                         getModule().getMajorVersion(),
-                                                                                         EXECUTE_INTERCEPTOR_FUNCTION);
 
     public static BError createError(String message, String errorTypeName) {
         return ErrorCreator.createError(getModule(), errorTypeName, StringUtils.fromString(message), null, null);
