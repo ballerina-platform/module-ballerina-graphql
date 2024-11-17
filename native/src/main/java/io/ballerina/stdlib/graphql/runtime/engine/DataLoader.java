@@ -19,9 +19,6 @@
 package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.Environment;
-import io.ballerina.runtime.api.concurrent.StrandMetadata;
-import io.ballerina.runtime.api.types.ObjectType;
-import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BTypedesc;
@@ -42,15 +39,11 @@ public class DataLoader {
     public static Object get(Environment env, BObject dataLoader, Object key, BTypedesc typedesc) {
         return env.yieldAndRun(() -> {
             CompletableFuture<Object> balFuture = new CompletableFuture<>();
-            ObjectType clientType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(dataLoader));
             Object[] paramFeed = getProcessGetMethodParams(key, typedesc);
             ExecutionCallback executionCallback = new ExecutionCallback(balFuture);
             try {
-                boolean isIsolated = clientType.isIsolated() &&
-                                     clientType.isIsolated(DATA_LOADER_PROCESSES_GET_METHOD_NAME);
-                StrandMetadata metadata = new StrandMetadata(isIsolated, null);
-                Object result = env.getRuntime().callMethod(dataLoader, DATA_LOADER_PROCESSES_GET_METHOD_NAME,
-                        metadata, paramFeed);
+                Object result = env.getRuntime().callMethod(dataLoader, DATA_LOADER_PROCESSES_GET_METHOD_NAME, null,
+                        paramFeed);
                 executionCallback.notifySuccess(result);
             } catch (BError bError) {
                 executionCallback.notifyFailure(bError);
