@@ -120,31 +120,35 @@ public class Engine {
                     fieldName.getValue().equals(resourceMethod.getResourcePath()[0])) {
                 ArgumentHandler argumentHandler =
                         new ArgumentHandler(resourceMethod, context, fieldObject, responseGenerator, validation);
-                try {
-                    argumentHandler.validateInputConstraint(environment);
-                } catch (ConstraintValidationException e) {
-                    return null;
-                }
-                return environment.yieldAndRun(() -> {
-                    CompletableFuture<Object> subscriptionFutureResult = new CompletableFuture<>();
-                    ExecutionCallback executionCallback = new ExecutionCallback(subscriptionFutureResult);
-                    Object[] args = argumentHandler.getArguments();
-                    HashMap<String, Object> properties = null;
-                    if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
-                        properties = getPropertiesToPropagate(environment, context);
-                    }
-                    try {
-                        Object result = callResourceMethod(environment.getRuntime(), service, resourceMethod.getName()
-                                , properties, args);
-                        executionCallback.notifySuccess(result);
-                    } catch (BError bError) {
-                        executionCallback.notifyFailure(bError);
-                    }
-                    return getResult(subscriptionFutureResult);
-                });
+                return getResultObject(environment, context, service, resourceMethod.getName(), argumentHandler);
             }
         }
         return null;
+    }
+
+    private static Object getResultObject(Environment environment, BObject context, BObject service,
+                                          String methodName, ArgumentHandler argumentHandler) {
+        try {
+            argumentHandler.validateInputConstraint(environment);
+        } catch (ConstraintValidationException e) {
+            return null;
+        }
+        return environment.yieldAndRun(() -> {
+            CompletableFuture<Object> subscriptionFutureResult = new CompletableFuture<>();
+            ExecutionCallback executionCallback = new ExecutionCallback(subscriptionFutureResult);
+            Object[] args = argumentHandler.getArguments();
+            HashMap<String, Object> properties = null;
+            if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
+                properties = getPropertiesToPropagate(environment, context);
+            }
+            try {
+                Object result = callResourceMethod(environment.getRuntime(), service, methodName, properties, args);
+                executionCallback.notifySuccess(result);
+            } catch (BError bError) {
+                executionCallback.notifyFailure(bError);
+            }
+            return getResult(subscriptionFutureResult);
+        });
     }
 
     private static Object callResourceMethod(Runtime runtime, BObject service, String methodName,
@@ -163,28 +167,7 @@ public class Engine {
         }
         ArgumentHandler argumentHandler =
                 new ArgumentHandler(resourceMethod, context, fieldObject, responseGenerator, validation);
-        try {
-            argumentHandler.validateInputConstraint(environment);
-        } catch (ConstraintValidationException e) {
-            return null;
-        }
-        return environment.yieldAndRun(() -> {
-            CompletableFuture<Object> future = new CompletableFuture<>();
-            ExecutionCallback executionCallback = new ExecutionCallback(future);
-            Object[] arguments = argumentHandler.getArguments();
-            HashMap<String, Object> properties = null;
-            if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
-                properties = getPropertiesToPropagate(environment, context);
-            }
-            try {
-                Object result = callResourceMethod(environment.getRuntime(), service, resourceMethod.getName(),
-                        properties, arguments);
-                executionCallback.notifySuccess(result);
-            } catch (BError bError) {
-                executionCallback.notifyFailure(bError);
-            }
-            return getResult(future);
-        });
+        return getResultObject(environment, context, service, resourceMethod.getName(), argumentHandler);
     }
 
     public static Object executeMutationMethod(Environment environment, BObject context, BObject service,
@@ -195,28 +178,7 @@ public class Engine {
             if (remoteMethod.getName().equals(fieldName)) {
                 ArgumentHandler argumentHandler =
                         new ArgumentHandler(remoteMethod, context, fieldObject, responseGenerator, validation);
-                try {
-                    argumentHandler.validateInputConstraint(environment);
-                } catch (ConstraintValidationException e) {
-                    return null;
-                }
-                return environment.yieldAndRun(() -> {
-                    CompletableFuture<Object> future = new CompletableFuture<>();
-                    ExecutionCallback executionCallback = new ExecutionCallback(future);
-                    Object[] arguments = argumentHandler.getArguments();
-                    HashMap<String, Object> properties = null;
-                    if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
-                        properties = getPropertiesToPropagate(environment, context);
-                    }
-                    try {
-                        Object result = callResourceMethod(environment.getRuntime(), service, remoteMethod.getName(),
-                                properties, arguments);
-                        executionCallback.notifySuccess(result);
-                    } catch (BError bError) {
-                        executionCallback.notifyFailure(bError);
-                    }
-                    return getResult(future);
-                });
+                return getResultObject(environment, context, service, remoteMethod.getName(), argumentHandler);
             }
         }
         return null;
