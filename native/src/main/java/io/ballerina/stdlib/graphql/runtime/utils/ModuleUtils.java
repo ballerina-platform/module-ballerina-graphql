@@ -33,7 +33,8 @@ public class ModuleUtils {
 
     private static Module module;
 
-    private ModuleUtils() {}
+    private ModuleUtils() {
+    }
 
     public static void setModule(Environment environment) {
         module = environment.getCurrentModule();
@@ -46,6 +47,11 @@ public class ModuleUtils {
     public static Object getResult(CompletableFuture<Object> balFuture) {
         try {
             return balFuture.get();
+        } catch (BError error) {
+            throw error;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw ErrorCreator.createError(e);
         } catch (Throwable throwable) {
             throw ErrorCreator.createError(throwable);
         }
