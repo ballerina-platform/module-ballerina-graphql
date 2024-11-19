@@ -19,11 +19,9 @@
 package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.Environment;
-import io.ballerina.runtime.api.Future;
-import io.ballerina.runtime.api.PredefinedTypes;
-import io.ballerina.runtime.api.TypeTags;
+import io.ballerina.runtime.api.Runtime;
+import io.ballerina.runtime.api.concurrent.StrandMetadata;
 import io.ballerina.runtime.api.creators.ErrorCreator;
-import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.types.IntersectionType;
 import io.ballerina.runtime.api.types.MethodType;
 import io.ballerina.runtime.api.types.ObjectType;
@@ -31,6 +29,7 @@ import io.ballerina.runtime.api.types.RemoteMethodType;
 import io.ballerina.runtime.api.types.ResourceMethodType;
 import io.ballerina.runtime.api.types.ServiceType;
 import io.ballerina.runtime.api.types.Type;
+import io.ballerina.runtime.api.types.TypeTags;
 import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
@@ -52,6 +51,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static io.ballerina.runtime.observability.ObservabilityConstants.KEY_OBSERVER_CONTEXT;
 import static io.ballerina.stdlib.graphql.runtime.engine.ArgumentHandler.getEffectiveType;
@@ -65,11 +65,9 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.RESOURCE_CO
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIBE_ACCESSOR;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
+import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getResult;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
-import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INTERCEPTOR_EXECUTION_STRAND;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INTERNAL_NODE;
-import static io.ballerina.stdlib.graphql.runtime.utils.Utils.REMOTE_EXECUTION_STRAND;
-import static io.ballerina.stdlib.graphql.runtime.utils.Utils.RESOURCE_EXECUTION_STRAND;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
 
 /**
@@ -122,36 +120,43 @@ public class Engine {
                     fieldName.getValue().equals(resourceMethod.getResourcePath()[0])) {
                 ArgumentHandler argumentHandler =
                         new ArgumentHandler(resourceMethod, context, fieldObject, responseGenerator, validation);
-                try {
-                    argumentHandler.validateInputConstraint(environment);
-                } catch (ConstraintValidationException e) {
-                    return null;
-                }
-                Future subscriptionFutureResult = environment.markAsync();
-                ExecutionCallback executionCallback = new ExecutionCallback(subscriptionFutureResult);
-                Object[] args = argumentHandler.getArguments();
-                ObjectType objectType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(service));
-                UnionType typeUnion =
-                        TypeCreator.createUnionType(PredefinedTypes.TYPE_STREAM, PredefinedTypes.TYPE_ERROR);
-
-                HashMap<String, Object> properties = null;
-                if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
-                    properties = getPropertiesToPropagate(environment, context);
-                }
-
-                if (objectType.isIsolated() && objectType.isIsolated(resourceMethod.getName())) {
-                    environment.getRuntime()
-                            .invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
-                                    null, executionCallback, properties, typeUnion, args);
-                } else {
-                    environment.getRuntime()
-                            .invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
-                                    null, executionCallback, properties, typeUnion, args);
-                }
-                return null;
+                return getResultObject(environment, context, service, resourceMethod.getName(), argumentHandler);
             }
         }
         return null;
+    }
+
+    private static Object getResultObject(Environment environment, BObject context, BObject service,
+                                          String methodName, ArgumentHandler argumentHandler) {
+        try {
+            argumentHandler.validateInputConstraint(environment);
+        } catch (ConstraintValidationException e) {
+            return null;
+        }
+        return environment.yieldAndRun(() -> {
+            CompletableFuture<Object> subscriptionFutureResult = new CompletableFuture<>();
+            ExecutionCallback executionCallback = new ExecutionCallback(subscriptionFutureResult);
+            Object[] args = argumentHandler.getArguments();
+            HashMap<String, Object> properties = null;
+            if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
+                properties = getPropertiesToPropagate(environment, context);
+            }
+            try {
+                Object result = callResourceMethod(environment.getRuntime(), service, methodName, properties, args);
+                executionCallback.notifySuccess(result);
+            } catch (BError bError) {
+                executionCallback.notifyFailure(bError);
+            }
+            return getResult(subscriptionFutureResult);
+        });
+    }
+
+    private static Object callResourceMethod(Runtime runtime, BObject service, String methodName,
+                                             HashMap<String, Object> properties, Object[] args) {
+        ObjectType objectType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(service));
+        boolean isIsolated = objectType.isIsolated() && objectType.isIsolated(methodName);
+        StrandMetadata strandMetadata = new StrandMetadata(isIsolated, properties);
+        return runtime.callMethod(service, methodName, strandMetadata, args);
     }
 
     public static Object executeQueryResource(Environment environment, BObject context, BObject service,
@@ -162,32 +167,7 @@ public class Engine {
         }
         ArgumentHandler argumentHandler =
                 new ArgumentHandler(resourceMethod, context, fieldObject, responseGenerator, validation);
-        try {
-            argumentHandler.validateInputConstraint(environment);
-        } catch (ConstraintValidationException e) {
-            return null;
-        }
-        Future future = environment.markAsync();
-        ExecutionCallback executionCallback = new ExecutionCallback(future);
-        ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
-        Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
-        Object[] arguments = argumentHandler.getArguments();
-
-        HashMap<String, Object> properties = null;
-        if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
-            properties = getPropertiesToPropagate(environment, context);
-        }
-
-        if (serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName())) {
-            environment.getRuntime().invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null,
-                    RESOURCE_EXECUTION_STRAND, executionCallback,
-                    properties, returnType, arguments);
-        } else {
-            environment.getRuntime().invokeMethodAsyncSequentially(service, resourceMethod.getName(), null,
-                    RESOURCE_EXECUTION_STRAND, executionCallback,
-                    properties, returnType, arguments);
-        }
-        return null;
+        return getResultObject(environment, context, service, resourceMethod.getName(), argumentHandler);
     }
 
     public static Object executeMutationMethod(Environment environment, BObject context, BObject service,
@@ -198,31 +178,7 @@ public class Engine {
             if (remoteMethod.getName().equals(fieldName)) {
                 ArgumentHandler argumentHandler =
                         new ArgumentHandler(remoteMethod, context, fieldObject, responseGenerator, validation);
-                try {
-                    argumentHandler.validateInputConstraint(environment);
-                } catch (ConstraintValidationException e) {
-                    return null;
-                }
-                Future future = environment.markAsync();
-                ExecutionCallback executionCallback = new ExecutionCallback(future);
-                Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
-                Object[] arguments = argumentHandler.getArguments();
-
-                HashMap<String, Object> properties = null;
-                if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
-                    properties = getPropertiesToPropagate(environment, context);
-                }
-
-                if (serviceType.isIsolated() && serviceType.isIsolated(remoteMethod.getName())) {
-                    environment.getRuntime().invokeMethodAsyncConcurrently(service, remoteMethod.getName(), null,
-                            REMOTE_EXECUTION_STRAND, executionCallback,
-                            properties, returnType, arguments);
-                } else {
-                    environment.getRuntime().invokeMethodAsyncSequentially(service, remoteMethod.getName(), null,
-                            REMOTE_EXECUTION_STRAND, executionCallback,
-                            properties, returnType, arguments);
-                }
-                return null;
+                return getResultObject(environment, context, service, remoteMethod.getName(), argumentHandler);
             }
         }
         return null;
@@ -235,26 +191,23 @@ public class Engine {
         if (remoteMethod == null) {
             return null;
         }
-        Future future = environment.markAsync();
-        ExecutionCallback executionCallback = new ExecutionCallback(future);
-        Type returnType = TypeCreator.createUnionType(PredefinedTypes.TYPE_ANY, PredefinedTypes.TYPE_NULL);
-        Object[] arguments = getInterceptorArguments(context, field);
-
-        HashMap<String, Object> properties = null;
-        if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
-            properties = getPropertiesToPropagate(environment, context);
-        }
-
-        if (serviceType.isIsolated() && serviceType.isIsolated(remoteMethod.getName())) {
-            environment.getRuntime().invokeMethodAsyncConcurrently(interceptor, remoteMethod.getName(), null,
-                                                                   INTERCEPTOR_EXECUTION_STRAND, executionCallback,
-                                                                   properties, returnType, arguments);
-        } else {
-            environment.getRuntime().invokeMethodAsyncSequentially(interceptor, remoteMethod.getName(), null,
-                                                                   INTERCEPTOR_EXECUTION_STRAND, executionCallback,
-                                                                   properties, returnType, arguments);
-        }
-        return null;
+        return environment.yieldAndRun(() -> {
+            CompletableFuture<Object> future = new CompletableFuture<>();
+            ExecutionCallback executionCallback = new ExecutionCallback(future);
+            Object[] arguments = getInterceptorArguments(context, field);
+            HashMap<String, Object> properties = null;
+            if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
+                properties = getPropertiesToPropagate(environment, context);
+            }
+            try {
+                Object result = callResourceMethod(environment.getRuntime(), interceptor, remoteMethod.getName(),
+                        properties, arguments);
+                executionCallback.notifySuccess(result);
+            } catch (BError bError) {
+                executionCallback.notifyFailure(bError);
+            }
+            return getResult(future);
+        });
     }
 
     public static Object getResourceMethod(BObject service, BArray path) {
@@ -305,11 +258,9 @@ public class Engine {
     }
 
     private static Object[] getInterceptorArguments(BObject context, BObject field) {
-        Object[] args = new Object[4];
+        Object[] args = new Object[2];
         args[0] = context;
-        args[1] = true;
-        args[2] = field;
-        args[3] = true;
+        args[1] = field;
         return args;
     }
 
@@ -344,26 +295,24 @@ public class Engine {
 
     public static void executePrefetchMethod(Environment environment, BObject context, BObject service,
                                              MethodType resourceMethod, BObject fieldObject) {
-        Future future = environment.markAsync();
-        ExecutionCallback executionCallback = new ExecutionCallback(future);
-        ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
-        ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context, fieldObject, null, false);
-        Object[] arguments = argumentHandler.getArguments();
-
-        HashMap<String, Object> properties = null;
-        if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
-            properties = getPropertiesToPropagate(environment, context);
-        }
-
-        if (serviceType.isIsolated() && serviceType.isIsolated(resourceMethod.getName())) {
-            environment.getRuntime()
-                    .invokeMethodAsyncConcurrently(service, resourceMethod.getName(), null, RESOURCE_EXECUTION_STRAND,
-                                                   executionCallback, properties, null, arguments);
-        } else {
-            environment.getRuntime()
-                    .invokeMethodAsyncSequentially(service, resourceMethod.getName(), null, RESOURCE_EXECUTION_STRAND,
-                                                   executionCallback, properties, null, arguments);
-        }
+        environment.yieldAndRun(() -> {
+            CompletableFuture<Object> future = new CompletableFuture<>();
+            ExecutionCallback executionCallback = new ExecutionCallback(future);
+            ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context, fieldObject, null, false);
+            Object[] arguments = argumentHandler.getArguments();
+            HashMap<String, Object> properties = null;
+            if (ObserveUtils.isObservabilityEnabled() && ObserveUtils.isTracingEnabled()) {
+                properties = getPropertiesToPropagate(environment, context);
+            }
+            try {
+                Object result = callResourceMethod(environment.getRuntime(), service, resourceMethod.getName(),
+                        properties, arguments);
+                executionCallback.notifySuccess(result);
+            } catch (BError bError) {
+                executionCallback.notifyFailure(bError);
+            }
+            return null;
+        });
     }
 
     public static boolean hasRecordReturnType(BObject serviceObject, BArray path) {

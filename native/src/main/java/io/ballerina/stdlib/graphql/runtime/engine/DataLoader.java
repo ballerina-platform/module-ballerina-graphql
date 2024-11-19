@@ -19,17 +19,13 @@
 package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.Environment;
-import io.ballerina.runtime.api.Future;
-import io.ballerina.runtime.api.async.Callback;
-import io.ballerina.runtime.api.creators.TypeCreator;
-import io.ballerina.runtime.api.types.ObjectType;
-import io.ballerina.runtime.api.types.Type;
-import io.ballerina.runtime.api.utils.TypeUtils;
+import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BTypedesc;
 
-import static io.ballerina.runtime.api.PredefinedTypes.TYPE_ANYDATA;
-import static io.ballerina.runtime.api.PredefinedTypes.TYPE_ERROR;
+import java.util.concurrent.CompletableFuture;
+
+import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getResult;
 
 /**
  *  This class provides native implementations of the Ballerina DataLoader class.
@@ -41,23 +37,22 @@ public class DataLoader {
     }
 
     public static Object get(Environment env, BObject dataLoader, Object key, BTypedesc typedesc) {
-        Future balFuture = env.markAsync();
-        ObjectType clientType = (ObjectType) TypeUtils.getReferredType(TypeUtils.getType(dataLoader));
-        Object[] paramFeed = getProcessGetMethodParams(key, typedesc);
-        Callback executionCallback = new ExecutionCallback(balFuture);
-        Type returnType = TypeCreator.createUnionType(TYPE_ANYDATA, TYPE_ERROR);
-        if (clientType.isIsolated() && clientType.isIsolated(DATA_LOADER_PROCESSES_GET_METHOD_NAME)) {
-            env.getRuntime()
-                    .invokeMethodAsyncConcurrently(dataLoader, DATA_LOADER_PROCESSES_GET_METHOD_NAME, null, null,
-                                                   executionCallback, null, returnType, paramFeed);
-            return null;
-        }
-        env.getRuntime().invokeMethodAsyncSequentially(dataLoader, DATA_LOADER_PROCESSES_GET_METHOD_NAME, null, null,
-                                                       executionCallback, null, returnType, paramFeed);
-        return null;
+        return env.yieldAndRun(() -> {
+            CompletableFuture<Object> balFuture = new CompletableFuture<>();
+            Object[] paramFeed = getProcessGetMethodParams(key, typedesc);
+            ExecutionCallback executionCallback = new ExecutionCallback(balFuture);
+            try {
+                Object result = env.getRuntime().callMethod(dataLoader, DATA_LOADER_PROCESSES_GET_METHOD_NAME, null,
+                        paramFeed);
+                executionCallback.notifySuccess(result);
+            } catch (BError bError) {
+                executionCallback.notifyFailure(bError);
+            }
+            return getResult(balFuture);
+        });
     }
 
     private static Object[] getProcessGetMethodParams(Object key, BTypedesc typedesc) {
-        return new Object[]{key, true, typedesc, true};
+        return new Object[]{key, typedesc};
     }
 }

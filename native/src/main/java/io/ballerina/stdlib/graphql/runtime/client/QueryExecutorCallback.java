@@ -18,26 +18,24 @@
 
 package io.ballerina.stdlib.graphql.runtime.client;
 
-import io.ballerina.runtime.api.Future;
-import io.ballerina.runtime.api.async.Callback;
 import io.ballerina.runtime.api.values.BError;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * This class implements async callback methods of {@link QueryExecutor}.
  */
-public class QueryExecutorCallback implements Callback {
-    private final Future balFuture;
+public class QueryExecutorCallback {
+    private final CompletableFuture<Object> balFuture;
 
-    public QueryExecutorCallback(Future balFuture) {
+    public QueryExecutorCallback(CompletableFuture<Object> balFuture) {
         this.balFuture = balFuture;
     }
 
-    @Override
     public void notifySuccess(Object result) {
         balFuture.complete(result);
     }
 
-    @Override
     public void notifyFailure(BError bError) {
         balFuture.complete(bError);
     }
