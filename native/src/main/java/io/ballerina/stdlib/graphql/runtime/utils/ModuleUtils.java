@@ -21,6 +21,7 @@ package io.ballerina.stdlib.graphql.runtime.utils;
 import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.Module;
 import io.ballerina.runtime.api.creators.ErrorCreator;
+import io.ballerina.runtime.api.values.BError;
 
 import java.util.concurrent.CompletableFuture;
 
