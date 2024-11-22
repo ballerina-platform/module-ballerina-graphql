@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static io.ballerina.runtime.observability.ObservabilityConstants.KEY_OBSERVER_CONTEXT;
+import static io.ballerina.stdlib.graphql.commons.utils.TypeUtils.removeEscapeCharacter;
 import static io.ballerina.stdlib.graphql.runtime.engine.ArgumentHandler.getEffectiveType;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.COLON;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.GET_ACCESSOR;
@@ -117,7 +118,7 @@ public class Engine {
         ServiceType serviceType = (ServiceType) TypeUtils.getType(service);
         for (ResourceMethodType resourceMethod : serviceType.getResourceMethods()) {
             if (SUBSCRIBE_ACCESSOR.equals(resourceMethod.getAccessor()) &&
-                    fieldName.getValue().equals(resourceMethod.getResourcePath()[0])) {
+                    fieldName.getValue().equals(removeEscapeCharacter(resourceMethod.getResourcePath()[0]))) {
                 ArgumentHandler argumentHandler =
                         new ArgumentHandler(resourceMethod, context, fieldObject, responseGenerator, validation);
                 return getResultObject(environment, context, service, resourceMethod.getName(), argumentHandler);

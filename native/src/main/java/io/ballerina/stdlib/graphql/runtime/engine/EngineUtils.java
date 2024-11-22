@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 
 import static io.ballerina.runtime.api.types.TypeTags.SERVICE_TAG;
+import static io.ballerina.stdlib.graphql.commons.utils.TypeUtils.removeEscapeCharacter;
 import static io.ballerina.stdlib.graphql.runtime.engine.Engine.RESOURCE_MAP;
 import static io.ballerina.stdlib.graphql.runtime.engine.Engine.getDecodedSchema;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
@@ -138,7 +139,7 @@ public class EngineUtils {
         }
 
         for (int i = 0; i < resourcePath.length; i++) {
-            if (!resourcePath[i].equals(paths.get(i))) {
+            if (!removeEscapeCharacter(resourcePath[i]).equals(paths.get(i))) {
                 return false;
             }
         }
