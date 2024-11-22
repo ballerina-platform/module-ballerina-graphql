@@ -19,7 +19,6 @@
 package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.Environment;
-import io.ballerina.runtime.api.concurrent.StrandMetadata;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
@@ -547,8 +546,7 @@ public final class ArgumentHandler {
             Object[] arguments = {errors, fieldNode};
             try {
                 Object result = environment.getRuntime()
-                        .callMethod(this.responseGenerator, ADD_CONSTRAINT_ERRORS_METHOD,
-                                new StrandMetadata(true, null), arguments);
+                        .callMethod(this.responseGenerator, ADD_CONSTRAINT_ERRORS_METHOD, null, arguments);
                 executionCallback.notifySuccess(result);
             } catch (BError bError) {
                 executionCallback.notifyFailure(bError);
