@@ -18,25 +18,24 @@
 
 package io.ballerina.stdlib.graphql.runtime.engine;
 
-import io.ballerina.runtime.api.Future;
-import io.ballerina.runtime.api.async.Callback;
 import io.ballerina.runtime.api.values.BError;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Callback class for executing Ballerina dependently type methods.
  */
-public class ExecutionCallback implements Callback {
-    private final Future future;
+public class ExecutionCallback {
+    private final CompletableFuture<Object> future;
 
-    ExecutionCallback(Future future) {
+    ExecutionCallback(CompletableFuture<Object> future) {
         this.future = future;
     }
-    @Override
+
     public void notifySuccess(Object o) {
         this.future.complete(o);
     }
 
-    @Override
     public void notifyFailure(BError bError) {
         bError.printStackTrace();
         // Service level `panic` is captured in this method.

@@ -19,9 +19,7 @@
 package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.Environment;
-import io.ballerina.runtime.api.Future;
-import io.ballerina.runtime.api.PredefinedTypes;
-import io.ballerina.runtime.api.TypeTags;
+import io.ballerina.runtime.api.concurrent.StrandMetadata;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
@@ -30,8 +28,10 @@ import io.ballerina.runtime.api.types.FiniteType;
 import io.ballerina.runtime.api.types.IntersectionType;
 import io.ballerina.runtime.api.types.MethodType;
 import io.ballerina.runtime.api.types.Parameter;
+import io.ballerina.runtime.api.types.PredefinedTypes;
 import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.Type;
+import io.ballerina.runtime.api.types.TypeTags;
 import io.ballerina.runtime.api.types.UnionType;
 import io.ballerina.runtime.api.utils.JsonUtils;
 import io.ballerina.runtime.api.utils.StringUtils;
@@ -52,8 +52,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
-import static io.ballerina.runtime.api.TypeTags.INTERSECTION_TAG;
+import static io.ballerina.runtime.api.types.TypeTags.INTERSECTION_TAG;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.FILE_INFO_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.NAME_FIELD;
@@ -72,7 +73,7 @@ import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isSubgraphModule;
 /**
  * This class processes the arguments passed to a GraphQL document to pass into Ballerina functions.
  */
-public class ArgumentHandler {
+public final class ArgumentHandler {
     private final BMap<BString, Object> argumentsMap;
     private final MethodType method;
     private final BMap<BString, Object> fileInfo;
@@ -496,24 +497,20 @@ public class ArgumentHandler {
 
     private Object[] getArgumentsForMethod() {
         Parameter[] parameters = this.method.getParameters();
-        Object[] result = new Object[parameters.length * 2];
-        for (int i = 0, j = 0; i < parameters.length; i += 1, j += 2) {
+        Object[] result = new Object[parameters.length];
+        for (int i = 0; i < parameters.length; i += 1) {
             if (isContext(parameters[i].type)) {
-                result[j] = this.context;
-                result[j + 1] = true;
+                result[i] = this.context;
                 continue;
             }
             if (isField(parameters[i].type)) {
-                result[j] = this.field;
-                result[j + 1] = true;
+                result[i] = this.field;
                 continue;
             }
             if (this.argumentsMap.get(StringUtils.fromString(parameters[i].name)) == null) {
-                result[j] = parameters[i].type.getZeroValue();
-                result[j + 1] = false;
+                result[i] = parameters[i].type.getZeroValue();
             } else {
-                result[j] = this.argumentsMap.get(StringUtils.fromString(parameters[i].name));
-                result[j + 1] = true;
+                result[i] = this.argumentsMap.get(StringUtils.fromString(parameters[i].name));
             }
         }
         return result;
@@ -543,13 +540,21 @@ public class ArgumentHandler {
     }
 
     private void addConstraintValidationErrors(Environment environment, BArray errors) {
-        Future future = environment.markAsync();
-        ExecutionCallback executionCallback = new ExecutionCallback(future);
-        BObject fieldNode = this.field.getObjectValue(INTERNAL_NODE);
-        Object[] arguments = {errors, true, fieldNode, true};
-        environment.getRuntime()
-                .invokeMethodAsyncConcurrently(this.responseGenerator, ADD_CONSTRAINT_ERRORS_METHOD, null, null,
-                        executionCallback, null, PredefinedTypes.TYPE_NULL, arguments);
+        environment.yieldAndRun(() -> {
+            CompletableFuture<Object> future = new CompletableFuture<>();
+            ExecutionCallback executionCallback = new ExecutionCallback(future);
+            BObject fieldNode = this.field.getObjectValue(INTERNAL_NODE);
+            Object[] arguments = {errors, fieldNode};
+            try {
+                Object result = environment.getRuntime()
+                        .callMethod(this.responseGenerator, ADD_CONSTRAINT_ERRORS_METHOD,
+                                new StrandMetadata(true, null), arguments);
+                executionCallback.notifySuccess(result);
+            } catch (BError bError) {
+                executionCallback.notifyFailure(bError);
+            }
+            return null;
+        });
     }
 
     private static BTypedesc getTypeDescFromParameter(Parameter parameter) {
