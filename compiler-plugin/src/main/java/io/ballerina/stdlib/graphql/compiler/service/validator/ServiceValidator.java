@@ -185,27 +185,67 @@ public class ServiceValidator {
     }
 
     private void validateEntityAnnotation(AnnotationNode entityAnnotation) {
-        if (entityAnnotation.annotValue().isEmpty()) {
-            return;
+  
+    if (entityAnnotation.annotValue().isEmpty()) {
+        return; 
+    }
+
+  
+    List<String> keyFields = new ArrayList<>();
+    for (MappingFieldNode fieldNode : entityAnnotation.annotValue().get().fields()) {
+        if (fieldNode.kind() != SPECIFIC_FIELD) {
+            
+            addDiagnostic(CompilationDiagnostic.PROVIDE_KEY_VALUE_PAIR_FOR_ENTITY_ANNOTATION, fieldNode.location());
+            continue;
         }
-        for (MappingFieldNode fieldNode : entityAnnotation.annotValue().get().fields()) {
-            if (fieldNode.kind() != SPECIFIC_FIELD) {
-                addDiagnostic(CompilationDiagnostic.PROVIDE_KEY_VALUE_PAIR_FOR_ENTITY_ANNOTATION, fieldNode.location());
-                continue;
-            }
-            SpecificFieldNode specificFieldNode = (SpecificFieldNode) fieldNode;
-            Node fieldNameNode = specificFieldNode.fieldName();
-            if (fieldNameNode.kind() != SyntaxKind.IDENTIFIER_TOKEN) {
-                continue;
-            }
+        SpecificFieldNode specificFieldNode = (SpecificFieldNode) fieldNode;
+        Node fieldNameNode = specificFieldNode.fieldName();
+
+        
+        if (fieldNameNode.kind() == SyntaxKind.IDENTIFIER_TOKEN) {
             IdentifierToken fieldNameToken = (IdentifierToken) fieldNameNode;
             String fieldName = fieldNameToken.text().trim();
             if (KEY.equals(fieldName)) {
-                validateKeyField(specificFieldNode);
+              
+                keyFields = extractKeyFields(specificFieldNode);
             }
         }
     }
 
+    
+    validateFieldsAgainstKeys(keyFields, entityAnnotation.location());
+}
+
+    private void validateFieldsAgainstKeys(List<String> keyFields, Location entityLocation) {
+    for (RecordFieldSymbol recordField : getRecordFields()) {
+        String fieldName = recordField.getName().orElse("");
+        
+        if (!keyFields.contains(fieldName)) {
+            addDiagnostic(CompilationDiagnostic.INVALID_ENTITY_FIELD, entityLocation, fieldName);
+        }
+    }
+}
+
+    private List<String> extractKeyFields(SpecificFieldNode specificFieldNode) {
+    List<String> keyFields = new ArrayList<>();
+    if (specificFieldNode.valueExpr().isPresent()) {
+        ExpressionNode valueNode = specificFieldNode.valueExpr().get();
+       
+        if (valueNode.kind() == SyntaxKind.LIST_CONSTRUCTOR) {
+            for (Node keyField : ((ListConstructorExpressionNode) valueNode).expressions()) {
+                if (keyField.kind() == SyntaxKind.STRING_LITERAL) {
+                    keyFields.add(keyField.toString().replace("\"", "").trim());
+                }
+            }
+        } else if (valueNode.kind() == SyntaxKind.STRING_LITERAL) {
+            
+            keyFields.add(valueNode.toString().replace("\"", "").trim());
+        }
+    }
+    return keyFields; 
+}
+
+    
     private void validateKeyField(SpecificFieldNode specificFieldNode) {
         if (specificFieldNode.valueExpr().isEmpty()) {
             addDiagnostic(CompilationDiagnostic.PROVIDE_A_STRING_LITERAL_OR_AN_ARRAY_OF_STRING_LITERALS_FOR_KEY_FIELD,
