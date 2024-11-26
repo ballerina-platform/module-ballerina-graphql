@@ -66,6 +66,7 @@ import io.ballerina.compiler.syntax.tree.TypeDefinitionNode;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.commons.types.TypeName;
+import io.ballerina.stdlib.graphql.commons.utils.TypeUtils;
 import io.ballerina.stdlib.graphql.compiler.CacheConfigContext;
 import io.ballerina.stdlib.graphql.compiler.FinderContext;
 import io.ballerina.stdlib.graphql.compiler.Utils;
@@ -1400,6 +1401,7 @@ public class ServiceValidator {
     }
 
     private String getCurrentFieldPath() {
-        return String.join(FIELD_PATH_SEPARATOR, this.currentFieldPath);
+        return String.join(FIELD_PATH_SEPARATOR,
+                this.currentFieldPath.stream().map(TypeUtils::removeEscapeCharacter).toList());
     }
 }
