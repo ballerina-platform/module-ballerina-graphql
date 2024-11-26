@@ -985,7 +985,7 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_ANONYMOUS_FIELD_TYPE,
-                                  "record {|string name; int age;|}", "Query.class.profile");
+                                  "record {|string name; int age;|}", "Query.'class.profile");
         assertErrorMessage(diagnostic, message, 52, 23);
 
         diagnostic = diagnosticIterator.next();
@@ -1044,7 +1044,7 @@ public class ServiceValidationTest {
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        String message = getErrorMessage(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_OUTPUT_TYPE, "Query.any",
+        String message = getErrorMessage(CompilationDiagnostic.INVALID_USE_OF_RESERVED_TYPE_AS_OUTPUT_TYPE, "Query.'any",
                                          "_Any");
         assertErrorMessage(diagnostic, message, 43, 5);
 
