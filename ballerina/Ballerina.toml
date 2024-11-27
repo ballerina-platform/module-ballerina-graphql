@@ -3,12 +3,26 @@ org = "ballerina"
 name = "graphql"
 version = "1.15.0"
 authors = ["Ballerina"]
-export=["graphql", "graphql.subgraph", "graphql.dataloader"]
 keywords = ["gql", "network", "query", "service"]
 repository = "https://github.com/ballerina-platform/module-ballerina-graphql"
 icon = "icon.png"
 license = ["Apache-2.0"]
-distribution = "2201.10.0-20241025-103700-5c9e6a27"
+distribution = "2201.11.0"
+
+[[package.modules]]
+name = "graphql.dataloader"
+description="This module provides a way to load data from a data source with batching and caching capabilities."
+export=true
+
+[[package.modules]]
+name = "graphql.subgraph"
+description="This module provides a way to create a subgraphs for a federated GraphQL service"
+export=true
+
+[[package.modules]]
+name = "graphql.parser"
+description="The GraphQL document parser module"
+export=false
 
 [platform.java21]
 graalvmCompatible = true
