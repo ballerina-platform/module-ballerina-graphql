@@ -3,12 +3,14 @@ org = "ballerina"
 name = "graphql"
 version = "1.15.0"
 authors = ["Ballerina"]
-export=["graphql", "graphql.subgraph", "graphql.dataloader"]
 keywords = ["gql", "network", "query", "service"]
 repository = "https://github.com/ballerina-platform/module-ballerina-graphql"
 icon = "icon.png"
 license = ["Apache-2.0"]
 distribution = "2201.11.0"
+
+[[package.modules]]
+export=["graphql", "graphql.subgraph", "graphql.dataloader"]
 
 [platform.java21]
 graalvmCompatible = true
