@@ -19,6 +19,11 @@ name = "graphql.subgraph"
 description="This module provides a way to create a subgraphs for a federated GraphQL service"
 export=true
 
+[[package.modules]]
+name = "graphql.parser"
+description="The GraphQL document parser module"
+export=false
+
 [platform.java21]
 graalvmCompatible = true
 
