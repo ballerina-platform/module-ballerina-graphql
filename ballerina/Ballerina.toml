@@ -10,7 +10,14 @@ license = ["Apache-2.0"]
 distribution = "2201.11.0"
 
 [[package.modules]]
-export=["graphql", "graphql.subgraph", "graphql.dataloader"]
+name = "graphql.dataloader"
+description="This module provides a way to load data from a data source with batching and caching capabilities."
+export=true
+
+[[package.modules]]
+name = "graphql.subgraph"
+description="This module provides a way to create a subgraphs for a federated GraphQL service"
+export=true
 
 [platform.java21]
 graalvmCompatible = true
