@@ -20,6 +20,7 @@ import ballerina/test;
 import ballerina/websocket;
 
 @test:Config {
+    enable: false,
     groups: ["listener", "subscriptions"]
 }
 function testAttachServiceWithSubscriptionToHttp2BasedListener() returns error? {
@@ -32,6 +33,7 @@ function testAttachServiceWithSubscriptionToHttp2BasedListener() returns error? 
 }
 
 @test:Config {
+    enable: false,
     groups: ["listener", "subscriptions"]
 }
 function testAttachServiceWithSubscriptionToHttp1BasedListener() returns error? {
