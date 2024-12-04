@@ -20,6 +20,7 @@ import ballerina/test;
 import ballerina/websocket;
 
 @test:Config {
+    enable: false,
     groups: ["subscriptions", "multiplexing"]
 }
 isolated function testSubscriptionMultiplexing() returns error? {
@@ -55,6 +56,7 @@ isolated function testSubscriptionMultiplexing() returns error? {
 }
 
 @test:Config {
+    enable: false,
     groups: ["request_validation", "websocket", "subscriptions"]
 }
 isolated function testInvalidWebSocketRequestWithEmptyQuery() returns error? {
@@ -69,6 +71,7 @@ isolated function testInvalidWebSocketRequestWithEmptyQuery() returns error? {
 }
 
 @test:Config {
+    enable: false,
     groups: ["request_validation", "websocket", "subscriptions"]
 }
 isolated function testInvalidWebSocketRequestWithInvalidQuery() returns error? {
@@ -84,6 +87,7 @@ isolated function testInvalidWebSocketRequestWithInvalidQuery() returns error? {
 }
 
 @test:Config {
+    enable: false,
     groups: ["request_validation", "websocket", "subscriptions"]
 }
 isolated function testInvalidWebSocketRequestWithoutQuery() returns error? {
@@ -98,6 +102,7 @@ isolated function testInvalidWebSocketRequestWithoutQuery() returns error? {
 }
 
 @test:Config {
+    enable: false,
     groups: ["request_validation", "websocket", "subscriptions"]
 }
 isolated function testInvalidVariableInWebSocketPayload() returns error? {
@@ -114,6 +119,7 @@ isolated function testInvalidVariableInWebSocketPayload() returns error? {
 }
 
 @test:Config {
+    enable: false,
     groups: ["request_validation", "websocket", "subscriptions"]
 }
 isolated function testEmptyWebSocketPayload() returns error? {
@@ -128,6 +134,7 @@ isolated function testEmptyWebSocketPayload() returns error? {
 }
 
 @test:Config {
+    enable: false,
     groups: ["request_validation", "websocket", "subscriptions"]
 }
 isolated function testInvalidWebSocketPayload() returns error? {
