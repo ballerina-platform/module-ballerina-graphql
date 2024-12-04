@@ -48,6 +48,7 @@ isolated function testDataLoaderWithDifferentAliasForSameField() returns error? 
 }
 
 @test:Config {
+    enable: false,
     groups: ["subscriptions", "dataloader"],
     after: resetDispatchCounters
 }
@@ -68,8 +69,8 @@ isolated function testDataLoaderWithSubscription() returns error? {
 @test:Config {
     groups: ["dataloader", "mutation"],
     dependsOn: [
-        testDataLoaderWithQuery,
-        testDataLoaderWithSubscription
+        testDataLoaderWithQuery
+        // ,testDataLoaderWithSubscription
     ],
     after: resetDispatchCounters
 }

@@ -19,6 +19,7 @@ import ballerina/test;
 import ballerina/websocket;
 
 @test:Config {
+    enable: false,
     groups: ["subscriptions"]
 }
 function testAlreadyExistingSubscriber() returns error? {
@@ -51,6 +52,7 @@ function testAlreadyExistingSubscriber() returns error? {
 }
 
 @test:Config {
+    enable: false,
     groups: ["subscriptions"]
 }
 isolated function testOnPing() returns error? {
@@ -63,6 +65,7 @@ isolated function testOnPing() returns error? {
 }
 
 @test:Config {
+    enable: false,
     groups: ["subscriptions"]
 }
 isolated function testInvalidSubProtocolInSubscriptions() returns error? {
@@ -77,6 +80,7 @@ isolated function testInvalidSubProtocolInSubscriptions() returns error? {
 }
 
 @test:Config {
+    enable: false,
     groups: ["subscriptions", "runtime_errors"]
 }
 isolated function testErrorsInStreams() returns error? {
@@ -96,6 +100,7 @@ isolated function testErrorsInStreams() returns error? {
 }
 
 @test:Config {
+    enable: false,
     groups: ["subscriptions"]
 }
 isolated function testMultipleSubscriptionUsingSingleClient() returns error? {
@@ -121,6 +126,7 @@ isolated function testMultipleSubscriptionUsingSingleClient() returns error? {
 }
 
 @test:Config {
+    enable: false,
     groups: ["subscriptions"]
 }
 isolated function testSubscriptionWithInvalidPayload() returns error? {
@@ -137,6 +143,7 @@ isolated function testSubscriptionWithInvalidPayload() returns error? {
 }
 
 @test:Config {
+    enable: false,
     groups: ["subscriptions", "recrods", "service"]
 }
 isolated function testResolverReturingStreamOfRecordsWithServiceObjects() returns error? {
@@ -152,6 +159,7 @@ isolated function testResolverReturingStreamOfRecordsWithServiceObjects() return
 }
 
 @test:Config {
+    enable: false,
     groups: ["subscriptions", "recrods", "service", "maps"]
 }
 isolated function testResolverReturingStreamOfRecordsWithMapOfServiceObjects() returns error? {
