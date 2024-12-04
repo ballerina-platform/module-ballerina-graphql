@@ -1,0 +1,31 @@
+{
+    "errors": [
+        {
+            "message": "Input type \"ProfileDetail\" does not have a field \"address\".",
+            "locations": [
+                {
+                    "line": 3,
+                    "column": 21
+                }
+            ]
+        },
+        {
+            "message": "Input type \"Movie\" does not have a field \"episodes\".",
+            "locations": [
+                {
+                    "line": 3,
+                    "column": 21
+                }
+            ]
+        },
+        {
+            "message": "Input type \"Info\" does not have a field \"dir\".",
+            "locations": [
+                {
+                    "line": 3,
+                    "column": 21
+                }
+            ]
+        }
+    ]
+}
