@@ -16,14 +16,12 @@
 
 import ballerina/graphql_test_common as common;
 import ballerina/test;
-import ballerina/io;
 
 @test:Config {
-    groups: ["server_cache", "dataloader"],
+    groups: ["server_cache", "data_loader"],
     dataProvider: dataProviderServerCacheWithDataloader
 }
 isolated function testServerSideCacheWithDataLoader(string documentFile, string[] resourceFileNames, json variables = (), string[] operationNames = []) returns error? {
-    io:println("start testServerSideCacheWithDataLoader");
     string url = "http://localhost:9090/caching_with_dataloader";
     string document = check common:getGraphqlDocumentFromFile(documentFile);
     foreach int i in 0 ..< resourceFileNames.length() {
@@ -32,7 +30,6 @@ isolated function testServerSideCacheWithDataLoader(string documentFile, string[
         common:assertJsonValuesWithOrder(actualPayload, expectedPayload);
     }
     resetDispatchCounters();
-    io:println("end testServerSideCacheWithDataLoader");
 }
 
 function dataProviderServerCacheWithDataloader() returns map<[string, string[], json, string[]]> {
@@ -44,11 +41,10 @@ function dataProviderServerCacheWithDataloader() returns map<[string, string[], 
 }
 
 @test:Config {
-    groups: ["server_cache", "dataloader"],
+    groups: ["server_cache", "data_loader"],
     dataProvider: dataProviderServerCacheWithDataloaderInOperationalLevel
 }
 isolated function testServerSideCacheWithDataLoaderInOperationalLevel(string documentFile, string[] resourceFileNames, json variables = (), string[] operationNames = []) returns error? {
-    io:println("start testServerSideCacheWithDataLoaderInOperationalLevel");
     string url = "http://localhost:9090/caching_with_dataloader_operational";
     string document = check common:getGraphqlDocumentFromFile(documentFile);
     foreach int i in 0 ..< resourceFileNames.length() {
@@ -57,7 +53,6 @@ isolated function testServerSideCacheWithDataLoaderInOperationalLevel(string doc
         common:assertJsonValuesWithOrder(actualPayload, expectedPayload);
     }
     resetDispatchCounters();
-    io:println("end testServerSideCacheWithDataLoaderInOperationalLevel");
 }
 
 function dataProviderServerCacheWithDataloaderInOperationalLevel() returns map<[string, string[], json, string[]]> {
