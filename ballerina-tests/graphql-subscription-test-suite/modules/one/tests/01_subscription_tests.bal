@@ -19,7 +19,6 @@ import ballerina/test;
 import ballerina/websocket;
 
 @test:Config {
-    enable: false,
     groups: ["subscriptions"]
 }
 isolated function testSubscription() returns error? {
@@ -37,7 +36,6 @@ isolated function testSubscription() returns error? {
 }
 
 @test:Config {
-    enable: false,
     groups: ["subscriptions"]
 }
 isolated function testSubscriptionWithoutSubProtocol() returns error? {
@@ -49,7 +47,6 @@ isolated function testSubscriptionWithoutSubProtocol() returns error? {
 }
 
 @test:Config {
-    enable: false,
     groups: ["subscriptions"]
 }
 isolated function testSubscriptionsWithMultipleOperations() returns error? {
@@ -79,7 +76,6 @@ isolated function testSubscriptionsWithMultipleOperations() returns error? {
 }
 
 @test:Config {
-    enable: false,
     groups: ["records", "subscriptions"]
 }
 isolated function testSubscriptionWithRecords() returns error? {
@@ -97,7 +93,6 @@ isolated function testSubscriptionWithRecords() returns error? {
 }
 
 @test:Config {
-    enable: false,
     groups: ["subscriptions"]
 }
 isolated function testQueryWithSameSubscriptionFieldName() returns error? {
@@ -109,7 +104,6 @@ isolated function testQueryWithSameSubscriptionFieldName() returns error? {
 }
 
 @test:Config {
-    enable: false,
     groups: ["fragments", "subscriptions"]
 }
 isolated function testSubscriptionWithFragments() returns error? {
@@ -127,7 +121,6 @@ isolated function testSubscriptionWithFragments() returns error? {
 }
 
 @test:Config {
-    enable: false,
     groups: ["union", "subscriptions"]
 }
 isolated function testSubscriptionWithUnionType() returns error? {
@@ -145,7 +138,6 @@ isolated function testSubscriptionWithUnionType() returns error? {
 }
 
 @test:Config {
-    enable: false,
     groups: ["variables", "subscriptions"]
 }
 isolated function testSubscriptionWithVariables() returns error? {

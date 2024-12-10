@@ -19,7 +19,6 @@ import ballerina/test;
 import ballerina/websocket;
 
 @test:Config {
-    enable: false,
     groups: ["interceptors", "subscriptions"]
 }
 isolated function testInterceptorsWithSubscriptionReturningScalar() returns error? {
@@ -42,7 +41,6 @@ isolated function testInterceptorsWithSubscriptionReturningScalar() returns erro
 }
 
 @test:Config {
-    enable: false,
     groups: ["interceptors", "subscriptions", "records"]
 }
 isolated function testInterceptorsWithSubscriptionReturningRecord() returns error? {
@@ -65,7 +63,6 @@ isolated function testInterceptorsWithSubscriptionReturningRecord() returns erro
 }
 
 @test:Config {
-    enable: false,
     groups: ["interceptors", "fragments", "subscriptions"]
 }
 isolated function testInterceptorsWithSubscriptionAndFragments() returns error? {
@@ -88,7 +85,6 @@ isolated function testInterceptorsWithSubscriptionAndFragments() returns error? 
 }
 
 @test:Config {
-    enable: false,
     groups: ["interceptors", "union", "subscriptions"]
 }
 isolated function testInterceptorsWithUnionTypeSubscription() returns error? {
@@ -132,7 +128,6 @@ isolated function testInterceptorsWithUnionTypeSubscription() returns error? {
 }
 
 @test:Config {
-    enable: false,
     groups: ["interceptors", "subscriptions"]
 }
 isolated function testInterceptorsReturnBeforeResolverWithSubscription() returns error? {
@@ -155,7 +150,6 @@ isolated function testInterceptorsReturnBeforeResolverWithSubscription() returns
 }
 
 @test:Config {
-    enable: false,
     groups: ["interceptors", "subscriptions"]
 }
 isolated function testInterceptorsDestructiveModificationWithSubscription() returns error? {
@@ -204,7 +198,6 @@ isolated function testInterceptorsDestructiveModificationWithSubscription() retu
 }
 
 @test:Config {
-    enable: false,
     groups: ["interceptors", "subscriptions"]
 }
 isolated function testInterceptorsWithSubscribersRunSimultaniously1() returns error? {
@@ -244,7 +237,6 @@ isolated function testInterceptorsWithSubscribersRunSimultaniously1() returns er
 }
 
 @test:Config {
-    enable: false,
     groups: ["interceptors", "union", "subscriptions"]
 }
 isolated function testInterceptorsWithSubscribersRunSimultaniously2() returns error? {
