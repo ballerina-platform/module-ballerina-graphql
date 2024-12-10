@@ -19,7 +19,6 @@ import ballerina/test;
 import ballerina/websocket;
 
 @test:Config {
-    enable: false,
     groups: ["context", "subscriptions"]
 }
 isolated function testContextWithSubscriptions() returns error? {
@@ -41,7 +40,6 @@ isolated function testContextWithSubscriptions() returns error? {
 }
 
 @test:Config {
-    enable: false,
     groups: ["context", "subscriptions"]
 }
 isolated function testContextWithInvalidScopeInSubscriptions() returns error? {
