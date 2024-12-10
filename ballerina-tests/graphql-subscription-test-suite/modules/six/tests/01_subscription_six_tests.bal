@@ -19,7 +19,6 @@ import ballerina/test;
 import ballerina/websocket;
 
 @test:Config {
-    enable: false,
     groups: ["subscriptions", "service"]
 }
 isolated function testConnectionClousureWhenPongNotRecived() returns error? {

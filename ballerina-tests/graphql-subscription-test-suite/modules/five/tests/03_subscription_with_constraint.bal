@@ -19,7 +19,6 @@ import ballerina/test;
 import ballerina/websocket;
 
 @test:Config {
-    enable: false,
     groups: ["constraints", "subscriptions"]
 }
 isolated function testSubscriptionWithConstraints() returns error? {
@@ -34,7 +33,6 @@ isolated function testSubscriptionWithConstraints() returns error? {
 }
 
 @test:Config {
-    enable: false,
     groups: ["constraints", "subscriptions"]
 }
 isolated function testMultipleSubscriptionClientsWithConstraints() returns error? {
