@@ -63,6 +63,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_VA
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isIgnoreType;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INTERNAL_NODE;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.handleBErrorAndExit;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isContext;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isField;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isFileUpload;
@@ -545,12 +546,7 @@ public final class ArgumentHandler {
                 environment.getRuntime().callMethod(this.responseGenerator, ADD_CONSTRAINT_ERRORS_METHOD, null,
                         arguments);
             } catch (BError bError) {
-                bError.printStackTrace();
-                // Service level `panic` is captured in this method.
-                // Since, `panic` is due to a critical application bug or resource exhaustion we need to exit the
-                // application.
-                // Please refer: https://github.com/ballerina-platform/ballerina-standard-library/issues/2714
-                System.exit(1);
+                handleBErrorAndExit(bError);
             }
             return null;
         });

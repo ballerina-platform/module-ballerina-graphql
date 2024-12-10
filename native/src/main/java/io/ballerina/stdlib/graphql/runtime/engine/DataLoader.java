@@ -23,6 +23,8 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BTypedesc;
 
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.handleBErrorAndExit;
+
 /**
  *  This class provides native implementations of the Ballerina DataLoader class.
  */
@@ -38,12 +40,7 @@ public class DataLoader {
             try {
                 return env.getRuntime().callMethod(dataLoader, DATA_LOADER_PROCESSES_GET_METHOD_NAME, null, paramFeed);
             } catch (BError bError) {
-                bError.printStackTrace();
-                // Service level `panic` is captured in this method.
-                // Since, `panic` is due to a critical application bug or resource exhaustion we need to exit the
-                // application.
-                // Please refer: https://github.com/ballerina-platform/ballerina-standard-library/issues/2714
-                System.exit(1);
+                handleBErrorAndExit(bError);
             }
             return null;
         });

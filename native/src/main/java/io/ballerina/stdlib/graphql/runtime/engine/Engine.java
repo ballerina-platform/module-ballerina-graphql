@@ -66,6 +66,7 @@ import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INTERNAL_NODE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.handleBErrorAndExit;
 
 /**
  * This handles Ballerina GraphQL Engine.
@@ -135,12 +136,7 @@ public class Engine {
             try {
                 return callResourceMethod(environment.getRuntime(), service, methodName, args);
             } catch (BError bError) {
-                bError.printStackTrace();
-                // Service level `panic` is captured in this method.
-                // Since, `panic` is due to a critical application bug or resource exhaustion we need to exit the
-                // application.
-                // Please refer: https://github.com/ballerina-platform/ballerina-standard-library/issues/2714
-                System.exit(1);
+                handleBErrorAndExit(bError);
             }
             return null;
         });
@@ -187,12 +183,7 @@ public class Engine {
             try {
                 return callResourceMethod(environment.getRuntime(), interceptor, remoteMethod.getName(), arguments);
             } catch (BError bError) {
-                bError.printStackTrace();
-                // Service level `panic` is captured in this method.
-                // Since, `panic` is due to a critical application bug or resource exhaustion we need to exit the
-                // application.
-                // Please refer: https://github.com/ballerina-platform/ballerina-standard-library/issues/2714
-                System.exit(1);
+                handleBErrorAndExit(bError);
             }
             return null;
         });
@@ -289,12 +280,7 @@ public class Engine {
             try {
                 return callResourceMethod(environment.getRuntime(), service, resourceMethod.getName(), arguments);
             } catch (BError bError) {
-                bError.printStackTrace();
-                // Service level `panic` is captured in this method.
-                // Since, `panic` is due to a critical application bug or resource exhaustion we need to exit the
-                // application.
-                // Please refer: https://github.com/ballerina-platform/ballerina-standard-library/issues/2714
-                System.exit(1);
+                handleBErrorAndExit(bError);
             }
             return null;
         });

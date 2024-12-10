@@ -48,6 +48,8 @@
     </Match>
     <Match>
         <And>
+            <Class name="io.ballerina.stdlib.graphql.runtime.utils.Utils" />
+            <Method name = "handleBErrorAndExit" />
             <Bug pattern="DM_EXIT" />
         </And>
     </Match>
