@@ -18,7 +18,6 @@ import ballerina/test;
 import graphql.parser;
 
 @test:Config {
-    enable: false,
     groups: ["subscriptions", "validation"],
     dataProvider: dataProviderSubscriptionValidation
 }

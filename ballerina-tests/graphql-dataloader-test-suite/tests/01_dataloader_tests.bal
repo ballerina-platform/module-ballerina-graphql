@@ -35,8 +35,7 @@ isolated function testDataLoaderWithQuery() returns error? {
 
 @test:Config {
     groups: ["dataloader", "query"],
-    after: resetDispatchCounters,
-    enable: false
+    after: resetDispatchCounters
 }
 isolated function testDataLoaderWithDifferentAliasForSameField() returns error? {
     graphql:Client graphqlClient = check new ("localhost:9090/dataloader");
@@ -49,7 +48,6 @@ isolated function testDataLoaderWithDifferentAliasForSameField() returns error? 
 }
 
 @test:Config {
-    enable: false,
     groups: ["subscriptions", "dataloader"],
     after: resetDispatchCounters
 }
