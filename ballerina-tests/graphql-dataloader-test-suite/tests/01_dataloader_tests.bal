@@ -68,8 +68,7 @@ isolated function testDataLoaderWithSubscription() returns error? {
 @test:Config {
     groups: ["dataloader", "mutation"],
     dependsOn: [
-        testDataLoaderWithQuery,
-        testDataLoaderWithSubscription
+        testDataLoaderWithQuery, testDataLoaderWithSubscription
     ],
     after: resetDispatchCounters
 }
