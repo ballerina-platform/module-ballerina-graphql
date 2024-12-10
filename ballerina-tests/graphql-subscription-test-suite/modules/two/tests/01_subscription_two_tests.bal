@@ -19,7 +19,6 @@ import ballerina/test;
 import ballerina/websocket;
 
 @test:Config {
-    enable: false,
     groups: ["introspection", "typename", "subscriptions"]
 }
 isolated function testSubscriptionWithIntrospectionInFields() returns error? {
@@ -35,7 +34,6 @@ isolated function testSubscriptionWithIntrospectionInFields() returns error? {
 }
 
 @test:Config {
-    enable: false,
     groups: ["subscriptions"]
 }
 isolated function testInvalidSubscription() returns error? {
@@ -51,7 +49,6 @@ isolated function testInvalidSubscription() returns error? {
 }
 
 @test:Config {
-    enable: false,
     groups: ["subscriptions"]
 }
 isolated function testSubscriptionFunctionWithErrors() returns error? {
@@ -73,7 +70,6 @@ isolated function testSubscriptionFunctionWithErrors() returns error? {
 }
 
 @test:Config {
-    enable: false,
     groups: ["service", "subscriptions"]
 }
 isolated function testSubscriptionWithServiceObjects() returns error? {
@@ -92,7 +88,6 @@ isolated function testSubscriptionWithServiceObjects() returns error? {
 }
 
 @test:Config {
-    enable: false,
     groups: ["subscriptions"]
 }
 isolated function testSubscriptionWithMultipleClients() returns error? {
@@ -118,8 +113,7 @@ isolated function testSubscriptionWithMultipleClients() returns error? {
 }
 
 @test:Config {
-    groups: ["subscriptions"],
-    enable: false
+    groups: ["subscriptions"]
 }
 isolated function testConnectionInitMessage() returns error? {
     string url = "ws://localhost:9091/subscriptions";
@@ -130,7 +124,6 @@ isolated function testConnectionInitMessage() returns error? {
 }
 
 @test:Config {
-    enable: false,
     groups: ["subscriptions"]
 }
 isolated function testInvalidMultipleConnectionInitMessages() returns error? {
@@ -145,7 +138,6 @@ isolated function testInvalidMultipleConnectionInitMessages() returns error? {
 }
 
 @test:Config {
-    enable: false,
     groups: ["subscriptions"]
 }
 isolated function testUnauthorizedAccess() returns error? {

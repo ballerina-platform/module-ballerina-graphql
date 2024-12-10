@@ -20,8 +20,7 @@ import ballerina/http;
 import ballerina/test;
 
 @test:Config {
-    groups: ["listener", "graphiql"],
-    enable: false
+    groups: ["listener", "graphiql"]
 }
 function testGraphiqlWithSamePathAsGraphQLService() returns error? {
     graphql:Error? result = basicListener.attach(graphiqlConfigService, "ballerina/graphiql");
