@@ -21,13 +21,6 @@
         </And>
     </Match>
     <Match>
-        <And>
-            <Class name="io.ballerina.stdlib.graphql.runtime.engine.ExecutionCallback" />
-            <Method name = "notifyFailure" />
-            <Bug pattern="DM_EXIT" />
-        </And>
-    </Match>
-    <Match>
         <Bug pattern="EI_EXPOSE_REP, EI_EXPOSE_REP2" />
     </Match>
     <Match>
@@ -52,5 +45,10 @@
         <Class name="io.ballerina.stdlib.graphql.compiler.schema.generator.GraphqlSourceModifier" />
         <Method name = "getServiceResolver" />
         <Bug pattern="DCN_NULLPOINTER_EXCEPTION" />
+    </Match>
+    <Match>
+        <And>
+            <Bug pattern="DM_EXIT" />
+        </And>
     </Match>
 </FindBugsFilter>

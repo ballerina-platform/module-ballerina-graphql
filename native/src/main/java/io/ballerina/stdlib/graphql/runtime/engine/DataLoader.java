@@ -23,10 +23,6 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BTypedesc;
 
-import java.util.concurrent.CompletableFuture;
-
-import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getResult;
-
 /**
  *  This class provides native implementations of the Ballerina DataLoader class.
  */
@@ -38,17 +34,18 @@ public class DataLoader {
 
     public static Object get(Environment env, BObject dataLoader, Object key, BTypedesc typedesc) {
         return env.yieldAndRun(() -> {
-            CompletableFuture<Object> balFuture = new CompletableFuture<>();
             Object[] paramFeed = getProcessGetMethodParams(key, typedesc);
-            ExecutionCallback executionCallback = new ExecutionCallback(balFuture);
             try {
-                Object result = env.getRuntime().callMethod(dataLoader, DATA_LOADER_PROCESSES_GET_METHOD_NAME, null,
-                        paramFeed);
-                executionCallback.notifySuccess(result);
+                return env.getRuntime().callMethod(dataLoader, DATA_LOADER_PROCESSES_GET_METHOD_NAME, null, paramFeed);
             } catch (BError bError) {
-                executionCallback.notifyFailure(bError);
+                bError.printStackTrace();
+                // Service level `panic` is captured in this method.
+                // Since, `panic` is due to a critical application bug or resource exhaustion we need to exit the
+                // application.
+                // Please refer: https://github.com/ballerina-platform/ballerina-standard-library/issues/2714
+                System.exit(1);
             }
-            return getResult(balFuture);
+            return null;
         });
     }
 
