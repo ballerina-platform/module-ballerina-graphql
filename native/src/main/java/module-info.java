@@ -23,4 +23,5 @@ module io.ballerina.stdlib.graphql.runtime {
     requires io.ballerina.lang;
     requires jdk.jshell;
     requires java.management;
+    requires jdk.management;
 }
