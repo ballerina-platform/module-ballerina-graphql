@@ -45,6 +45,7 @@ public class Utils {
         Thread.startVirtualThread(() -> {
             try {
                 Thread.sleep(5 * 60 * 1000);
+                dumpThreads();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
