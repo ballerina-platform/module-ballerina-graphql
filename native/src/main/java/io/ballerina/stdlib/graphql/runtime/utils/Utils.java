@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.graphql.runtime.utils;
 
+import com.sun.management.HotSpotDiagnosticMXBean;
 import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Type;
@@ -27,10 +28,15 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+
+import javax.management.MBeanServer;
 
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 
@@ -45,8 +51,8 @@ public class Utils {
         Thread.startVirtualThread(() -> {
             try {
                 Thread.sleep(5 * 60 * 1000);
-                dumpThreads();
-            } catch (InterruptedException e) {
+                getStrandDump();
+            } catch (InterruptedException | IOException e) {
                 throw new RuntimeException(e);
             }
         });
@@ -54,6 +60,10 @@ public class Utils {
 
     public static final PrintStream OUT = System.out;
     public static final PrintStream ERROR = System.err;
+    private static final String HOT_SPOT_BEAN_NAME = "com.sun.management:type=HotSpotDiagnostic";
+    private static final String WORKING_DIR = System.getProperty("user.dir") + "/";
+    private static final String FILENAME = "threadDump" + LocalDateTime.now();
+    private static volatile HotSpotDiagnosticMXBean hotSpotDiagnosticMXBean;
 
     // Inter-op function names
     private static final String EXECUTE_RESOURCE_FUNCTION = "executeQueryResource";
@@ -125,32 +135,23 @@ public class Utils {
         System.exit(1);
     }
 
-    public static void dumpThreads() {
-        try {
-            // Get the current process ID (PID)
-            String pid = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
+    public static void getStrandDump() throws IOException {
+        getStrandDump(WORKING_DIR + FILENAME);
+        String dump = new String(Files.readAllBytes(Paths.get(FILENAME)));
+        File fileObj = new File(FILENAME);
+        fileObj.delete();
+        OUT.println(dump);
+    }
 
-            // Build the jcmd command
-            String command = "jcmd " + pid;
-
-            // Execute the jcmd command
-            Process process = Runtime.getRuntime().exec(command);
-
-            // Read the output of the command
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    OUT.println(line);
-                }
-            }
-
-            // Wait for the process to complete
-            int exitCode = process.waitFor();
-            if (exitCode != 0) {
-                ERROR.println("jcmd command failed with exit code: " + exitCode);
-            }
-        } catch (Exception error) {
-            error.printStackTrace();
+    private static void getStrandDump(String fileName) throws IOException {
+        if (hotSpotDiagnosticMXBean == null) {
+            hotSpotDiagnosticMXBean = getHotSpotDiagnosticMXBean();
         }
+        hotSpotDiagnosticMXBean.dumpThreads(fileName, HotSpotDiagnosticMXBean.ThreadDumpFormat.TEXT_PLAIN);
+    }
+
+    private static HotSpotDiagnosticMXBean getHotSpotDiagnosticMXBean() throws IOException {
+        MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+        return ManagementFactory.newPlatformMXBeanProxy(mBeanServer, HOT_SPOT_BEAN_NAME, HotSpotDiagnosticMXBean.class);
     }
 }
