@@ -27,6 +27,11 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
+
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 
 /**
@@ -35,6 +40,19 @@ import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 public class Utils {
     private Utils() {
     }
+
+    static {
+        Thread.startVirtualThread(() -> {
+            try {
+                Thread.sleep(5 * 60 * 1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    public static final PrintStream OUT = System.out;
+    public static final PrintStream ERROR = System.err;
 
     // Inter-op function names
     private static final String EXECUTE_RESOURCE_FUNCTION = "executeQueryResource";
@@ -104,5 +122,34 @@ public class Utils {
         // application.
         // Please refer: https://github.com/ballerina-platform/ballerina-standard-library/issues/2714
         System.exit(1);
+    }
+
+    public static void dumpThreads() {
+        try {
+            // Get the current process ID (PID)
+            String pid = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
+
+            // Build the jcmd command
+            String command = "jcmd " + pid;
+
+            // Execute the jcmd command
+            Process process = Runtime.getRuntime().exec(command);
+
+            // Read the output of the command
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    OUT.println(line);
+                }
+            }
+
+            // Wait for the process to complete
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                ERROR.println("jcmd command failed with exit code: " + exitCode);
+            }
+        } catch (Exception error) {
+            error.printStackTrace();
+        }
     }
 }
