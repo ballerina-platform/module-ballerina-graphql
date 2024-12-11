@@ -35,6 +35,9 @@ import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.management.MBeanServer;
 
@@ -48,7 +51,8 @@ public class Utils {
     }
 
     static {
-        Thread.startVirtualThread(() -> {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.submit(() -> {
             try {
                 int count = 0;
                 while (true) {
