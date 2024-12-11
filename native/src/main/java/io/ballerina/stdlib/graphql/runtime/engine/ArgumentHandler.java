@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 
 import static io.ballerina.runtime.api.types.TypeTags.INTERSECTION_TAG;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.ARGUMENTS_FIELD;
@@ -64,6 +63,7 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_VA
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isIgnoreType;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INTERNAL_NODE;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.handleBErrorAndExit;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isContext;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isField;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isFileUpload;
@@ -540,16 +540,13 @@ public final class ArgumentHandler {
 
     private void addConstraintValidationErrors(Environment environment, BArray errors) {
         environment.yieldAndRun(() -> {
-            CompletableFuture<Object> future = new CompletableFuture<>();
-            ExecutionCallback executionCallback = new ExecutionCallback(future);
             BObject fieldNode = this.field.getObjectValue(INTERNAL_NODE);
             Object[] arguments = {errors, fieldNode};
             try {
-                Object result = environment.getRuntime()
-                        .callMethod(this.responseGenerator, ADD_CONSTRAINT_ERRORS_METHOD, null, arguments);
-                executionCallback.notifySuccess(result);
+                environment.getRuntime().callMethod(this.responseGenerator, ADD_CONSTRAINT_ERRORS_METHOD, null,
+                        arguments);
             } catch (BError bError) {
-                executionCallback.notifyFailure(bError);
+                handleBErrorAndExit(bError);
             }
             return null;
         });
