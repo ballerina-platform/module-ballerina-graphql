@@ -50,8 +50,16 @@ public class Utils {
     static {
         Thread.startVirtualThread(() -> {
             try {
-                Thread.sleep(5 * 60 * 1000);
-                getStrandDump();
+                int count = 0;
+                while (true) {
+                    Thread.sleep(count);
+                    count += 500;
+                    PrintStream out = System.out;
+                    out.println("COUNT =" + count);
+                    if (count == 300000) {
+                        getStrandDump();
+                    }
+                }
             } catch (InterruptedException | IOException e) {
                 throw new RuntimeException(e);
             }
