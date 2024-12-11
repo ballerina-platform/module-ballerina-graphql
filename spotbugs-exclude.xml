@@ -53,4 +53,9 @@
             <Bug pattern="DM_EXIT" />
         </And>
     </Match>
+    <Match>
+        <And>
+            <Class name="io.ballerina.stdlib.graphql.runtime.utils.Utils" />
+        </And>
+    </Match>
 </FindBugsFilter>
