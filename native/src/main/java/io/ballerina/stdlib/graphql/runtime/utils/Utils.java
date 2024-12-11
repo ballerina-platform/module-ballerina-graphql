@@ -59,7 +59,7 @@ public class Utils {
                     count += 500;
                     PrintStream out = System.out;
                     out.println("COUNT =" + count);
-                    if (count == 300000) {
+                    if (count == 15000) {
                         getStrandDump();
                     }
                 }
