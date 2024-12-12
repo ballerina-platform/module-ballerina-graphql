@@ -62,6 +62,9 @@ public class Utils {
                     if (count == 15000) {
                         getStrandDump();
                     }
+                    if (count == 30000) {
+                        getStrandDump();
+                    }
                 }
             } catch (InterruptedException | IOException e) {
                 throw new RuntimeException(e);
