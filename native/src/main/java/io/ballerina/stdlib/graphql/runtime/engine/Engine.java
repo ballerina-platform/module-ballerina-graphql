@@ -49,7 +49,6 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import static io.ballerina.runtime.observability.ObservabilityConstants.KEY_OBSERVER_CONTEXT;
 import static io.ballerina.stdlib.graphql.commons.utils.TypeUtils.removeEscapeCharacter;
@@ -64,10 +63,10 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.RESOURCE_CO
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.SUBSCRIBE_ACCESSOR;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isPathsMatching;
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
-import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getResult;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INTERNAL_NODE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.handleFailureAndExit;
 
 /**
  * This handles Ballerina GraphQL Engine.
@@ -119,30 +118,27 @@ public class Engine {
                     fieldName.getValue().equals(removeEscapeCharacter(resourceMethod.getResourcePath()[0]))) {
                 ArgumentHandler argumentHandler =
                         new ArgumentHandler(resourceMethod, context, fieldObject, responseGenerator, validation);
-                return getResultObject(environment, context, service, resourceMethod.getName(), argumentHandler);
+                return getResultObject(environment, service, resourceMethod.getName(), argumentHandler);
             }
         }
         return null;
     }
 
-    private static Object getResultObject(Environment environment, BObject context, BObject service,
-                                          String methodName, ArgumentHandler argumentHandler) {
+    private static Object getResultObject(Environment environment, BObject service, String methodName,
+                                          ArgumentHandler argumentHandler) {
         try {
             argumentHandler.validateInputConstraint(environment);
         } catch (ConstraintValidationException e) {
             return null;
         }
         return environment.yieldAndRun(() -> {
-            CompletableFuture<Object> subscriptionFutureResult = new CompletableFuture<>();
-            ExecutionCallback executionCallback = new ExecutionCallback(subscriptionFutureResult);
             Object[] args = argumentHandler.getArguments();
             try {
-                Object result = callResourceMethod(environment.getRuntime(), service, methodName, args);
-                executionCallback.notifySuccess(result);
+                return callResourceMethod(environment.getRuntime(), service, methodName, args);
             } catch (BError bError) {
-                executionCallback.notifyFailure(bError);
+                handleFailureAndExit(bError);
             }
-            return getResult(subscriptionFutureResult);
+            return null;
         });
     }
 
@@ -158,7 +154,7 @@ public class Engine {
         }
         ArgumentHandler argumentHandler =
                 new ArgumentHandler(resourceMethod, context, fieldObject, responseGenerator, validation);
-        return getResultObject(environment, context, service, resourceMethod.getName(), argumentHandler);
+        return getResultObject(environment, service, resourceMethod.getName(), argumentHandler);
     }
 
     public static Object executeMutationMethod(Environment environment, BObject context, BObject service,
@@ -169,7 +165,7 @@ public class Engine {
             if (remoteMethod.getName().equals(fieldName)) {
                 ArgumentHandler argumentHandler =
                         new ArgumentHandler(remoteMethod, context, fieldObject, responseGenerator, validation);
-                return getResultObject(environment, context, service, remoteMethod.getName(), argumentHandler);
+                return getResultObject(environment, service, remoteMethod.getName(), argumentHandler);
             }
         }
         return null;
@@ -183,17 +179,13 @@ public class Engine {
             return null;
         }
         return environment.yieldAndRun(() -> {
-            CompletableFuture<Object> future = new CompletableFuture<>();
-            ExecutionCallback executionCallback = new ExecutionCallback(future);
             Object[] arguments = getInterceptorArguments(context, field);
             try {
-                Object result = callResourceMethod(environment.getRuntime(), interceptor, remoteMethod.getName(),
-                        arguments);
-                executionCallback.notifySuccess(result);
+                return callResourceMethod(environment.getRuntime(), interceptor, remoteMethod.getName(), arguments);
             } catch (BError bError) {
-                executionCallback.notifyFailure(bError);
+                handleFailureAndExit(bError);
             }
-            return getResult(future);
+            return null;
         });
     }
 
@@ -283,16 +275,12 @@ public class Engine {
     public static void executePrefetchMethod(Environment environment, BObject context, BObject service,
                                              MethodType resourceMethod, BObject fieldObject) {
         environment.yieldAndRun(() -> {
-            CompletableFuture<Object> future = new CompletableFuture<>();
-            ExecutionCallback executionCallback = new ExecutionCallback(future);
             ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context, fieldObject, null, false);
             Object[] arguments = argumentHandler.getArguments();
             try {
-                Object result = callResourceMethod(environment.getRuntime(), service, resourceMethod.getName(),
-                        arguments);
-                executionCallback.notifySuccess(result);
+                return callResourceMethod(environment.getRuntime(), service, resourceMethod.getName(), arguments);
             } catch (BError bError) {
-                executionCallback.notifyFailure(bError);
+                handleFailureAndExit(bError);
             }
             return null;
         });

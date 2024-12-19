@@ -22,8 +22,8 @@
     </Match>
     <Match>
         <And>
-            <Class name="io.ballerina.stdlib.graphql.runtime.engine.ExecutionCallback" />
-            <Method name = "notifyFailure" />
+            <Class name="io.ballerina.stdlib.graphql.runtime.utils.Utils" />
+            <Method name = "handleFailureAndExit" />
             <Bug pattern="DM_EXIT" />
         </And>
     </Match>
