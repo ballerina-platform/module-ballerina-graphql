@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.graphql.runtime.utils;
 
+import com.sun.management.HotSpotDiagnosticMXBean;
 import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.Type;
@@ -27,6 +28,18 @@ import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import javax.management.MBeanServer;
+
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 
 /**
@@ -35,6 +48,36 @@ import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 public class Utils {
     private Utils() {
     }
+
+    static {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.submit(() -> {
+            try {
+                int count = 0;
+                while (true) {
+                    Thread.sleep(count);
+                    count += 500;
+                    PrintStream out = System.out;
+                    out.println("COUNT =" + count);
+                    if (count == 15000) {
+                        getStrandDump();
+                    }
+                    if (count == 30000) {
+                        getStrandDump();
+                    }
+                }
+            } catch (InterruptedException | IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    public static final PrintStream OUT = System.out;
+    public static final PrintStream ERROR = System.err;
+    private static final String HOT_SPOT_BEAN_NAME = "com.sun.management:type=HotSpotDiagnostic";
+    private static final String WORKING_DIR = System.getProperty("user.dir") + "/";
+    private static final String FILENAME = "threadDump" + LocalDateTime.now();
+    private static volatile HotSpotDiagnosticMXBean hotSpotDiagnosticMXBean;
 
     // Inter-op function names
     private static final String EXECUTE_RESOURCE_FUNCTION = "executeQueryResource";
@@ -104,5 +147,25 @@ public class Utils {
         // application.
         // Please refer: https://github.com/ballerina-platform/ballerina-standard-library/issues/2714
         System.exit(1);
+    }
+
+    public static void getStrandDump() throws IOException {
+        getStrandDump(WORKING_DIR + FILENAME);
+        String dump = new String(Files.readAllBytes(Paths.get(FILENAME)));
+        File fileObj = new File(FILENAME);
+        fileObj.delete();
+        OUT.println(dump);
+    }
+
+    private static void getStrandDump(String fileName) throws IOException {
+        if (hotSpotDiagnosticMXBean == null) {
+            hotSpotDiagnosticMXBean = getHotSpotDiagnosticMXBean();
+        }
+        hotSpotDiagnosticMXBean.dumpThreads(fileName, HotSpotDiagnosticMXBean.ThreadDumpFormat.TEXT_PLAIN);
+    }
+
+    private static HotSpotDiagnosticMXBean getHotSpotDiagnosticMXBean() throws IOException {
+        MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+        return ManagementFactory.newPlatformMXBeanProxy(mBeanServer, HOT_SPOT_BEAN_NAME, HotSpotDiagnosticMXBean.class);
     }
 }

@@ -53,4 +53,7 @@
         <Method name = "getServiceResolver" />
         <Bug pattern="DCN_NULLPOINTER_EXCEPTION" />
     </Match>
+    <Match>
+        <Class name="io.ballerina.stdlib.graphql.runtime.utils.Utils" />
+    </Match>
 </FindBugsFilter>
