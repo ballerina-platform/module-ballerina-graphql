@@ -140,7 +140,7 @@ public class Utils {
         return StringUtils.fromString(Integer.toString(object.hashCode()));
     }
 
-    public static void handleFailureAndExit(BError bError)
+    public static void handleFailureAndExit(BError bError) {
         bError.printStackTrace();
         // Service level `panic` is captured in this method.
         // Since, `panic` is due to a critical application bug or resource exhaustion we need to exit the
