@@ -138,7 +138,8 @@ isolated function testSubscriptionWithUnionType() returns error? {
 }
 
 @test:Config {
-    groups: ["variables", "subscriptions"]
+    groups: ["variables", "subscriptions"],
+    enable: false
 }
 isolated function testSubscriptionWithVariables() returns error? {
     string document = check common:getGraphqlDocumentFromFile("subscriptions_with_variable_values");

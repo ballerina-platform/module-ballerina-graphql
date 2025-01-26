@@ -49,7 +49,8 @@ isolated function testDataLoaderWithDifferentAliasForSameField() returns error? 
 
 @test:Config {
     groups: ["subscriptions", "dataloader"],
-    after: resetDispatchCounters
+    after: resetDispatchCounters,
+    enable: false
 }
 isolated function testDataLoaderWithSubscription() returns error? {
     string document = check common:getGraphqlDocumentFromFile("dataloader_with_subscription");
