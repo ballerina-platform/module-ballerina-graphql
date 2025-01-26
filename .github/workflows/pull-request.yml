@@ -14,3 +14,42 @@ jobs:
         secrets: inherit
         with:
             additional-ubuntu-test-flags: "-Pdisable=subscriptions"
+
+    ubuntu-debug:
+        needs: call_workflow
+        runs-on: ubuntu-latest
+        if: always()  # Ensures the debug job runs even if ubuntu-build is stuck
+        steps:
+            - name: Wait before debugging (Give the build time to start)
+              run: sleep 600  # Wait for 10 minutes before debugging
+
+            - name: Check Running Java Processes
+              run: jps
+
+            - name: Capture Thread Dump
+              run: |
+                PID=$(jps | awk '{print $1}')
+                if [ -n "$PID" ]; then
+                    jstack $PID > thread_dump.log
+                    cat thread_dump.log
+                else
+                    echo "No Java process found."
+                fi
+
+            - name: Check Open Files for Java Process
+              run: |
+                PID=$(jps | awk '{print $1}')
+                if [ -n "$PID" ]; then
+                    lsof -p $PID
+                else
+                    echo "No Java process found."
+                fi
+
+            - name: Monitor GC Activity
+              run: |
+                PID=$(jps | awk '{print $1}')
+                if [ -n "$PID" ]; then
+                    jstat -gcutil $PID 1000 10
+                else
+                    echo "No Java process found."
+                fi
