@@ -14,4 +14,3 @@ jobs:
         secrets: inherit
         with:
             additional-ubuntu-test-flags: "-Pdisable=subscriptions"
-            additional-windows-test-flags: "-Pdisable=subscriptions"
