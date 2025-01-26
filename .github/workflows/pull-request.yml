@@ -13,4 +13,5 @@ jobs:
         uses: ballerina-platform/ballerina-library/.github/workflows/pull-request-build-template.yml@main
         secrets: inherit
         with:
-            additional-ubuntu-test-flags: "-P disable=subscriptions"
+            additional-ubuntu-test-flags: "-Pdisable=subscriptions"
+            additional-windows-test-flags: "-Pdisable=subscriptions"
