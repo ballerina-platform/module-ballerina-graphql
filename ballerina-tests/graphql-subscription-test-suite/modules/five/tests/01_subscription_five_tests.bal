@@ -26,9 +26,9 @@ function testAttachServiceWithSubscriptionToHttp2BasedListener() returns error? 
     graphql:Error? result = http2BasedListener.attach(subscriptionService);
     test:assertTrue(result is graphql:Error);
     graphql:Error err = <graphql:Error>result;
-    string expecctedMessage = string `Websocket listener initialization failed due to the incompatibility of ` +
+    string expectedMessage = string `Websocket listener initialization failed due to the incompatibility of ` +
                             string `provided HTTP(version 2.0) listener`;
-    test:assertEquals(err.message(), expecctedMessage);
+    test:assertEquals(err.message(), expectedMessage);
 }
 
 @test:Config {
@@ -51,4 +51,6 @@ function testAttachServiceWithSubscriptionToHttp1BasedListener() returns error? 
         check common:validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
         check common:validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
     }
+    common:closeWebsocketClient(wsClient1);
+    common:closeWebsocketClient(wsClient2);
 }

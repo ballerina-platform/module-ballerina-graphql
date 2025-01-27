@@ -101,7 +101,7 @@ returns stream<any, error?>|json {
     }
     if result !is error {
         if context.getErrors().length() == 0 {
-            result = error("Error ocurred in the subscription resolver");
+            result = error("Error occurred in the subscription resolver");
         }
         result = ();
     }
@@ -143,10 +143,8 @@ isolated function logError(string message, error cause) {
 }
 
 isolated function writeMessage(websocket:Caller caller, OutboundMessage message) returns websocket:Error? {
-    lock {
-        if !caller.isOpen() {
-            return;
-        }
-        check caller->writeMessage(message);
+    if !caller.isOpen() {
+        return;
     }
+    check caller->writeMessage(message);
 }
