@@ -37,7 +37,6 @@ isolated function testContextWithSubscriptions() returns error? {
         json expectedMsgPayload = {data: {messages: i}};
         check common:validateNextMessage(wsClient, expectedMsgPayload);
     }
-    common:closeWebsocketClient(wsClient);
 }
 
 @test:Config {
@@ -63,5 +62,4 @@ isolated function testContextWithInvalidScopeInSubscriptions() returns error? {
         }
     ];
     check common:validateErrorMessage(wsClient, expectedErrorPayload);
-    common:closeWebsocketClient(wsClient);
 }

@@ -18,7 +18,6 @@ import ballerina/file;
 import ballerina/graphql;
 import ballerina/http;
 import ballerina/io;
-import ballerina/log;
 import ballerina/test;
 import ballerina/websocket;
 
@@ -178,16 +177,4 @@ public isolated function validateConnectionClosureWithError(websocket:Client wsC
         return;
     }
     test:assertFail(string `Unexpected Error found : ${response.toString()}`);
-}
-
-public isolated function closeWebsocketClient(websocket:Client wsClient) {
-    string id = wsClient.getConnectionId();
-    error? result = wsClient->writeMessage({'type: WS_COMPLETE, id});
-    if result is error {
-        log:printError("Error occurred while sending the complete message: ", result);
-    }
-    result = wsClient->close(timeout = 1);
-    if result is error {
-        log:printError("Error occurred while closing the websocket client: ", result);
-    }
 }

@@ -64,7 +64,6 @@ isolated function testDataLoaderWithSubscription() returns error? {
         check common:validateNextMessage(wsClient, expectedMsgPayload, id = "1");
     }
     assertDispatchCountForBookLoader(5);
-    common:closeWebsocketClient(wsClient);
 }
 
 @test:Config {

@@ -51,6 +51,4 @@ function testAttachServiceWithSubscriptionToHttp1BasedListener() returns error? 
         check common:validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
         check common:validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
     }
-    common:closeWebsocketClient(wsClient1);
-    common:closeWebsocketClient(wsClient2);
 }

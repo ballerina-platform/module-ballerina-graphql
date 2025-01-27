@@ -38,8 +38,6 @@ isolated function testInterceptorsWithSubscriptionReturningScalar() returns erro
         check common:validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
         check common:validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
     }
-    common:closeWebsocketClient(wsClient1);
-    common:closeWebsocketClient(wsClient2);
 }
 
 @test:Config {
@@ -62,8 +60,6 @@ isolated function testInterceptorsWithSubscriptionReturningRecord() returns erro
     check common:sendSubscriptionMessage(wsClient2, document, operationName = "B");
     expectedMsgPayload = {data: {newBooks: {name: "A Game of Thrones", author: "George R.R. Martin"}}};
     check common:validateNextMessage(wsClient2, expectedMsgPayload);
-    common:closeWebsocketClient(wsClient1);
-    common:closeWebsocketClient(wsClient2);
 }
 
 @test:Config {
@@ -86,8 +82,6 @@ isolated function testInterceptorsWithSubscriptionAndFragments() returns error? 
     check common:sendSubscriptionMessage(wsClient2, document, operationName = "getNewStudents");
     expectedMsgPayload = {data: {newStudents: {id: 4, name: "Ron Weasley"}}};
     check common:validateNextMessage(wsClient2, expectedMsgPayload);
-    common:closeWebsocketClient(wsClient1);
-    common:closeWebsocketClient(wsClient2);
 }
 
 @test:Config {
@@ -131,8 +125,6 @@ isolated function testInterceptorsWithUnionTypeSubscription() returns error? {
         }
     };
     check common:validateNextMessage(wsClient2, expectedMsgPayload);
-    common:closeWebsocketClient(wsClient1);
-    common:closeWebsocketClient(wsClient2);
 }
 
 @test:Config {
@@ -155,8 +147,6 @@ isolated function testInterceptorsReturnBeforeResolverWithSubscription() returns
         check common:validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
         check common:validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
     }
-    common:closeWebsocketClient(wsClient1);
-    common:closeWebsocketClient(wsClient2);
 }
 
 @test:Config {
@@ -205,8 +195,6 @@ isolated function testInterceptorsDestructiveModificationWithSubscription() retu
         check common:validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
         check common:validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
     }
-    common:closeWebsocketClient(wsClient1);
-    common:closeWebsocketClient(wsClient2);
 }
 
 @test:Config {
@@ -246,9 +234,6 @@ isolated function testInterceptorsWithSubscribersRunSimultaniously1() returns er
     }
     check wait A;
     check wait B;
-    common:closeWebsocketClient(wsClient1);
-    common:closeWebsocketClient(wsClient2);
-    common:closeWebsocketClient(wsClient3);
 }
 
 @test:Config {
@@ -308,6 +293,4 @@ isolated function testInterceptorsWithSubscribersRunSimultaniously2() returns er
     }
     check wait A;
     check wait B;
-    common:closeWebsocketClient(wsClient1);
-    common:closeWebsocketClient(wsClient2);
 }
