@@ -31,7 +31,6 @@ isolated function testSubscriptionWithIntrospectionInFields() returns error? {
 
     json expectedMsgPayload = {data: {students: {__typename: "StudentService"}}};
     check common:validateNextMessage(wsClient, expectedMsgPayload);
-    common:closeWebsocketClient(wsClient);
 }
 
 @test:Config {
@@ -47,7 +46,6 @@ isolated function testInvalidSubscription() returns error? {
 
     json expectedMsgPayload = check common:getJsonContentFromFile("subscription_invalid_field");
     check common:validateErrorMessage(wsClient, expectedMsgPayload);
-    common:closeWebsocketClient(wsClient);
 }
 
 @test:Config {
@@ -69,7 +67,6 @@ isolated function testSubscriptionFunctionWithErrors() returns error? {
         }
     ];
     check common:validateErrorMessage(wsClient, expectedErrorPayload);
-    common:closeWebsocketClient(wsClient);
 }
 
 @test:Config {
@@ -88,7 +85,6 @@ isolated function testSubscriptionWithServiceObjects() returns error? {
     expectedMsgPayload = {data: {students: {id: 2, name: "Mikasa Ackerman"}}};
     check common:validateNextMessage(wsClient, expectedMsgPayload);
     check common:validateCompleteMessage(wsClient);
-    common:closeWebsocketClient(wsClient);
 }
 
 @test:Config {
@@ -114,8 +110,6 @@ isolated function testSubscriptionWithMultipleClients() returns error? {
     }
     check common:validateCompleteMessage(wsClient1, id = "1");
     check common:validateCompleteMessage(wsClient2, id = "2");
-    common:closeWebsocketClient(wsClient1);
-    common:closeWebsocketClient(wsClient2);
 }
 
 @test:Config {
@@ -127,7 +121,6 @@ isolated function testConnectionInitMessage() returns error? {
     websocket:Client wsClient = check new (url, config);
     check common:sendConnectionInitMessage(wsClient);
     check common:validateConnectionAckMessage(wsClient);
-    common:closeWebsocketClient(wsClient);
 }
 
 @test:Config {
@@ -142,7 +135,6 @@ isolated function testInvalidMultipleConnectionInitMessages() returns error? {
 
     string expectedErrorMsg = "Too many initialisation requests: Status code: 4429";
     common:validateConnectionClosureWithError(wsClient, expectedErrorMsg);
-    common:closeWebsocketClient(wsClient);
 }
 
 @test:Config {
@@ -157,5 +149,4 @@ isolated function testUnauthorizedAccess() returns error? {
 
     string expectedErrorMsg = "Unauthorized: Status code: 4401";
     common:validateConnectionClosureWithError(wsClient, expectedErrorMsg);
-    common:closeWebsocketClient(wsClient);
 }

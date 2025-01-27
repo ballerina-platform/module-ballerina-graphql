@@ -33,7 +33,6 @@ isolated function testSubscription() returns error? {
     check common:validateNextMessage(wsClient, expectedMsgPayload);
     expectedMsgPayload = {data: {name: "Skyler"}};
     check common:validateNextMessage(wsClient, expectedMsgPayload);
-    common:closeWebsocketClient(wsClient);
 }
 
 @test:Config {
@@ -74,8 +73,6 @@ isolated function testSubscriptionsWithMultipleOperations() returns error? {
     json actualPayload = check common:getJsonPayloadFromService(httpUrl, document, operationName = "getName");
     json expectedPayload = {data: {name: "Walter White"}};
     common:assertJsonValuesWithOrder(actualPayload, expectedPayload);
-    common:closeWebsocketClient(wsClient1);
-    common:closeWebsocketClient(wsClient2);
 }
 
 @test:Config {
@@ -93,7 +90,6 @@ isolated function testSubscriptionWithRecords() returns error? {
     check common:validateNextMessage(wsClient, expectedMsgPayload);
     expectedMsgPayload = {data: {books: {name: "A Game of Thrones", author: "George R.R. Martin"}}};
     check common:validateNextMessage(wsClient, expectedMsgPayload);
-    common:closeWebsocketClient(wsClient);
 }
 
 @test:Config {
@@ -122,7 +118,6 @@ isolated function testSubscriptionWithFragments() returns error? {
     check common:validateNextMessage(wsClient, expectedMsgPayload);
     expectedMsgPayload = {data: {students: {id: 2, name: "Mikasa Ackerman"}}};
     check common:validateNextMessage(wsClient, expectedMsgPayload);
-    common:closeWebsocketClient(wsClient);
 }
 
 @test:Config {
@@ -140,7 +135,6 @@ isolated function testSubscriptionWithUnionType() returns error? {
     check common:validateNextMessage(wsClient, expectedMsgPayload);
     expectedMsgPayload = {data: {multipleValues: {name: "Walter White", subject: "Chemistry"}}};
     check common:validateNextMessage(wsClient, expectedMsgPayload);
-    common:closeWebsocketClient(wsClient);
 }
 
 @test:Config {
@@ -159,5 +153,4 @@ isolated function testSubscriptionWithVariables() returns error? {
         json expectedMsgPayload = {data: {filterValues: i}};
         check common:validateNextMessage(wsClient, expectedMsgPayload);
     }
-    common:closeWebsocketClient(wsClient);
 }

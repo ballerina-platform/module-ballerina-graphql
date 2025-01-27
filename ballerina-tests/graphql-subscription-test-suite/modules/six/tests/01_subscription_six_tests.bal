@@ -37,5 +37,4 @@ isolated function testConnectionClosureWhenPongNotReceived() returns error? {
     }
     test:assertTrue(response is error, "Expected connection closure error");
     test:assertEquals((<error>response).message(), "Request timeout: Status code: 4408");
-    common:closeWebsocketClient(wsClient);
 }

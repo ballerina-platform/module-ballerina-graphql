@@ -48,7 +48,6 @@ function testAlreadyExistingSubscriber() returns error? {
         }
     }
     test:assertEquals((<error>response).message(), expectedErrorMsg);
-    common:closeWebsocketClient(wsClient);
 }
 
 @test:Config {
@@ -61,7 +60,6 @@ isolated function testOnPing() returns error? {
     check wsClient->writeMessage({'type: common:WS_PING});
     json response = check wsClient->readMessage();
     test:assertEquals(response.'type, common:WS_PONG);
-    common:closeWebsocketClient(wsClient);
 }
 
 @test:Config {
@@ -94,7 +92,6 @@ isolated function testErrorsInStreams() returns error? {
     check common:validateNextMessage(wsClient, expectedMsgPayload);
     expectedMsgPayload = {data: {evenNumber: 6}};
     check common:validateNextMessage(wsClient, expectedMsgPayload);
-    common:closeWebsocketClient(wsClient);
 }
 
 @test:Config {
@@ -120,7 +117,6 @@ isolated function testMultipleSubscriptionUsingSingleClient() returns error? {
         check common:validateNextMessage(wsClient, expectedMsgPayload, id = "2");
     }
     check common:validateCompleteMessage(wsClient, id = "2");
-    common:closeWebsocketClient(wsClient);
 }
 
 @test:Config {
@@ -137,7 +133,6 @@ isolated function testSubscriptionWithInvalidPayload() returns error? {
     string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the" +
         " 'graphql-transport-ws' subprotocol: Status code: 1003";
     common:validateConnectionClosureWithError(wsClient, expectedErrorMsg);
-    common:closeWebsocketClient(wsClient);
 }
 
 @test:Config {
@@ -153,7 +148,6 @@ isolated function testResolverReturingStreamOfRecordsWithServiceObjects() return
 
     json expectedPayload = {data: {live: {product: {id: "1"}, score: 20}}};
     check common:validateNextMessage(wsClient, expectedPayload);
-    common:closeWebsocketClient(wsClient);
 }
 
 @test:Config {
@@ -171,5 +165,4 @@ isolated function testResolverReturingStreamOfRecordsWithMapOfServiceObjects() r
     check common:validateNextMessage(wsClient, expectedMsgPayload);
     expectedMsgPayload = {data: {accountUpdates: {details: {name: "James Deen"}}}};
     check common:validateNextMessage(wsClient, expectedMsgPayload);
-    common:closeWebsocketClient(wsClient);
 }
