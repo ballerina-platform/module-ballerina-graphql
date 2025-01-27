@@ -24,10 +24,6 @@ import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTypedesc;
 
-import java.util.concurrent.CompletableFuture;
-
-import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getResult;
-
 /**
  * This class is used to execute a GraphQL document using the Ballerina GraphQL client.
  */
@@ -67,15 +63,11 @@ public final class QueryExecutor {
 
     private static Object invokeClientMethod(Environment env, BObject client, String methodName, Object[] paramFeed) {
         return env.yieldAndRun(() -> {
-            CompletableFuture<Object> balFuture = new CompletableFuture<>();
-            QueryExecutorCallback executorCallback = new QueryExecutorCallback(balFuture);
             try {
-                Object result = env.getRuntime().callMethod(client, methodName, null, paramFeed);
-                executorCallback.notifySuccess(result);
+                return env.getRuntime().callMethod(client, methodName, null, paramFeed);
             } catch (BError bError) {
-                executorCallback.notifyFailure(bError);
+                return bError;
             }
-            return getResult(balFuture);
         });
     }
 }
