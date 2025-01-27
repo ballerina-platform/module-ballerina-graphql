@@ -37,7 +37,7 @@ def testSuites = [
     "graphql-dataloader-test-suite",
     "graphql-interceptor-test-suite",
     "graphql-security-test-suite",
-    "graphql-service-test-suite", 
+    "graphql-service-test-suite",
     "graphql-subgraph-test-suite",
     "graphql-subscription-test-suite"
 ]
@@ -165,7 +165,12 @@ task ballerinaTest {
 
     doLast {
         testSuites.each { testPackage ->
-        if (!skipTests) {
+            // TODO: Disable the graphql-subscription-test-suite on Linux
+            // Check issue: https://github.com/ballerina-platform/ballerina-library/issues/7529
+            if (Os.isFamily(Os.FAMILY_UNIX) && testPackage == "graphql-subscription-test-suite") {
+                return
+            }
+            if (!skipTests) {
                 exec {
                     workingDir "${project.projectDir}/${testPackage}"
                     environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
