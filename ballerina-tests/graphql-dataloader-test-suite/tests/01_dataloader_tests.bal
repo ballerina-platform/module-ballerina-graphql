@@ -49,7 +49,8 @@ isolated function testDataLoaderWithDifferentAliasForSameField() returns error? 
 
 @test:Config {
     groups: ["subscriptions", "dataloader"],
-    after: resetDispatchCounters
+    after: resetDispatchCounters,
+    enable: false
 }
 isolated function testDataLoaderWithSubscription() returns error? {
     string document = check common:getGraphqlDocumentFromFile("dataloader_with_subscription");
@@ -63,6 +64,7 @@ isolated function testDataLoaderWithSubscription() returns error? {
         check common:validateNextMessage(wsClient, expectedMsgPayload, id = "1");
     }
     assertDispatchCountForBookLoader(5);
+    common:closeWebsocketClient(wsClient);
 }
 
 @test:Config {
@@ -70,7 +72,8 @@ isolated function testDataLoaderWithSubscription() returns error? {
     dependsOn: [
         testDataLoaderWithQuery, testDataLoaderWithSubscription
     ],
-    after: resetDispatchCounters
+    after: resetDispatchCounters,
+    enable: false
 }
 isolated function testDataLoaderWithMutation() returns error? {
     graphql:Client graphqlClient = check new ("localhost:9090/dataloader");

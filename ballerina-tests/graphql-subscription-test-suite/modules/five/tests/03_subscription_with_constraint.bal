@@ -30,6 +30,7 @@ isolated function testSubscriptionWithConstraints() returns error? {
     check common:sendSubscriptionMessage(wsClient, document, operationName = "Sub");
     json expectedMsgPayload = check common:getJsonContentFromFile("constraints_with_subscription");
     check common:validateErrorMessage(wsClient, expectedMsgPayload);
+    common:closeWebsocketClient(wsClient);
 }
 
 @test:Config {
@@ -50,4 +51,6 @@ isolated function testMultipleSubscriptionClientsWithConstraints() returns error
     json expectedMsgPayload = check common:getJsonContentFromFile("constraints_with_subscription");
     check common:validateErrorMessage(wsClient1, expectedMsgPayload, "1");
     check common:validateErrorMessage(wsClient2, expectedMsgPayload, "2");
+    common:closeWebsocketClient(wsClient1);
+    common:closeWebsocketClient(wsClient2);
 }

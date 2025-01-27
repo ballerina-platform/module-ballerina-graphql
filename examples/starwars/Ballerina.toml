@@ -1,5 +1,5 @@
 [package]
-org = "graphql"
+org = "wso2"
 name = "starwars"
 version = "0.1.0"
 

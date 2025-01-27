@@ -5,7 +5,7 @@
 
 [ballerina]
 dependencies-toml-version = "2"
-distribution-version = "2201.11.0-20241204-121300-fc33b755"
+distribution-version = "2201.11.0-20250121-140200-15de3b28"
 
 [[package]]
 org = "ballerina"
@@ -127,6 +127,7 @@ dependencies = [
 	{org = "ballerina", name = "graphql"},
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "test"},
 	{org = "ballerina", name = "websocket"}
 ]

@@ -18,6 +18,7 @@ import ballerina/file;
 import ballerina/graphql;
 import ballerina/http;
 import ballerina/io;
+import ballerina/log;
 import ballerina/test;
 import ballerina/websocket;
 
@@ -108,9 +109,11 @@ public isolated function getContentFromByteStream(stream<byte[], io:Error?> byte
     return 'string:fromBytes(content);
 }
 
-public isolated function readMessageExcludingPingMessages(websocket:Client wsClient) returns json|websocket:Error {
+public isolated function readMessageExcludingPingMessages(websocket:Client wsClient) returns json|error {
     json message = null;
-    while true {
+    int i = 0;
+    while i < 10 {
+        i = i + 1;
         message = check wsClient->readMessage();
         if message == null {
             continue;
@@ -121,6 +124,7 @@ public isolated function readMessageExcludingPingMessages(websocket:Client wsCli
         }
         return message;
     }
+    return error("No message received");
 }
 
 public isolated function sendPongMessage(websocket:Client wsClient) returns websocket:Error? {
@@ -149,29 +153,41 @@ public isolated function initiateGraphqlWsConnection(websocket:Client wsClient) 
     check validateConnectionAckMessage(wsClient);
 }
 
-public isolated function validateNextMessage(websocket:Client wsClient, json expectedMsgPayload, string id = "1") returns websocket:Error? {
+public isolated function validateNextMessage(websocket:Client wsClient, json expectedMsgPayload, string id = "1") returns error? {
     json expectedPayload = {'type: WS_NEXT, id, payload: expectedMsgPayload};
     json actualPayload = check readMessageExcludingPingMessages(wsClient);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-public isolated function validateErrorMessage(websocket:Client wsClient, json expectedMsgPayload, string id = "1") returns websocket:Error? {
+public isolated function validateErrorMessage(websocket:Client wsClient, json expectedMsgPayload, string id = "1") returns error? {
     json expectedPayload = {'type: WS_ERROR, id, payload: expectedMsgPayload};
     json actualPayload = check readMessageExcludingPingMessages(wsClient);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-public isolated function validateCompleteMessage(websocket:Client wsClient, string id = "1") returns websocket:Error? {
+public isolated function validateCompleteMessage(websocket:Client wsClient, string id = "1") returns error? {
     json expectedPayload = {'type: WS_COMPLETE, id};
     json actualPayload = check readMessageExcludingPingMessages(wsClient);
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-public isolated function validateConnectionClousureWithError(websocket:Client wsClient, string expectedErrorMsg) {
+public isolated function validateConnectionClosureWithError(websocket:Client wsClient, string expectedErrorMsg) {
     json|error response = readMessageExcludingPingMessages(wsClient);
     if response is error {
         test:assertEquals(response.message(), expectedErrorMsg);
         return;
     }
     test:assertFail(string `Unexpected Error found : ${response.toString()}`);
+}
+
+public isolated function closeWebsocketClient(websocket:Client wsClient) {
+    string id = wsClient.getConnectionId();
+    error? result = wsClient->writeMessage({'type: WS_COMPLETE, id});
+    if result is error {
+        log:printError("Error occurred while sending the complete message: ", result);
+    }
+    result = wsClient->close(timeout = 1);
+    if result is error {
+        log:printError("Error occurred while closing the websocket client: ", result);
+    }
 }
