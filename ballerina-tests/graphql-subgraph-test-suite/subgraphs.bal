@@ -21,7 +21,7 @@ service /subgraph on new graphql:Listener(9088) {
     resource function get greet() returns string => "welcome";
 }
 
-public graphql:Service subgraphServivce = @subgraph:Subgraph service object {
+public graphql:Service subgraphService = @subgraph:Subgraph service object {
     resource function get greeting() returns string => "welcome";
 };
 

@@ -167,7 +167,6 @@ dependencies = [
 ]
 modules = [
 	{org = "ballerina", packageName = "http", moduleName = "http"},
-	{org = "ballerina", packageName = "http", moduleName = "http.default"},
 	{org = "ballerina", packageName = "http", moduleName = "http.httpscerr"}
 ]
 

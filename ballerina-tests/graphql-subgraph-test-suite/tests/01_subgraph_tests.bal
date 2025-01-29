@@ -109,13 +109,15 @@ isolated function testQueringSdlOnSubgraph() returns error? {
     groups: ["federation", "subgraph"]
 }
 function testAttachingSubgraphServiceToDynamicListener() returns error? {
-    check subgraphListener.attach(subgraphServivce, "subgraph");
+    graphql:Listener subgraphListener = check new (9095);
+    check subgraphListener.attach(subgraphService, "subgraph");
+    check subgraphListener.start();
     string url = "http://localhost:9095/subgraph";
     graphql:Client graphqlClient = check new (url);
     string document = check common:getGraphqlDocumentFromFile("querying_entities_field_on_subgraph");
     json response = check graphqlClient->execute(document);
     json expectedPayload = check common:getJsonContentFromFile("querying_entities_field_on_subgraph");
-    check subgraphListener.detach(subgraphServivce);
+    check subgraphListener.detach(subgraphService);
     common:assertJsonValuesWithOrder(response, expectedPayload);
 }
 
