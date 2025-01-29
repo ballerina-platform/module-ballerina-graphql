@@ -265,7 +265,7 @@ function testFriends() returns error? {
 }
 
 @test:Config {
-    enable: false // Disabled the test becasue the service is not closing when this test is done.
+    enable: false // Disabled the test because the service is not closing when this test is done.
 }
 function testReviewAdded() returns error? {
     string document = check getGraphqlDocumentFromFile("reviewAdded");
@@ -300,12 +300,7 @@ function addReview(string document) returns error? {
 
 function subscribeReviewAdded(string document) returns error? {
     json variables = {
-        episode: "EMPIRE",
-        // TODO: This field is not required. We can remove the `review` field from the `variables` map after fixing #4206
-        review: {
-            stars: 5,
-            commentary: "Nice!"
-        }
+        episode: "EMPIRE"
     };
     websocket:ClientConfiguration config = {subProtocols: ["graphql-transport-ws"]};
     websocket:Client wsClient = check new ("ws://localhost:9090/graphql", config);

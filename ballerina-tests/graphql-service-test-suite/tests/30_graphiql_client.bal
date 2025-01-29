@@ -26,7 +26,7 @@ function testGraphiqlWithSamePathAsGraphQLService() returns error? {
     graphql:Error? result = basicListener.attach(graphiqlConfigService, "ballerina/graphiql");
     test:assertTrue(result is graphql:Error);
     graphql:Error err = <graphql:Error>result;
-    test:assertEquals(err.message(), "Error occurred while attaching the GraphiQL endpoint");
+    test:assertEquals(err.message(), "Error occurred while attaching the HTTP service");
 }
 
 @test:Config {

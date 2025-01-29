@@ -17,4 +17,3 @@
 import ballerina/graphql;
 
 listener graphql:Listener basicListener = new (9090);
-listener graphql:Listener subscriptionListener = new (9091);
