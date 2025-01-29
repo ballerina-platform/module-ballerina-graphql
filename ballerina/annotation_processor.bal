@@ -59,20 +59,6 @@ isolated function getServiceInterceptors(GraphqlServiceConfig? serviceConfig) re
     return [];
 }
 
-isolated function getIntrospection(GraphqlServiceConfig? serviceConfig) returns boolean {
-    if serviceConfig is GraphqlServiceConfig {
-        return serviceConfig.introspection;
-    }
-    return true;
-}
-
-isolated function getValidation(GraphqlServiceConfig? serviceConfig) returns boolean {
-    if serviceConfig is GraphqlServiceConfig {
-        return serviceConfig.validation;
-    }
-    return true;
-}
-
 isolated function getFieldInterceptors(service object {} serviceObj, parser:RootOperationType operationType,
         string fieldName, string[] resourcePath) returns readonly & (readonly & Interceptor)[] {
     GraphqlResourceConfig? resourceConfig = getResourceAnnotation(serviceObj, operationType, resourcePath, fieldName);
@@ -107,22 +93,6 @@ isolated function isGlobalInterceptor(readonly & Interceptor interceptor) return
 isolated function getInterceptorConfig(readonly & Interceptor interceptor) returns GraphqlInterceptorConfig? {
     typedesc<any> classType = typeof interceptor;
     return classType.@InterceptorConfig;
-}
-
-isolated function getCacheConfig(GraphqlServiceConfig? serviceConfig) returns ServerCacheConfig? {
-    if serviceConfig is GraphqlServiceConfig {
-        if serviceConfig.cacheConfig is ServerCacheConfig {
-            return serviceConfig.cacheConfig;
-        }
-    }
-    return;
-}
-
-isolated function getFieldCacheConfigFromServiceConfig(GraphqlServiceConfig? serviceConfig) returns ServerCacheConfig? {
-    if serviceConfig is GraphqlServiceConfig {
-        return serviceConfig.fieldCacheConfig;
-    }
-    return;
 }
 
 isolated function getFieldCacheConfig(service object {} serviceObj, parser:RootOperationType operationType,

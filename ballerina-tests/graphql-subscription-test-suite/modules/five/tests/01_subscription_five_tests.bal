@@ -16,6 +16,7 @@
 
 import ballerina/graphql;
 import ballerina/graphql_test_common as common;
+import ballerina/http;
 import ballerina/test;
 import ballerina/websocket;
 
@@ -23,11 +24,12 @@ import ballerina/websocket;
     groups: ["listener", "subscriptions"]
 }
 function testAttachServiceWithSubscriptionToHttp2BasedListener() returns error? {
+    http:Listener http2Listener = check new http:Listener(9090);
+    graphql:Listener http2BasedListener = check new (http2Listener);
     graphql:Error? result = http2BasedListener.attach(subscriptionService);
     test:assertTrue(result is graphql:Error);
     graphql:Error err = <graphql:Error>result;
-    string expectedMessage = string `Websocket listener initialization failed due to the incompatibility of ` +
-                            string `provided HTTP(version 2.0) listener`;
+    string expectedMessage = "GraphQL subscriptions are only supported over HTTP/1.1 or HTTP/1.0. Found 2.0";
     test:assertEquals(err.message(), expectedMessage);
 }
 

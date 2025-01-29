@@ -450,6 +450,15 @@ returns [string, string] {
     return [string `https://${LOCALHOST}:${port}`, string `wss://${LOCALHOST}:${port}`];
 }
 
+isolated function validateHttpVersion(http:Listener httpListener) returns Error? {
+    string httpVersion = httpListener.getConfig().httpVersion;
+    if httpVersion !is http:HTTP_1_1|http:HTTP_1_0 {
+        string message =
+            string `GraphQL subscriptions are only supported over HTTP/1.1 or HTTP/1.0. Found ${httpVersion}`;
+        return error Error(message);
+    }
+}
+
 isolated function attachHttpServiceToGraphqlService(Service s, HttpService httpService) = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.ListenerUtils"
 } external;

@@ -16,4 +16,7 @@
 
 import ballerina/graphql;
 
-listener graphql:Listener graphqlListener = new (9090);
+configurable int port = 9090;
+configurable graphql:ListenerConfiguration graphqlListenerConfigs = {};
+
+listener graphql:Listener graphqlListener = new (port, graphqlListenerConfigs);
