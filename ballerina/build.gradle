@@ -50,7 +50,6 @@ ballerina {
     module = packageName
     langVersion = ballerinaLangVersion
     testCoverageParam = "--code-coverage --coverage-format=xml --includes=io.ballerina.stdlib.graphql.*:ballerina.graphql*"
-    platform = 'java21'
 }
 
 task updateTomlFiles {
