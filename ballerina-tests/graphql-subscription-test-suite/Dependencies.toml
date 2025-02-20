@@ -5,7 +5,7 @@
 
 [ballerina]
 dependencies-toml-version = "2"
-distribution-version = "2201.11.0-20250127-101700-a4b67fe5"
+distribution-version = "2201.11.0"
 
 [[package]]
 org = "ballerina"
@@ -79,7 +79,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "graphql"
-version = "1.15.0"
+version = "1.16.0"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "auth"},
@@ -112,7 +112,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql_subscription_test_suite"
-version = "1.15.0"
+version = "1.16.0"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "graphql"},
@@ -135,7 +135,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql_test_common"
-version = "1.15.0"
+version = "1.16.0"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "file"},
@@ -152,7 +152,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.13.0"
+version = "2.13.3"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "auth"},
@@ -424,7 +424,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "websocket"
-version = "2.13.0"
+version = "2.13.1"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "auth"},

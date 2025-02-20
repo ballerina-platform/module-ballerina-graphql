@@ -1,8 +1,7 @@
 import ballerina/test;
 
 @test:Config {
-    groups: ["query"],
-    enable: true
+    groups: ["query"]
 }
 function testUser() returns error? {
     string query = "query { user { login } }";
@@ -18,8 +17,7 @@ function testUser() returns error? {
 }
 
 @test:Config {
-    groups: ["query"],
-    enable: true
+    groups: ["query"]
 }
 function testRepositories() returns error? {
     string query = "query { repositories { name }}";
@@ -31,8 +29,7 @@ function testRepositories() returns error? {
 }
 
 @test:Config {
-    groups: ["query"],
-    enable: true
+    groups: ["query"]
 }
 function testRepository() returns error? {
     string repoName = "Module-Ballerina-GraphQL";
@@ -49,8 +46,7 @@ function testRepository() returns error? {
 }
 
 @test:Config {
-    groups: ["query"],
-    enable: true
+    groups: ["query"]
 }
 function testBranches() returns error? {
     string repoName = "Module-Ballerina-GraphQL";
@@ -70,8 +66,7 @@ function testBranches() returns error? {
 }
 
 @test:Config {
-    groups: ["mutation"],
-    enable: true
+    groups: ["mutation"]
 }
 function createRepository() returns error? {
     string repoName = "Test-Repo";
