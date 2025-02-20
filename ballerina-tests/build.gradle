@@ -191,9 +191,11 @@ test {
 
 clean {
     delete "${project.projectDir}/${testCommonPackage}/target"
+    delete "${project.projectDir}/${testCommonPackage}/Dependencies.toml"
 
     testSuites.each { testPackage ->
         delete "${project.projectDir}/${testPackage}/target"
+        delete "${project.projectDir}/${testPackage}/Dependencies.toml"
     }
 }
 

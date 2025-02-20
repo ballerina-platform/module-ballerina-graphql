@@ -26,12 +26,14 @@ import io.ballerina.compiler.syntax.tree.ExplicitNewExpressionNode;
 import io.ballerina.compiler.syntax.tree.FunctionArgumentNode;
 import io.ballerina.compiler.syntax.tree.ImplicitNewExpressionNode;
 import io.ballerina.compiler.syntax.tree.ListenerDeclarationNode;
+import io.ballerina.compiler.syntax.tree.NamedArgumentNode;
 import io.ballerina.compiler.syntax.tree.PositionalArgumentNode;
 import io.ballerina.compiler.syntax.tree.SeparatedNodeList;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.diagnostics.CompilationDiagnostic;
+import io.ballerina.tools.diagnostics.Location;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlListener;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.updateContext;
@@ -40,6 +42,8 @@ import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUt
  * Validates Ballerina GraphQL Listener Initializations.
  */
 public class ListenerValidator implements AnalysisTask<SyntaxNodeAnalysisContext> {
+    private static final String LISTEN_TO = "listenTo";
+
     @Override
     public void perform(SyntaxNodeAnalysisContext context) {
         if (context.node().kind() == SyntaxKind.EXPLICIT_NEW_EXPRESSION) {
@@ -100,21 +104,46 @@ public class ListenerValidator implements AnalysisTask<SyntaxNodeAnalysisContext
 
     private void validateListenerArguments(SyntaxNodeAnalysisContext context,
                                            SeparatedNodeList<FunctionArgumentNode> arguments) {
+        if (arguments.size() < 2) {
+            return;
+        }
         // two args are valid only if the first arg is numeric (i.e, port and config)
-        if (arguments.size() > 1) {
-            PositionalArgumentNode firstArg = (PositionalArgumentNode) arguments.get(0);
-            if (context.semanticModel().symbol(firstArg.expression()).isEmpty()) {
+        FunctionArgumentNode firstArg = arguments.get(0);
+        if (firstArg.kind() == SyntaxKind.POSITIONAL_ARG) {
+            PositionalArgumentNode positionalArgumentNode = (PositionalArgumentNode) firstArg;
+            if (context.semanticModel().symbol(positionalArgumentNode.expression()).isEmpty()) {
                 return;
             }
-            Symbol firstArgSymbol = context.semanticModel().symbol(firstArg.expression()).get();
-            if (firstArgSymbol.kind() == SymbolKind.VARIABLE) {
-                VariableSymbol variableSymbol = (VariableSymbol) firstArgSymbol;
-                if (variableSymbol.typeDescriptor().typeKind() == TypeDescKind.INT) {
+            Symbol firstArgSymbol = context.semanticModel().symbol(positionalArgumentNode.expression()).get();
+            validateListenerArgSymbol(context, firstArgSymbol, positionalArgumentNode.location());
+        } else if (firstArg.kind() == SyntaxKind.NAMED_ARG) {
+            validateListenerNamedArguments(context, arguments);
+        }
+    }
+
+    private void validateListenerNamedArguments(SyntaxNodeAnalysisContext context,
+                                                SeparatedNodeList<FunctionArgumentNode> arguments) {
+        for (FunctionArgumentNode argument : arguments) {
+            // Casting directly to NamedArgumentNode as the kind is already checked
+            NamedArgumentNode namedArgument = (NamedArgumentNode) argument;
+            String argumentName = namedArgument.argumentName().name().text();
+            if (argumentName.equals(LISTEN_TO)) {
+                if (context.semanticModel().symbol(namedArgument.expression()).isEmpty()) {
                     return;
                 }
+                Symbol argumentNodeSymbol = context.semanticModel().symbol(namedArgument.expression()).get();
+                validateListenerArgSymbol(context, argumentNodeSymbol, namedArgument.location());
             }
-            FunctionArgumentNode secondArg = arguments.get(1);
-            updateContext(context, CompilationDiagnostic.INVALID_LISTENER_INIT, secondArg.location());
+        }
+    }
+
+    private void validateListenerArgSymbol(SyntaxNodeAnalysisContext context, Symbol argumentNodeSymbol,
+                                           Location location) {
+        if (argumentNodeSymbol.kind() == SymbolKind.VARIABLE) {
+            VariableSymbol variableSymbol = (VariableSymbol) argumentNodeSymbol;
+            if (variableSymbol.typeDescriptor().typeKind() != TypeDescKind.INT) {
+                updateContext(context, CompilationDiagnostic.INVALID_LISTENER_INIT, location);
+            }
         }
     }
 }
