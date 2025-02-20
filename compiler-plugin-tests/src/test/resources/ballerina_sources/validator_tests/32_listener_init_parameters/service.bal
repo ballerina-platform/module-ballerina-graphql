@@ -26,10 +26,17 @@ graphql:ListenerConfiguration configs = {
     timeout: 1.0
 };
 
+listener graphql:Listener listener0 = new (9090, configs);
 listener graphql:Listener listener1 = new(httpListener1, configs);
 listener graphql:Listener listener2 = check new(httpListener2, configs);
 listener graphql:Listener listener3 = new graphql:Listener(httpListener3, configs);
 listener graphql:Listener listener4 = check new graphql:Listener(httpListener4, configs);
+listener graphql:Listener listener5 = new (listenTo = httpListener1, httpVersion = http:HTTP_2_0);
+listener graphql:Listener listener6 = check new (listenTo = httpListener2, httpVersion = http:HTTP_2_0);
+listener graphql:Listener listener7 = new (httpVersion = http:HTTP_2_0, listenTo = httpListener3);
+listener graphql:Listener listener8 = check new (httpVersion = http:HTTP_2_0, listenTo = httpListener4);
+listener graphql:Listener listener9 = new (httpVersion = http:HTTP_2_0, host = "192.168.1.1", listenTo = httpListener1);
+listener graphql:Listener listener10 = check new (httpVersion = http:HTTP_2_0, host = "192.168.1.1", listenTo = 9090);
 
 service graphql:Service on new graphql:Listener(httpListener1, configs) {
     resource function get name() returns string {

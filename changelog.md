@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- [[#7555] Fix Compiler Crash when Listener Init Parameters are Passed as Named Parameters](https://github.com/ballerina-platform/ballerina-library/issues/7555)
+
 ## [1.15.0] - 2025-02-08
 
 ### Added

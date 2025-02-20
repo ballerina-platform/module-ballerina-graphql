@@ -406,23 +406,38 @@ public class ServiceValidationTest {
     public void testListenerInitParameters() {
         String packagePath = "32_listener_init_parameters";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 5);
+        Assert.assertEquals(diagnosticResult.errorCount(), 10);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 29, 58);
+        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 30, 43);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 30, 64);
+        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 31, 49);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 31, 75);
+        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 32, 60);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 32, 81);
+        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 33, 66);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 34, 64);
+        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 34, 44);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 35, 50);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 36, 73);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 37, 79);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 38, 95);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 41, 49);
     }
 
     @Test(groups = "invalid")
@@ -560,16 +575,16 @@ public class ServiceValidationTest {
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 24, 58);
+        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 24, 43);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 25, 64);
+        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 25, 49);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 26, 75);
+        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 26, 60);
 
         diagnostic = diagnosticIterator.next();
-        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 27, 81);
+        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 27, 66);
     }
 
     @Test(groups = "invalid")

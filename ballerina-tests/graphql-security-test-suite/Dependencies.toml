@@ -76,7 +76,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "graphql"
-version = "1.15.0"
+version = "1.15.1"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "auth"},
@@ -109,7 +109,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql_security_test_suite"
-version = "1.15.0"
+version = "1.15.1"
 dependencies = [
 	{org = "ballerina", name = "graphql"},
 	{org = "ballerina", name = "graphql_test_common"},
@@ -123,7 +123,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql_test_common"
-version = "1.15.0"
+version = "1.15.1"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "file"},
@@ -140,7 +140,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.13.0"
+version = "2.13.3"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "auth"},
@@ -409,7 +409,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "websocket"
-version = "2.13.0"
+version = "2.13.1"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "auth"},
