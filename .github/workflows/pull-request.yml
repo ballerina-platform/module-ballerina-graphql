@@ -7,8 +7,64 @@ concurrency:
 on: pull_request
 
 jobs:
-    call_workflow:
-        name: Run PR Build Workflow
-        if: ${{ github.repository_owner == 'ballerina-platform' }}
-        uses: ballerina-platform/ballerina-library/.github/workflows/pull-request-build-template.yml@main
-        secrets: inherit
+    ubuntu-build:
+        name: Build on Ubuntu
+        runs-on: ubuntu-20.04
+        concurrency:
+          group: ${{ github.head_ref }}-ubuntu-build
+          cancel-in-progress: true
+        steps:
+            -   name: Checkout Repository
+                uses: actions/checkout@v3
+
+            -   name: Set up JDK 21
+                uses: actions/setup-java@v3
+                with:
+                    distribution: 'temurin'
+                    java-version: 21.0.3
+
+            - name: Set ENV Variables
+              run: |
+                echo -e '${{ toJson(secrets) }}' | jq -r 'to_entries[] | .key + "=" + .value' >> $GITHUB_ENV
+
+            -   name: Build the Package
+                env:
+                    packageUser: ${{ github.actor }}
+                    packagePAT: ${{ secrets.GITHUB_TOKEN }}
+                run: |
+                  ./gradlew build
+
+            - name: Generate CodeCov Report
+              uses: codecov/codecov-action@v5
+              with:
+                token: ${{ secrets.CODECOV_TOKEN }}
+                slug: ballerina-platform/module-ballerina-graphql
+
+    windows-build:
+        name: Build on Windows
+        runs-on: windows-latest
+        concurrency:
+          group: ${{ github.head_ref }}-windows-build
+          cancel-in-progress: true
+        steps:
+            -   name: Checkout Repository
+                uses: actions/checkout@v3
+
+            -   name: Set up JDK 21
+                uses: actions/setup-java@v3
+                with:
+                    distribution: 'temurin'
+                    java-version: 21.0.3
+
+            - name: Set ENV Variables
+              run: |
+                echo '${{ toJson(secrets) }}' | jq -r 'to_entries[] | .key + "=" + .value' | Out-File -FilePath $env:GITHUB_ENV -Append
+
+            -   name: Build the Project
+                env:
+                    packageUser: ${{ github.actor }}
+                    packagePAT: ${{ secrets.GITHUB_TOKEN }}
+                    JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF8
+                run: |
+                  ./gradlew.bat build
+                  ./gradlew.bat test
