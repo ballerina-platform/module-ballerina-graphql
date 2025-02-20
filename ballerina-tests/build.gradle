@@ -165,11 +165,6 @@ task ballerinaTest {
 
     doLast {
         testSuites.each { testPackage ->
-            // TODO: Disable the graphql-subscription-test-suite on Linux
-            // Check issue: https://github.com/ballerina-platform/ballerina-library/issues/7529
-            if (Os.isFamily(Os.FAMILY_UNIX) && testPackage == "graphql-subscription-test-suite") {
-                return
-            }
             if (!skipTests) {
                 exec {
                     workingDir "${project.projectDir}/${testPackage}"
