@@ -65,7 +65,7 @@ public class Parser {
         token = check self.peekNextNonSeparatorToken();
         string operationName = check getOperationNameFromToken(self);
         token = check self.peekNextNonSeparatorToken();
-        TokenType tokenType = token.kind;
+        int tokenType = token.kind;
         if tokenType == T_OPEN_PARENTHESES || tokenType == T_OPEN_BRACE || tokenType == T_AT {
             OperationNode operation = check self.parseOperationNode(operationName, operationType, location);
             self.addOperationToMap(operation);
@@ -385,9 +385,8 @@ public class Parser {
                 } else {
                     //input object fields with value
                     token = check self.readNextNonSeparatorToken();
-                    ArgumentType argType = <ArgumentType>token.kind;
                     ArgumentValue fieldValue = check getArgumentValue(token);
-                    ArgumentNode inputObjectFieldNode = new (fieldName, fieldLocation, argType, value = fieldValue,
+                    ArgumentNode inputObjectFieldNode = new (fieldName, fieldLocation, token.kind, value = fieldValue,
                                                              valueLocation = token.location);
                     fields.push(inputObjectFieldNode);
                     visitedFields.push(fieldName);
@@ -402,22 +401,24 @@ public class Parser {
     isolated function getListTypeArgument(string name, Location location,
             boolean isAllowVariableValue = true) returns ArgumentNode|Error {
         Token token = check self.readNextNonSeparatorToken(); // consume open bracket here
+        int kind = token.kind;
         ArgumentValue[] listMembers = [];
         token = check self.peekNextNonSeparatorToken();
         Location valueLocation = token.location;
-        if token.kind != T_CLOSE_BRACKET {
-            while token.kind != T_CLOSE_BRACKET {
+        if kind != T_CLOSE_BRACKET {
+            while kind != T_CLOSE_BRACKET {
                 token = check self.peekNextNonSeparatorToken();
-                if token.kind == T_OPEN_BRACE {
+                kind = token.kind;
+                if kind == T_OPEN_BRACE {
                     //list with input objects
                     ArgumentNode inputObjectValue =
                         check self.getInputObjectTypeArgument(name, token.location, isAllowVariableValue);
                     listMembers.push(inputObjectValue);
-                } else if token.kind == T_OPEN_BRACKET {
+                } else if kind == T_OPEN_BRACKET {
                     //list with nested lists
                     ArgumentNode listValue = check self.getListTypeArgument(name, token.location);
                     listMembers.push(listValue);
-                } else if token.kind == T_DOLLAR {
+                } else if kind == T_DOLLAR {
                     if isAllowVariableValue {
                         //list with variables
                         token = check self.readNextNonSeparatorToken(); // consume dollar here
@@ -429,17 +430,17 @@ public class Parser {
                     } else {
                         return getUnexpectedTokenError(token);
                     }
-                } else if token.kind is ArgumentType {
+                } else if kind >= T_IDENTIFIER && kind <= T_LIST {
                     //list with Scalar values
                     token = check self.readNextNonSeparatorToken();
-                    ArgumentType argType = <ArgumentType>token.kind;
                     ArgumentValue value = check getArgumentValue(token);
-                    ArgumentNode argumentValue = new (name, token.location, argType, value = value);
+                    ArgumentNode argumentValue = new (name, token.location, token.kind, value = value);
                     listMembers.push(argumentValue);
                 } else {
                     return getUnexpectedTokenError(token);
                 }
                 token = check self.peekNextNonSeparatorToken();
+                kind = token.kind;
             }
         }
         token = check self.readNextNonSeparatorToken(); // consume close bracket here
@@ -454,14 +455,12 @@ public class Parser {
                 //scalar type argument with variable definition
                 token = check self.readNextNonSeparatorToken();
                 string varName = check getIdentifierTokenvalue(token);
-                ArgumentType argType = <ArgumentType>token.kind;
-                return new (name, token.location, argType, true, token.location, variableName = varName);
+                return new (name, token.location, token.kind, true, token.location, variableName = varName);
             }
             return getUnexpectedTokenError(token);
         } else {
             ArgumentValue value = check getArgumentValue(token);
-            ArgumentType argType = <ArgumentType>token.kind;
-            return new (name, location, argType, valueLocation = token.location, value = value);
+            return new (name, location, token.kind, valueLocation = token.location, value = value);
         }
     }
 
@@ -507,7 +506,8 @@ public class Parser {
 
     isolated function readNextNonSeparatorToken() returns Token|Error {
         Token token = check self.lexer.read();
-        if token.kind is IgnoreType {
+        int kind = token.kind;
+        if token.kind >= T_COMMENT && kind <= T_WHITE_SPACE {
             return self.readNextNonSeparatorToken();
         }
         return token;
@@ -516,9 +516,11 @@ public class Parser {
     isolated function peekNextNonSeparatorToken() returns Token|Error {
         int i = 0;
         Token token = check self.lexer.peek(i);
-        while token.kind is IgnoreType {
+        int kind = token.kind;
+        while kind >= T_COMMENT && kind <= T_WHITE_SPACE {
             i += 1;
             token = check self.lexer.peek(i);
+            kind = token.kind;
         }
         return token;
     }
@@ -586,7 +588,8 @@ isolated function getRootOperationType(Token token) returns RootOperationType|Er
 }
 
 isolated function getArgumentValue(Token token) returns ArgumentValue|Error {
-    if token.kind is ArgumentType {
+    int kind = token.kind;
+    if kind >= T_IDENTIFIER && kind <= T_LIST {
         return token.value == NULL ? () : token.value;
     }
     return getUnexpectedTokenError(token);

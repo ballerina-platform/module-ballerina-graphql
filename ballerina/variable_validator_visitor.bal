@@ -215,7 +215,7 @@ class VariableValidatorVisitor {
         }
     }
 
-    isolated function setDefaultValueToArgumentNode(parser:ArgumentNode argumentNode, parser:ArgumentType kind,
+    isolated function setDefaultValueToArgumentNode(parser:ArgumentNode argumentNode, int kind,
                                                     parser:ArgumentValue|parser:ArgumentValue[] defaultValue,
                                                     parser:Location valueLocation) {
         self.modifyArgumentNode(argumentNode, kind = kind, value = defaultValue, valueLocation = valueLocation, isVarDef = false);
@@ -363,7 +363,7 @@ class VariableValidatorVisitor {
         return self.errors.length() > 0 ? self.errors : ();
     }
 
-    private isolated function modifyArgumentNode(parser:ArgumentNode originalNode, parser:ArgumentType? kind = (),
+    private isolated function modifyArgumentNode(parser:ArgumentNode originalNode, int? kind = (),
                                                 parser:ArgumentValue|parser:ArgumentValue[] value = (),
                                                 Location? valueLocation = (), boolean? isVarDef = (),
                                                 json variableValue = (), boolean? containsInvalidValue = ()) {

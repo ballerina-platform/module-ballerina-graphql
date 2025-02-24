@@ -51,17 +51,22 @@ public class Lexer {
 
     isolated function readNextToken() returns Token|SyntaxError {
         string:Char? char = self.charReader.peek();
-        if char is () {
+        if char == () {
             return {
                 kind: T_EOF,
                 value: "",
                 location: self.currentLocation.clone()
             };
-        } else if char == DOUBLE_QUOTE {
+        }
+        int tokenTag = -1;
+        if (symbolTable.hasKey(char)) {
+            tokenTag = symbolTable.get(char);
+        }
+        if char == DOUBLE_QUOTE {
             return self.readStringLiteral();
-        } else if char == DASH || char is Digit {
+        } else if char == DASH || tokenTag == DIGIT_TAG {
             return self.readNumericLiteral(char);
-        } else if char is Separator || char is SpecialCharacter {
+        } else if (tokenTag >= WHITE_SPACE_TAG && tokenTag <= SPECIAL_CHARACTER_TAG) {
             return self.readSpecialCharacterToken(char);
         } else if char == HASH {
             return self.readCommentToken();
@@ -75,14 +80,14 @@ public class Lexer {
     isolated function readSeparatorToken(string:Char char) returns Token? {
         Location location = self.currentLocation.clone();
         _ = self.readNextChar();
-        TokenType kind = getTokenType(char);
+        int kind = getTokenType(char);
         return getToken(char, kind, location);
     }
 
     isolated function readSpecialCharacterToken(string:Char char) returns Token {
         Location location = self.currentLocation.clone();
         _ = self.readNextChar();
-        TokenType kind = getTokenType(char);
+        int kind = getTokenType(char);
         return getToken(char, kind, location);
     }
 
@@ -101,8 +106,14 @@ public class Lexer {
 
         string:Char? char = self.charReader.peek();
         boolean isEscaped = false;
-        while char is string:Char {
-            if char is LineTerminator {
+        int tokenTag = -1;
+        while char != () {
+            if (symbolTable.hasKey(char)) {
+                tokenTag = symbolTable.get(char);
+            } else {
+                tokenTag = -1;
+            }
+            if tokenTag == LINE_TERMINATOR_TAG {
                 break;
             } else if char == DOUBLE_QUOTE && !isEscaped {
                 _ = self.readNextChar(); // Consume last double quote character
@@ -126,11 +137,16 @@ public class Lexer {
         string[] lines = [];
         string line = "";
         self.consumeIgnoreChars(3); // Consume first three double quote characters
-
+        int tokenTag = -1;
         string:Char? currentChar = self.charReader.peek();
         boolean isEscaped = false;
 
-        while currentChar !is () {
+        while currentChar != () {
+            if (symbolTable.hasKey(currentChar)) {
+                tokenTag = symbolTable.get(currentChar);
+            } else {
+                tokenTag = -1;
+            }
             if currentChar == DOUBLE_QUOTE && !isEscaped {
                 if self.isTripleQuotedString() {
                     self.consumeIgnoreChars(3); // Cosume last three double quote characters
@@ -139,7 +155,7 @@ public class Lexer {
                 }
                 line += currentChar;
                 isEscaped = false;
-            } else if currentChar is LineTerminator {
+            } else if tokenTag == LINE_TERMINATOR_TAG {
                 lines.push(line);
                 line = "";
             } else if currentChar == BACK_SLASH {
@@ -152,7 +168,7 @@ public class Lexer {
             currentChar = self.charReader.peek();
         }
 
-        if currentChar is () {
+        if currentChar == () {
             string message = "Syntax Error: Unterminated string.";
             return error UnterminatedStringError(message, line = self.currentLocation.line,
                                                  column = self.currentLocation.column);
@@ -175,7 +191,7 @@ public class Lexer {
         string formatted = "";
         foreach string line in lines {
             int indent = self.getLeadingWhiteSpaceCount(line);
-            if indent < line.length() && (commonIndent is () || indent < commonIndent) {
+            if indent < line.length() && (commonIndent == () || indent < commonIndent) {
                 commonIndent = indent;
             }
         }
@@ -198,8 +214,16 @@ public class Lexer {
         CharIterator iterator = line.iterator();
         CharIteratorNode? next = iterator.next();
         int i = 0;
+        int tokenTag = -1;
+
         while next is CharIteratorNode {
-            if next.value is WhiteSpace {
+            string:Char value = next.value;
+            if (symbolTable.hasKey(value)) {
+                tokenTag = symbolTable.get(value);
+            } else {
+                tokenTag = -1;
+            }
+            if tokenTag == WHITE_SPACE_TAG {
                 i += 1;
                 next = iterator.next();
             } else {
@@ -214,12 +238,18 @@ public class Lexer {
         string numeral = firstChar; // Passing first char to handle negative numbers.
         _ = self.readNextChar(); // Consume first char
         string:Char? character = self.charReader.peek();
-        while character !is () {
-            if character is Digit {
+        int tokenTag = -1;
+        while character != () {
+            if (symbolTable.hasKey(character)) {
+                tokenTag = symbolTable.get(character);
+            } else {
+                tokenTag = -1;
+            }
+            if tokenTag == DIGIT_TAG {
                 numeral += character;
-            } else if character == DOT || character is Exp {
+            } else if character == DOT || tokenTag == EXP_TAG {
                 return self.readFloatLiteral(numeral, character, location);
-            } else if character is Separator || character is SpecialCharacter {
+            } else if (tokenTag >= WHITE_SPACE_TAG && tokenTag <= SPECIAL_CHARACTER_TAG) {
                 break;
             } else {
                 string message = string `Syntax Error: Invalid number, expected digit but got: "${character}".`;
@@ -242,12 +272,18 @@ public class Lexer {
 
         string numeral = initialNumber + separator;
         string:Char? value = self.charReader.peek();
-        while value !is () {
-            if value is Digit {
+        int tokenTag = -1;
+        while value != () {
+            if (symbolTable.hasKey(value)) {
+                tokenTag = symbolTable.get(value);
+            } else {
+                tokenTag = -1;
+            }
+            if tokenTag == DIGIT_TAG {
                 numeral += value;
                 isDashExpected = false;
                 isDigitExpected = false;
-            } else if value is Exp && isExpExpected && !isDigitExpected {
+            } else if tokenTag == EXP_TAG && isExpExpected && !isDigitExpected {
                 numeral += value;
                 isExpExpected = false;
                 isDashExpected = true;
@@ -256,7 +292,7 @@ public class Lexer {
                 numeral += value;
                 isDashExpected = false;
                 isDigitExpected = true;
-            } else if (value is Separator || value is SpecialCharacter) && !isDigitExpected {
+            } else if (tokenTag >= WHITE_SPACE_TAG && tokenTag <= SPECIAL_CHARACTER_TAG) && !isDigitExpected {
                 return getToken(check getFloat(numeral, location), T_FLOAT, location);
             } else {
                 string message = string `Syntax Error: Invalid number, expected digit but got: "${value}".`;
@@ -274,8 +310,14 @@ public class Lexer {
         _ = self.readNextChar(); // Ignore first hash character
         string:Char? character = self.charReader.peek();
         string word = "#";
-        while character !is () {
-            if character is LineTerminator {
+        int tokenTag = -1;
+        while character != () {
+            if (symbolTable.hasKey(character)) {
+                tokenTag = symbolTable.get(character);
+            } else {
+                tokenTag = -1;
+            }
+            if tokenTag == LINE_TERMINATOR_TAG {
                 break;
             } else {
                 word += character;
@@ -293,10 +335,10 @@ public class Lexer {
         while i < 3 {
             i += 1;
             string:Char? c = self.readNextChar();
-            if c is DOT {
+            if c == DOT {
                 ellipsis += c;
                 continue;
-            } else if c is () {
+            } else if c == () {
                 string message = string `Syntax Error: Cannot parse the unexpected character "${EOF}".`;
                 return error InvalidTokenError(message, line = self.currentLocation.line,
                                                column = self.currentLocation.column);
@@ -315,10 +357,14 @@ public class Lexer {
         check validateFirstChar(firstChar, self.currentLocation);
         string word = firstChar;
         string:Char? char = self.charReader.peek();
-        while char !is () {
-            if char is SpecialCharacter {
-                break;
-            } else if char is Separator {
+        int tokenTag = -1;
+        while char != () {
+            if (symbolTable.hasKey(char)) {
+                tokenTag = symbolTable.get(char);
+            } else {
+                tokenTag = -1;
+            }
+            if tokenTag >= WHITE_SPACE_TAG && tokenTag <= SPECIAL_CHARACTER_TAG {
                 break;
             } else {
                 Location charLocation = self.currentLocation.clone();
@@ -328,7 +374,7 @@ public class Lexer {
             }
             char = self.charReader.peek();
         }
-        TokenType kind = getWordTokenType(word);
+        int kind = getWordTokenType(word);
         Scalar value = word;
         if kind is T_BOOLEAN {
             boolean|error booleanValue = 'boolean:fromString(word);
@@ -346,7 +392,16 @@ public class Lexer {
     }
 
     isolated function updateLocation(string:Char? char) {
-        if char is LineTerminator {
+        if (char == ()) {
+            self.currentLocation.column += 1;
+            return;
+        }
+        int tokenTag = -1;
+        if (symbolTable.hasKey(char)) {
+            tokenTag = symbolTable.get(char);
+        }
+
+        if tokenTag == LINE_TERMINATOR_TAG {
             self.currentLocation.line += 1;
             self.currentLocation.column = 1;
         } else {
@@ -361,10 +416,15 @@ public class Lexer {
     }
 }
 
-isolated function getTokenType(string:Char? value) returns TokenType {
-    if value is () {
+isolated function getTokenType(string:Char? value) returns int {
+    if value == () {
         return T_EOF;
-    } else if value == OPEN_BRACE {
+    }
+    int tokenTag = -1;
+    if (symbolTable.hasKey(value)) {
+        tokenTag = symbolTable.get(value);
+    }
+    if value == OPEN_BRACE {
         return T_OPEN_BRACE;
     } else if value == CLOSE_BRACE {
         return T_CLOSE_BRACE;
@@ -380,13 +440,13 @@ isolated function getTokenType(string:Char? value) returns TokenType {
         return T_COLON;
     } else if value == COMMA {
         return T_COMMA;
-    } else if value is WhiteSpace {
+    } else if tokenTag == WHITE_SPACE_TAG {
         return T_WHITE_SPACE;
-    } else if value is LineTerminator {
+    } else if tokenTag == LINE_TERMINATOR_TAG {
         return T_NEW_LINE;
     } else if value == DOUBLE_QUOTE {
         return T_STRING;
-    } else if value is Digit {
+    } else if tokenTag == DIGIT_TAG {
         return T_INT;
     } else if value == HASH {
         return T_COMMENT;
@@ -402,7 +462,7 @@ isolated function getTokenType(string:Char? value) returns TokenType {
     return T_IDENTIFIER;
 }
 
-isolated function getToken(Scalar value, TokenType kind, Location location) returns Token {
+isolated function getToken(Scalar value, int kind, Location location) returns Token {
     return {
         kind: kind,
         value: value,
@@ -410,8 +470,8 @@ isolated function getToken(Scalar value, TokenType kind, Location location) retu
     };
 }
 
-isolated function getWordTokenType(string value) returns TokenType {
-    if value is Boolean {
+isolated function getWordTokenType(string value) returns int {
+    if value == "true" || value == "false" {
         return T_BOOLEAN;
     }
     return T_IDENTIFIER;

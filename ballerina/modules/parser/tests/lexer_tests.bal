@@ -697,6 +697,6 @@ isolated function testReadCommentToken() returns error? {
     test:assertEquals(token, expectedToken);
 }
 
-isolated function getExpectedToken(Scalar value, TokenType kind, int line, int column) returns Token {
+isolated function getExpectedToken(Scalar value, int kind, int line, int column) returns Token {
     return {value: value, kind: kind, location: {line: line, column: column}};
 }

@@ -15,7 +15,7 @@
 // under the License.
 
 type Token record {|
-    TokenType kind;
+    int kind;
     Scalar value;
     Location location;
 |};

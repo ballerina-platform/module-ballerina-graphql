@@ -21,13 +21,13 @@ public readonly class ArgumentNode {
     private Location location;
     private ArgumentValue|ArgumentValue[] value;
     private Location valueLocation;
-    private ArgumentType kind;
+    private int kind;
     private string? variableName;
     private json variableValue;
     private boolean variableDefinition;
     private boolean containsInvalidValue;
 
-    public isolated function init(string name, Location location, ArgumentType kind,
+    public isolated function init(string name, Location location, int kind,
                                   boolean isVarDef = false, Location? valueLocation = (),
                                   ArgumentValue|ArgumentValue[] value = (), string? variableName = (),
                                   boolean containsInvalidValue = false, json variableValue = ()) {
@@ -54,7 +54,7 @@ public readonly class ArgumentNode {
         return self.location;
     }
 
-    public isolated function getKind() returns ArgumentType {
+    public isolated function getKind() returns int {
         return self.kind;
     }
 
@@ -82,12 +82,12 @@ public readonly class ArgumentNode {
         return self.containsInvalidValue;
     }
 
-    public isolated function modifyWith(ArgumentType? kind = (), ArgumentValue|ArgumentValue[] value = (), 
+    public isolated function modifyWith(int? kind = (), ArgumentValue|ArgumentValue[] value = (),
                                         Location? valueLocation = (),   boolean? isVarDef = (),
-                                        json variableValue = (), boolean? containsInvalidValue = ()) 
+                                        json variableValue = (), boolean? containsInvalidValue = ())
     returns ArgumentNode {
 
-        ArgumentType kindParam = kind is () ? self.kind : kind;
+        int kindParam = kind is () ? self.kind : kind;
         boolean isVarDefParam = isVarDef is () ? self.variableDefinition : isVarDef;
         Location? valueLocationParam = valueLocation is () ? self.valueLocation : valueLocation;
         ArgumentValue|ArgumentValue[] valueParam = value is () ? self.value : value;

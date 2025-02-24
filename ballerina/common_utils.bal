@@ -140,7 +140,7 @@ isolated function getOutputObject(Data data, ErrorDetail[] errors) returns Outpu
 }
 
 isolated function getTypeName(parser:ArgumentNode argumentNode) returns string {
-    parser:ArgumentType kind = argumentNode.getKind();
+    int kind = argumentNode.getKind();
     if kind == parser:T_INT {
         return INT;
     } else if kind == parser:T_FLOAT {
@@ -158,7 +158,7 @@ isolated function getTypeName(parser:ArgumentNode argumentNode) returns string {
     }
 }
 
-isolated function getArgumentTypeKind(string argType) returns parser:ArgumentType {
+isolated function getArgumentTypeKind(string argType) returns int {
     if argType == INT {
         return parser:T_INT;
     } else if argType == STRING {
@@ -232,7 +232,7 @@ isolated function getErrorDetailRecord(string message, Location|Location[] locat
     };
 }
 
-isolated function getArgumentTypeIdentifierFromType(__Type argType) returns parser:ArgumentType {
+isolated function getArgumentTypeIdentifierFromType(__Type argType) returns int {
     if argType.kind == NON_NULL {
         return getArgumentTypeIdentifierFromType(<__Type> argType?.ofType);
     } else if argType.kind == LIST {

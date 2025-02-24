@@ -62,7 +62,7 @@ isolated function getScalarTypeNameForError(Scalar value) returns string {
 }
 
 isolated function getErrorMessageTypeNameForError(Token token) returns string {
-    TokenType kind = token.kind;
+    int kind = token.kind;
     if kind == T_EOF {
         return "<EOF>";
     } else if kind == T_IDENTIFIER {
