@@ -74,7 +74,7 @@ isolated function getResponseFromQuery(Engine engine, string document, string? o
         context,
         operationName: OPERATION_VALIDATION
     };
-    addTracingInfomation(traceObserverContext);
+    addTracingInformation(traceObserverContext);
     parser:OperationNode|OutputObject validationResult = engine.validate(document, operationName, variables);
     http:Response response;
     if validationResult is parser:OperationNode {
@@ -85,7 +85,7 @@ isolated function getResponseFromQuery(Engine engine, string document, string? o
             operationType: validationResult.getKind(),
             operationName: OPERATION_EXECUTION
         };
-        addTracingInfomation(traceObserverContext);
+        addTracingInformation(traceObserverContext);
         response = getResponseFromExecution(engine, validationResult, context);
         stopTracing(context);
     } else {

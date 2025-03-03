@@ -44,7 +44,7 @@ public isolated class Context {
 
     # Retrieves a value using the given key from the GraphQL context.
     # ```ballerina
-    # string userId = check context.get("userId").ensureType();  
+    # string userId = check context.get("userId").ensureType();
     # ```
     #
     # + key - The key corresponding to the required value
@@ -59,7 +59,7 @@ public isolated class Context {
 
     # Removes a value using the given key from the GraphQL context.
     # ```ballerina
-    # string userId = check context.remove("userId").ensureType();  
+    # string userId = check context.remove("userId").ensureType();
     # ```
     #
     # + key - The key corresponding to the value to be removed
@@ -108,7 +108,7 @@ public isolated class Context {
 
     # Remove all cache entries.
     #
-    # + return - The error if the cache invalidateion fails or nil otherwise
+    # + return - The error if the cache invalidation fails or nil otherwise
     public isolated function invalidateAll() returns error? {
         Engine? engine = self.getEngine();
         if engine is Engine {
@@ -123,12 +123,9 @@ public isolated class Context {
         }
     }
 
-    isolated function addErrors(ErrorDetail[] errs) {
-        readonly & ErrorDetail[] errors = errs.cloneReadOnly();
-        lock {
-            self.errors.push(...errors);
-        }
-    }
+    isolated function addErrors(ErrorDetail[] errs) = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
 
     isolated function getErrors() returns ErrorDetail[] {
         lock {
@@ -221,7 +218,7 @@ public isolated class Context {
     }
 
     isolated function clearDataLoadersCachesAndPlaceholders() {
-        // This function is called at the end of each subscription loop execution to prevent using old values 
+        // This function is called at the end of each subscription loop execution to prevent using old values
         // from DataLoader caches in the next iteration and to avoid filling up the idPlaceholderMap.
         string[] nonDispatchedDataLoaderIds = self.getDataLoaderIds();
         foreach string dataLoaderId in nonDispatchedDataLoaderIds {

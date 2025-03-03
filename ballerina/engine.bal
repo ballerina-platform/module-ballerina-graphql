@@ -285,7 +285,7 @@ isolated class Engine {
                 string prefetchMethodName = getPrefetchMethodName(serviceObject, 'field)
                     ?: getDefaultPrefetchMethodName(fieldNode.getName());
                 if self.hasPrefetchMethod(serviceObject, prefetchMethodName) {
-                    addTracingInfomation({
+                    addTracingInformation({
                         context,
                         serviceName: prefetchMethodName,
                         operationType: 'field.getOperationType()
@@ -298,14 +298,14 @@ isolated class Engine {
         }
 
         (readonly & Interceptor)? interceptor = 'field.getNextInterceptor(self);
-        __Type fieldType = 'field.getFieldType();
+        readonly & __Type fieldType = 'field.getFieldType();
         ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone(),
             'field.getCacheConfig(), 'field.getParentArgHashes()
         );
         do {
             if interceptor is readonly & Interceptor {
                 string interceptorName = self.getInterceptorName(interceptor);
-                addTracingInfomation({
+                addTracingInformation({
                     context,
                     serviceName: interceptorName,
                     operationType: 'field.getOperationType()
@@ -319,7 +319,7 @@ isolated class Engine {
             parser:RootOperationType operationType = 'field.getOperationType();
             if 'field.isCacheEnabled() && 'field.getOperationType() == parser:OPERATION_QUERY {
                 string cacheName = string `${'field.getName()}.cache`;
-                addTracingInfomation({context, serviceName: cacheName, operationType});
+                addTracingInformation({context, serviceName: cacheName, operationType});
                 addFieldMetric('field);
                 string cacheKey = 'field.getCacheKey();
                 any|error cachedValue = self.getFromCache(cacheKey);
@@ -334,7 +334,7 @@ isolated class Engine {
                     }
                 }
             } else {
-                addTracingInfomation({
+                addTracingInformation({
                     context,
                     serviceName: 'field.getName(),
                     operationType

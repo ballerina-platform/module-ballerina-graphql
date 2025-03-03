@@ -22,7 +22,7 @@ public class Field {
     private final parser:FieldNode internalNode;
     private final service object {}? serviceObject;
     private final any|error fieldValue;
-    private final __Type fieldType;
+    private final readonly & __Type fieldType;
     private final __Type parentType;
     private final readonly & (string|int)[] path;
     private string[] resourcePath;
@@ -42,7 +42,7 @@ public class Field {
             boolean isAlreadyCached = false) {
         self.internalNode = internalNode;
         self.serviceObject = serviceObject;
-        self.fieldType = fieldType;
+        self.fieldType = fieldType.cloneReadOnly();
         self.parentType = parentType;
         self.path = path;
         self.operationType = operationType;
@@ -136,7 +136,7 @@ public class Field {
         return self.resourcePath;
     }
 
-    isolated function getFieldType() returns __Type {
+    isolated function getFieldType() returns readonly & __Type {
         return self.fieldType;
     }
 

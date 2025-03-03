@@ -22,7 +22,9 @@ import io.ballerina.runtime.api.PredefinedTypes;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
+import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
+import io.ballerina.runtime.api.values.BIterator;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BValue;
@@ -35,6 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * This class provides native implementations of the Ballerina Context class.
  */
 public class Context {
+    private static final BString ERRORS_FIELD = StringUtils.fromString("errors");
     private final ConcurrentHashMap<BString, Object> attributes = new ConcurrentHashMap<>();
     // Provides mapping between user defined id and DataLoader
     private final ConcurrentHashMap<BString, BObject> idDataLoaderMap = new ConcurrentHashMap<>();
@@ -131,6 +134,14 @@ public class Context {
     public static void clearPlaceholders(BObject object) {
         Context context = (Context) object.getNativeData(CONTEXT);
         context.clearPlaceholders();
+    }
+
+    public static void addErrors(BObject context, BArray errs) {
+        BArray errorArray = context.getArrayValue(ERRORS_FIELD);
+        BIterator errorIterator = errs.getIterator();
+        while (errorIterator.hasNext()) {
+            errorArray.append(errorIterator.next());
+        }
     }
 
     private void setAttribute(BString key, Object value) {
