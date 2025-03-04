@@ -50,7 +50,7 @@ public class Lexer {
     }
 
     isolated function readNextToken() returns Token|SyntaxError {
-        string:Char? char = self.charReader.peek();
+        string? char = self.charReader.peek();
         if char == () {
             return {
                 kind: T_EOF,
@@ -72,14 +72,14 @@ public class Lexer {
         }
     }
 
-    isolated function readSeparatorToken(string:Char char) returns Token? {
+    isolated function readSeparatorToken(string char) returns Token? {
         Location location = self.currentLocation.clone();
         _ = self.readNextChar();
         TokenType kind = getTokenType(char);
         return getToken(char, kind, location);
     }
 
-    isolated function readSpecialCharacterToken(string:Char char) returns Token {
+    isolated function readSpecialCharacterToken(string char) returns Token {
         Location location = self.currentLocation.clone();
         _ = self.readNextChar();
         TokenType kind = getTokenType(char);
@@ -99,9 +99,9 @@ public class Lexer {
         Location location = self.currentLocation.clone();
         _ = self.readNextChar(); // Consume first double quote character
 
-        string:Char? char = self.charReader.peek();
+        string? char = self.charReader.peek();
         boolean isEscaped = false;
-        while char is string:Char {
+        while char is string {
             if char is LineTerminator {
                 break;
             } else if char == DOUBLE_QUOTE && !isEscaped {
@@ -127,7 +127,7 @@ public class Lexer {
         string line = "";
         self.consumeIgnoreChars(3); // Consume first three double quote characters
 
-        string:Char? currentChar = self.charReader.peek();
+        string? currentChar = self.charReader.peek();
         boolean isEscaped = false;
 
         while currentChar != () {
@@ -209,11 +209,11 @@ public class Lexer {
         return i;
     }
 
-    isolated function readNumericLiteral(string:Char firstChar) returns Token|SyntaxError {
+    isolated function readNumericLiteral(string firstChar) returns Token|SyntaxError {
         Location location = self.currentLocation.clone();
         string numeral = firstChar; // Passing first char to handle negative numbers.
         _ = self.readNextChar(); // Consume first char
-        string:Char? character = self.charReader.peek();
+        string? character = self.charReader.peek();
         while character != () {
             if character is Digit {
                 numeral += character;
@@ -233,7 +233,7 @@ public class Lexer {
         return getToken(number, T_INT, location);
     }
 
-    isolated function readFloatLiteral(string initialNumber, string:Char separator, Location location)
+    isolated function readFloatLiteral(string initialNumber, string separator, Location location)
     returns Token|SyntaxError {
         _ = self.readNextChar(); // Consume the separator character
         boolean isExpExpected = separator == DOT;
@@ -241,7 +241,7 @@ public class Lexer {
         boolean isDigitExpected = true;
 
         string numeral = initialNumber + separator;
-        string:Char? value = self.charReader.peek();
+        string? value = self.charReader.peek();
         while value != () {
             if value is Digit {
                 numeral += value;
@@ -272,7 +272,7 @@ public class Lexer {
     isolated function readCommentToken() returns Token|SyntaxError {
         Location location = self.currentLocation.clone();
         _ = self.readNextChar(); // Ignore first hash character
-        string:Char? character = self.charReader.peek();
+        string? character = self.charReader.peek();
         string word = "#";
         while character != () {
             if character is LineTerminator {
@@ -292,7 +292,7 @@ public class Lexer {
         int i = 0;
         while i < 3 {
             i += 1;
-            string:Char? c = self.readNextChar();
+            string? c = self.readNextChar();
             if c is DOT {
                 ellipsis += c;
                 continue;
@@ -309,12 +309,12 @@ public class Lexer {
         return getToken(ELLIPSIS, T_ELLIPSIS, location);
     }
 
-    isolated function readIdentifierToken(string:Char firstChar) returns Token|SyntaxError {
+    isolated function readIdentifierToken(string firstChar) returns Token|SyntaxError {
         Location location = self.currentLocation.clone();
         _ = self.readNextChar();
         check validateFirstChar(firstChar, self.currentLocation);
         string word = firstChar;
-        string:Char? char = self.charReader.peek();
+        string? char = self.charReader.peek();
         while char != () {
             if char is SpecialCharacter {
                 break;
@@ -345,7 +345,7 @@ public class Lexer {
         };
     }
 
-    isolated function updateLocation(string:Char? char) {
+    isolated function updateLocation(string? char) {
         if char is LineTerminator {
             self.currentLocation.line += 1;
             self.currentLocation.column = 1;
@@ -354,14 +354,14 @@ public class Lexer {
         }
     }
 
-    isolated function readNextChar() returns string:Char? {
-        string:Char? char = self.charReader.read();
+    isolated function readNextChar() returns string? {
+        string? char = self.charReader.read();
         self.updateLocation(char);
         return char;
     }
 }
 
-isolated function getTokenType(string:Char? value) returns TokenType {
+isolated function getTokenType(string? value) returns TokenType {
     match value {
         () => {
             return T_EOF;
