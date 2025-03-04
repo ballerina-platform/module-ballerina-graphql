@@ -70,7 +70,7 @@ public class Listener {
         Engine engine;
         if self.graphiql.enabled {
             check validateGraphiqlPath(self.graphiql.path);
-            string gqlServiceBasePath = name is () ? "" : getBasePath(name);
+            string gqlServiceBasePath = name == () ? "" : getBasePath(name);
             engine = check new (schemaString, maxQueryDepth, s, interceptors, introspection, validation,
                                 operationCacheConfig, fieldCacheConfig);
             __Schema & readonly schema = engine.getSchema();
@@ -100,7 +100,7 @@ public class Listener {
 
         __Schema & readonly schema = engine.getSchema();
         __Type? subscriptionType = schema.subscriptionType;
-        if subscriptionType is __Type && self.wsListener is () {
+        if subscriptionType is __Type && self.wsListener == () {
             string httpVersion = self.httpListener.getConfig().httpVersion;
             if httpVersion !is http:HTTP_1_1|http:HTTP_1_0 {
                 string message = string `Websocket listener initialization failed due to the incompatibility of ` +

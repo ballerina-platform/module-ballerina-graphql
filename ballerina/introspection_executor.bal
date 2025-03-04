@@ -38,7 +38,7 @@ class IntrospectionExecutor {
         parser:ArgumentValue argValue = <parser:ArgumentValue> argNode.getValue();
         string requiredTypeName = argValue.toString();
         __Type? requiredType = getTypeFromTypeArray(self.schema.types, requiredTypeName);
-        if requiredType is () {
+        if requiredType == () {
             return result;
         }
         foreach parser:SelectionNode selectionNode in fieldNode.getSelections() {

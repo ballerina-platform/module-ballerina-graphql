@@ -329,7 +329,7 @@ isolated class Engine {
                     fieldValue = check self.getFieldValue(context, 'field, responseGenerator);
                     decimal maxAge = 'field.getCacheMaxAge();
                     boolean alreadyCached = 'field.isAlreadyCached();
-                    if !alreadyCached && maxAge > 0d && fieldValue !is () {
+                    if !alreadyCached && maxAge > 0d && fieldValue != () {
                         _ = check self.addToCache(cacheKey, fieldValue, maxAge, alreadyCached);
                     }
                 }
@@ -355,7 +355,7 @@ isolated class Engine {
     private isolated function getResultFromPrefetchMethodExecution(Context context, Field 'field,
             service object {} serviceObject, string prefetchMethodName) returns PlaceholderNode? {
         handle? prefetchMethodHandle = self.getMethod(serviceObject, prefetchMethodName);
-        if prefetchMethodHandle is () {
+        if prefetchMethodHandle == () {
             return ();
         }
         self.executePrefetchMethod(context, serviceObject, prefetchMethodHandle, 'field);

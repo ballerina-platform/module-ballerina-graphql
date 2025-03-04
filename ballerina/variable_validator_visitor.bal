@@ -184,7 +184,7 @@ class VariableValidatorVisitor {
         } else if defaultValue.getKind() == parser:T_INT &&
             getArgumentTypeIdentifierFromType(variableType) == parser:T_FLOAT {
             return false;
-        } else if defaultValue.getValue() is () && variableType.kind != NON_NULL {
+        } else if defaultValue.getValue() == () && variableType.kind != NON_NULL {
             return false;
         } else {
             return true;
@@ -226,17 +226,17 @@ class VariableValidatorVisitor {
         parser:ArgumentNode modifiedArgNode = self.nodeModifierContext.getModifiedArgumentNode(argument);
         if getOfType(variableType).name == UPLOAD {
             return;
-        } else if value !is () && (modifiedArgNode.getKind() == parser:T_INPUT_OBJECT ||
+        } else if value != () && (modifiedArgNode.getKind() == parser:T_INPUT_OBJECT ||
             modifiedArgNode.getKind() == parser:T_LIST || modifiedArgNode.getKind() == parser:T_IDENTIFIER) {
             self.modifyArgumentNode(argument, variableValue = value);
         } else if value is Scalar && getTypeNameFromScalarValue(<Scalar>value) == getTypeName(modifiedArgNode) {
             self.modifyArgumentNode(argument, variableValue = value);
         } else if getTypeName(modifiedArgNode) == FLOAT && value is decimal|int {
             self.modifyArgumentNode(argument, variableValue = value);
-        } else if value is () && variableType.kind != NON_NULL {
+        } else if value == () && variableType.kind != NON_NULL {
             self.modifyArgumentNode(argument, variableValue = value);
         } else {
-            string invalidValue = value is () ? "null": value.toString();
+            string invalidValue = value == () ? "null": value.toString();
             string message = string `Variable ${<string> modifiedArgNode.getVariableName()} expected value of type ` +
                              string `"${variableTypeName}", found ${invalidValue}`;
             self.errors.push(getErrorDetailRecord(message, modifiedArgNode.getLocation()));
@@ -262,7 +262,7 @@ class VariableValidatorVisitor {
     isolated function isVariableUsageAllowed(__Type varType, parser:VariableNode variable,
                                              __InputValue inputValue) returns boolean {
         if inputValue.'type.kind == NON_NULL && varType.kind != NON_NULL {
-            if inputValue?.defaultValue is () && variable.getDefaultValue() is () {
+            if inputValue?.defaultValue == () && variable.getDefaultValue() == () {
                 return false;
             }
             return self.areTypesCompatible(varType, <__Type>inputValue.'type?.ofType);

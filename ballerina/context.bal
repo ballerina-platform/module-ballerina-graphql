@@ -51,7 +51,7 @@ public isolated class Context {
     # + return - The value if the key is present in the context, a `graphql:Error` otherwise
     public isolated function get(string 'key) returns value:Cloneable|isolated object {}|Error {
         value:Cloneable|isolated object {}? value = self.getAttribute('key);
-        if value is () {
+        if value == () {
             return error Error(string `Attribute with the key "${'key}" not found in the context`);
         }
         return value is value:Cloneable ? value.clone() : value;
@@ -66,7 +66,7 @@ public isolated class Context {
     # + return - The value if the key is present in the context, a `graphql:Error` otherwise
     public isolated function remove(string 'key) returns value:Cloneable|isolated object {}|Error {
         value:Cloneable|isolated object {}? value = self.removeAttribute('key);
-        if value is () {
+        if value == () {
             return error Error(string `Attribute with the key "${'key}" not found in the context`);
         }
         return value is value:Cloneable ? value.clone() : value;
@@ -164,7 +164,7 @@ public isolated class Context {
         [Placeholder, future<anydata>][] placeholderValues = [];
         foreach Placeholder placeholder in unResolvedPlaceholders {
             Engine? engine = self.getEngine();
-            if engine is () {
+            if engine == () {
                 continue;
             }
             future<anydata> resolvedValue = start engine.resolve(self, placeholder.getField(), false);

@@ -93,7 +93,7 @@ isolated function getInvalidArgumentValueError(string listIndexOfError, string e
     if value is parser:ArgumentNode {
         string errorValue = getErrorValueInString(value);
         return string`${listIndexOfError}${expectedTypeName} cannot represent non ${expectedTypeName} value: ${errorValue}`;
-    } else if value is () {
+    } else if value == () {
         return string`${listIndexOfError}${expectedTypeName} cannot represent non ${expectedTypeName} value: null`;
     } else {
         return string`${listIndexOfError}${expectedTypeName} cannot represent non ${expectedTypeName} value: ${value}`;
@@ -176,7 +176,7 @@ isolated function getArgumentTypeKind(string argType) returns parser:ArgumentTyp
 
 isolated function getOfType(readonly & __Type schemaType) returns readonly & __Type {
     readonly & __Type? ofType = schemaType?.ofType;
-    if ofType is () {
+    if ofType == () {
         return schemaType;
     } else {
         return getOfType(ofType);
@@ -313,7 +313,7 @@ isolated function getInputObjectErrorValueInString(parser:ArgumentValue[] argVal
                 inputFields = getErrorValueInString(value, inputFields);
             } else if fieldValue is string {
                 inputFields += string`${value.getName()}: "${fieldValue}"`;
-            } else if fieldValue is () {
+            } else if fieldValue == () {
                 inputFields += string`${value.getName()}: null`;
             } else if fieldValue is Scalar {
                 inputFields += string`${value.getName()}: ${fieldValue}`;
@@ -340,7 +340,7 @@ isolated function getListErrorValueInString(parser:ArgumentValue[] argValue, str
                 listItems = getErrorValueInString(value, listItems);
             } else if listItemValue is string {
                 listItems += string`"${listItemValue}"`;
-            } else if listItemValue is () {
+            } else if listItemValue == () {
                 listItems += "null";
             } else if listItemValue is Scalar {
                 listItems += string`${listItemValue}`;
@@ -359,7 +359,7 @@ isolated function getListErrorValueInString(parser:ArgumentValue[] argValue, str
 isolated function appendScalarValues(parser:ArgumentValue argValue, string errorValue = "") returns string {
     if argValue is Scalar {
         return string`${errorValue}${argValue}`;
-    } else if argValue is () {
+    } else if argValue == () {
         return string`${errorValue}null`;
     }
     return errorValue;
@@ -411,7 +411,7 @@ isolated function handleGraphqlErrorResponse(map<json> responseMap) returns Requ
         return error RequestError("GraphQL Client Error", errors);
     }
     json? data = (responseMap.hasKey("data")) ? responseMap.get("data") : ();
-    map<json>? extensions = (responseMap.hasKey("extensions")) ? (responseMap.get("extensions") is () ? () :
+    map<json>? extensions = (responseMap.hasKey("extensions")) ? (responseMap.get("extensions") == () ? () :
         <map<json>> responseMap.get("extensions")) : ();
     return error ServerError("GraphQL Server Error", errors = errors, data = data, extensions = extensions);
 }
@@ -479,7 +479,7 @@ isolated function getFieldTypeFromParentType(readonly & __Type parentType, reado
         }
     } else if typeKind == INTERFACE {
         readonly & __Field? requiredFieldValue = getRequiredFieldFromType(parentType, typeArray, fieldNode);
-        if requiredFieldValue is () {
+        if requiredFieldValue == () {
             foreach readonly & __Type possibleType in <readonly & __Type[]>parentType.possibleTypes {
                 readonly & __Field? fieldValue = getRequiredFieldFromType(possibleType, typeArray, fieldNode);
                 if fieldValue is __Field {

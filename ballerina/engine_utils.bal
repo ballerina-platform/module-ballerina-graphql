@@ -53,11 +53,11 @@ isolated function validateInterceptorReturnValue(readonly & __Type 'type, any|er
 
 isolated function isValidReturnType(readonly & __Type 'type, anydata value) returns boolean {
     if 'type.kind is NON_NULL {
-        if value is () {
+        if value == () {
             return false;
         }
         return isValidReturnType(unwrapNonNullType('type), value);
-    } else if value is () {
+    } else if value == () {
         return true;
     } else if 'type.kind is ENUM && value is string {
         return true;

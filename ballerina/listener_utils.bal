@@ -62,7 +62,7 @@ isolated function getResponseFromJsonPayload(Engine engine, Context context, htt
     }
     json|error variables = payload.variables;
     variables = variables is error ? () : variables;
-    if variables is map<json> || variables is () {
+    if variables is map<json> || variables == () {
         return getResponseFromQuery(engine, document, getOperationName(payload), variables, context, fileInfo);
     }
     return createResponse("Invalid format in request parameter: variables", http:STATUS_BAD_REQUEST);
@@ -444,7 +444,7 @@ returns [string, string] {
         secureSocket = listenTo.getConfig().secureSocket;
     }
 
-    if secureSocket is () {
+    if secureSocket == () {
         return [string `http://${LOCALHOST}:${port}`, string `ws://${LOCALHOST}:${port}`];
     }
     return [string `https://${LOCALHOST}:${port}`, string `wss://${LOCALHOST}:${port}`];

@@ -61,7 +61,7 @@ isolated function addTracingInformation(TraceObserverContext|TraceInformation tr
 
 isolated function stopTracing(Context context, error? err = ()) {
     if tracingEnabled {
-        if err is () {
+        if err == () {
             stopObserverContext(context);
         } else {
             stopObserverContextWithError(context, err);

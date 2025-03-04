@@ -154,7 +154,7 @@ public class Field {
         readonly & __Type parentType = getOfType('type);
 
         readonly & __Field[]? typeFields = parentType.fields;
-        if typeFields is () {
+        if typeFields == () {
             return [];
         }
 

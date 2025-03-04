@@ -85,7 +85,7 @@ isolated service class WsService {
 
     private isolated function startSendingPingMessages(websocket:Caller caller) {
         lock {
-            if self.pingMessageHandler !is () || !self.initiatedConnection {
+            if self.pingMessageHandler != () || !self.initiatedConnection {
                 return;
             }
             PingMessageJob job = new PingMessageJob(caller);
@@ -128,7 +128,7 @@ isolated service class WsService {
     private isolated function handlePongRequest() {
         lock {
             PongMessageHandlerJob? handler = self.pongMessageHandler;
-            if handler is () {
+            if handler == () {
                 return;
             }
             handler.setPongMessageReceived();

@@ -44,7 +44,7 @@ public class CharReader {
 
     isolated function next() returns string:Char? {
         CharIteratorNode? next = self.iterator.next();
-        if next is () {
+        if next == () {
             return;
         }
         return next.value;

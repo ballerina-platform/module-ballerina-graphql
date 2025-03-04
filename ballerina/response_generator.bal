@@ -309,11 +309,11 @@ isolated class ResponseGenerator {
     private isolated function isPossibleTypeOfInterface(string interfaceName,
             string implementedTypeName) returns boolean {
         readonly & __Type? interfaceType = getTypeFromTypeArray(self.engine.getSchema().types, interfaceName);
-        if interfaceType is () || interfaceType.kind != INTERFACE {
+        if interfaceType == () || interfaceType.kind != INTERFACE {
             return false;
         }
         readonly & __Type[]? possibleTypes = interfaceType.possibleTypes;
-        if possibleTypes is () {
+        if possibleTypes == () {
             return false;
         }
         return getTypeFromTypeArray(possibleTypes, implementedTypeName) is __Type;

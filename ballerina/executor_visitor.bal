@@ -143,7 +143,7 @@ isolated class ExecutorVisitor {
         }
         foreach [parser:SelectionNode, future<()>] [selection, 'future] in selectionFutures {
             error? err = wait 'future;
-            if err is () {
+            if err == () {
                 continue;
             }
             if selection is parser:FieldNode {

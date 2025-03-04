@@ -51,7 +51,7 @@ public class Lexer {
 
     isolated function readNextToken() returns Token|SyntaxError {
         string:Char? char = self.charReader.peek();
-        if char is () {
+        if char == () {
             return {
                 kind: T_EOF,
                 value: "",
@@ -130,10 +130,10 @@ public class Lexer {
         string:Char? currentChar = self.charReader.peek();
         boolean isEscaped = false;
 
-        while currentChar !is () {
+        while currentChar != () {
             if currentChar == DOUBLE_QUOTE && !isEscaped {
                 if self.isTripleQuotedString() {
-                    self.consumeIgnoreChars(3); // Cosume last three double quote characters
+                    self.consumeIgnoreChars(3); // Consume last three double quote characters
                     lines.push(line);
                     break;
                 }
@@ -152,7 +152,7 @@ public class Lexer {
             currentChar = self.charReader.peek();
         }
 
-        if currentChar is () {
+        if currentChar == () {
             string message = "Syntax Error: Unterminated string.";
             return error UnterminatedStringError(message, line = self.currentLocation.line,
                                                  column = self.currentLocation.column);
@@ -175,7 +175,7 @@ public class Lexer {
         string formatted = "";
         foreach string line in lines {
             int indent = self.getLeadingWhiteSpaceCount(line);
-            if indent < line.length() && (commonIndent is () || indent < commonIndent) {
+            if indent < line.length() && (commonIndent == () || indent < commonIndent) {
                 commonIndent = indent;
             }
         }
@@ -214,7 +214,7 @@ public class Lexer {
         string numeral = firstChar; // Passing first char to handle negative numbers.
         _ = self.readNextChar(); // Consume first char
         string:Char? character = self.charReader.peek();
-        while character !is () {
+        while character != () {
             if character is Digit {
                 numeral += character;
             } else if character == DOT || character is Exp {
@@ -242,7 +242,7 @@ public class Lexer {
 
         string numeral = initialNumber + separator;
         string:Char? value = self.charReader.peek();
-        while value !is () {
+        while value != () {
             if value is Digit {
                 numeral += value;
                 isDashExpected = false;
@@ -274,7 +274,7 @@ public class Lexer {
         _ = self.readNextChar(); // Ignore first hash character
         string:Char? character = self.charReader.peek();
         string word = "#";
-        while character !is () {
+        while character != () {
             if character is LineTerminator {
                 break;
             } else {
@@ -296,7 +296,7 @@ public class Lexer {
             if c is DOT {
                 ellipsis += c;
                 continue;
-            } else if c is () {
+            } else if c == () {
                 string message = string `Syntax Error: Cannot parse the unexpected character "${EOF}".`;
                 return error InvalidTokenError(message, line = self.currentLocation.line,
                                                column = self.currentLocation.column);
@@ -315,7 +315,7 @@ public class Lexer {
         check validateFirstChar(firstChar, self.currentLocation);
         string word = firstChar;
         string:Char? char = self.charReader.peek();
-        while char !is () {
+        while char != () {
             if char is SpecialCharacter {
                 break;
             } else if char is Separator {
@@ -362,51 +362,72 @@ public class Lexer {
 }
 
 isolated function getTokenType(string:Char? value) returns TokenType {
-    if value is () {
-        return T_EOF;
-    } else if value == OPEN_BRACE {
-        return T_OPEN_BRACE;
-    } else if value == CLOSE_BRACE {
-        return T_CLOSE_BRACE;
-    } else if value == OPEN_PARENTHESES {
-        return T_OPEN_PARENTHESES;
-    } else if value == CLOSE_PARENTHESES {
-        return T_CLOSE_PARENTHESES;
-    } else if value == DOLLAR {
-        return T_DOLLAR;
-    } else if value == EQUAL {
-        return T_EQUAL;
-    } else if value == COLON {
-        return T_COLON;
-    } else if value == COMMA {
-        return T_COMMA;
-    } else if value is WhiteSpace {
-        return T_WHITE_SPACE;
-    } else if value is LineTerminator {
-        return T_NEW_LINE;
-    } else if value == DOUBLE_QUOTE {
-        return T_STRING;
-    } else if value is Digit {
-        return T_INT;
-    } else if value == HASH {
-        return T_COMMENT;
-    } else if value == EXCLAMATION {
-        return T_EXCLAMATION;
-    } else if value == OPEN_BRACKET {
-        return T_OPEN_BRACKET;
-    } else if value == CLOSE_BRACKET {
-        return T_CLOSE_BRACKET;
-    } else if value == AT {
-        return T_AT;
+    match value {
+        () => {
+            return T_EOF;
+        }
+        OPEN_BRACE => {
+            return T_OPEN_BRACE;
+        }
+        CLOSE_BRACE => {
+            return T_CLOSE_BRACE;
+        }
+        OPEN_PARENTHESES => {
+            return T_OPEN_PARENTHESES;
+        }
+        CLOSE_PARENTHESES => {
+            return T_CLOSE_PARENTHESES;
+        }
+        DOLLAR => {
+            return T_DOLLAR;
+        }
+        EQUAL => {
+            return T_EQUAL;
+        }
+        COLON => {
+            return T_COLON;
+        }
+        COMMA => {
+            return T_COMMA;
+        }
+        SPACE|TAB => {
+            return T_WHITE_SPACE;
+        }
+        NEW_LINE|LINE_RETURN => {
+            return T_NEW_LINE;
+        }
+        DOUBLE_QUOTE => {
+            return T_STRING;
+        }
+        ZERO|ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE => {
+            return T_INT;
+        }
+        HASH => {
+            return T_COMMENT;
+        }
+        EXCLAMATION => {
+            return T_EXCLAMATION;
+        }
+        OPEN_BRACKET => {
+            return T_OPEN_BRACKET;
+        }
+        CLOSE_BRACKET => {
+            return T_CLOSE_BRACKET;
+        }
+        AT => {
+            return T_AT;
+        }
+        _ => {
+            return T_IDENTIFIER;
+        }
     }
-    return T_IDENTIFIER;
 }
 
 isolated function getToken(Scalar value, TokenType kind, Location location) returns Token {
     return {
-        kind: kind,
-        value: value,
-        location: location
+        kind,
+        value,
+        location
     };
 }
 
