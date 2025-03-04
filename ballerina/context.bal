@@ -97,7 +97,7 @@ public isolated class Context {
     # Remove cache entries related to the given path.
     #
     # + path - The path corresponding to the cache entries to be removed (Ex: "person.address.city")
-    # + return - The error if the cache invalidateion fails or nil otherwise
+    # + return - The error if the cache invalidation fails or nil otherwise
     public isolated function invalidate(string path) returns error? {
         Engine? engine = self.getEngine();
         if engine is Engine {
@@ -117,21 +117,17 @@ public isolated class Context {
         return;
     }
 
-    isolated function addError(ErrorDetail err) {
-        lock {
-            self.errors.push(err.clone());
-        }
-    }
+    isolated function addError(ErrorDetail err) = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
 
     isolated function addErrors(ErrorDetail[] errs) = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
     } external;
 
-    isolated function getErrors() returns ErrorDetail[] {
-        lock {
-            return self.errors.clone();
-        }
-    }
+    isolated function getErrors() returns ErrorDetail[] = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
 
     isolated function setFileInfo(map<Upload|Upload[]> fileInfo) = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
@@ -149,23 +145,17 @@ public isolated class Context {
         return;
     }
 
-    isolated function setEngine(Engine engine) {
-        lock {
-            self.engine = engine;
-        }
-    }
+    isolated function setEngine(Engine engine) = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
 
-    isolated function getEngine() returns Engine? {
-        lock {
-            return self.engine;
-        }
-    }
+    isolated function getEngine() returns Engine? = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
 
-    isolated function resetErrors() {
-        lock {
-            self.errors.removeAll();
-        }
-    }
+    isolated function resetErrors() = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
 
     isolated function resolvePlaceholders() {
         self.dispatchDataloaders();
