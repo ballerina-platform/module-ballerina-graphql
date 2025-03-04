@@ -61,7 +61,7 @@ public class Parser {
 
     isolated function parseOperationWithType(RootOperationType operationType) returns Error? {
         Token token = check self.readNextNonSeparatorToken();
-        Location location = token.location.clone();
+        Location location = token.location;
         token = check self.peekNextNonSeparatorToken();
         string operationName = check getOperationNameFromToken(self);
         token = check self.peekNextNonSeparatorToken();
@@ -76,7 +76,7 @@ public class Parser {
 
     isolated function parseFragment() returns Error? {
         Token token = check self.readNextNonSeparatorToken(); // fragment keyword already validated
-        Location location = token.location.clone();
+        Location location = token.location;
 
         token = check self.readNextNonSeparatorToken();
         string name = check getIdentifierTokenValue(token);
@@ -124,10 +124,10 @@ public class Parser {
             if token.kind != T_DOLLAR {
                 return getExpectedCharError(token, DOLLAR);
             }
-            Location varDefinitionLocation = token.location.clone();
+            Location varDefinitionLocation = token.location;
             token = check self.readNextNonSeparatorToken();
             string name = check getIdentifierTokenValue(token);
-            Location varLocation = token.location.clone();
+            Location varLocation = token.location;
             token = check self.readNextNonSeparatorToken();
             if token.kind != T_COLON {
                 return getExpectedCharError(token, COLON);
@@ -248,7 +248,7 @@ public class Parser {
         while token.kind != T_CLOSE_PARENTHESES {
             token = check self.readNextNonSeparatorToken();
             string name = check getIdentifierTokenValue(token);
-            Location location = token.location.clone();
+            Location location = token.location;
             token = check self.readNextNonSeparatorToken();
             if token.kind != T_COLON {
                 return getExpectedCharError(token, COLON);
@@ -280,7 +280,7 @@ public class Parser {
         }
         while token.kind == T_AT {
             token = check self.readNextNonSeparatorToken(); //consume @
-            Location location = token.location.clone();
+            Location location = token.location;
             token = check self.readNextNonSeparatorToken();
             string name = check getIdentifierTokenValue(token);
             token = check self.peekNextNonSeparatorToken();
@@ -301,7 +301,7 @@ public class Parser {
         while token.kind != T_CLOSE_PARENTHESES {
             token = check self.readNextNonSeparatorToken();
             string varName = check getIdentifierTokenValue(token);
-            Location location = token.location.clone();
+            Location location = token.location;
             token = check self.readNextNonSeparatorToken();
             if token.kind != T_COLON {
                 return getExpectedCharError(token, COLON);
@@ -349,7 +349,7 @@ public class Parser {
             while token.kind != T_CLOSE_BRACE {
                 token = check self.readNextNonSeparatorToken();
                 string fieldName = check getIdentifierTokenValue(token);
-                Location fieldLocation = token.location.clone();
+                Location fieldLocation = token.location;
                 if visitedFields.indexOf(fieldName) != () {
                     return getDuplicateFieldError(token);
                 }

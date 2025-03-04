@@ -269,8 +269,8 @@ isolated function testInvalidMultipleConnectionInitMessages() returns error? {
     check initiateGraphqlWsConnection(wsClient);
     check sendConnectionInitMessage(wsClient);
 
-    string expectedErrorMsg = "Too many initialisation requests: Status code: 4429";
-    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    string expectedErrorMsg = "Too many initialization requests: Status code: 4429";
+    validateConnectionClosureWithError(wsClient, expectedErrorMsg);
 }
 
 @test:Config {
@@ -284,7 +284,7 @@ isolated function testUnauthorizedAccess() returns error? {
     check sendSubscriptionMessage(wsClient, document);
 
     string expectedErrorMsg = "Unauthorized: Status code: 4401";
-    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    validateConnectionClosureWithError(wsClient, expectedErrorMsg);
 }
 
 @test:Config {
@@ -402,7 +402,7 @@ isolated function testSubscriptionWithInvalidPayload() returns error? {
 
     string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the" +
         " 'graphql-transport-ws' subprotocol: Status code: 1003";
-    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    validateConnectionClosureWithError(wsClient, expectedErrorMsg);
 }
 
 @test:Config {

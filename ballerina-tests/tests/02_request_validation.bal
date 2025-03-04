@@ -172,7 +172,7 @@ isolated function testInvalidWebSocketRequestWithInvalidQuery() returns error? {
     check wsClient->writeMessage({"type": WS_SUBSCRIBE, id: "1", payload: payload});
     string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the" +
         " 'graphql-transport-ws' subprotocol: Status code: 1003";
-    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    validateConnectionClosureWithError(wsClient, expectedErrorMsg);
 }
 
 @test:Config {
@@ -186,7 +186,7 @@ isolated function testInvalidWebSocketRequestWithoutQuery() returns error? {
     check wsClient->writeMessage({"type": WS_SUBSCRIBE, id: "1", payload: {}});
     string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the" +
         " 'graphql-transport-ws' subprotocol: Status code: 1003";
-    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    validateConnectionClosureWithError(wsClient, expectedErrorMsg);
 }
 
 @test:Config {
@@ -202,7 +202,7 @@ isolated function testInvalidVariableInWebSocketPayload() returns error? {
     check sendSubscriptionMessage(wsClient, document, variables = variables);
     string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the" +
         " 'graphql-transport-ws' subprotocol: Status code: 1003";
-    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    validateConnectionClosureWithError(wsClient, expectedErrorMsg);
 }
 
 @test:Config {
@@ -216,7 +216,7 @@ isolated function testEmptyWebSocketPayload() returns error? {
     check wsClient->writeMessage(payload);
     string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the" +
         " 'graphql-transport-ws' subprotocol: Status code: 1003";
-    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    validateConnectionClosureWithError(wsClient, expectedErrorMsg);
 }
 
 @test:Config {
@@ -229,5 +229,5 @@ isolated function testInvalidWebSocketPayload() returns error? {
     check wsClient->writeMessage(payload);
     string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the"
         + " 'graphql-transport-ws' subprotocol: Status code: 1003";
-    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    validateConnectionClosureWithError(wsClient, expectedErrorMsg);
 }
