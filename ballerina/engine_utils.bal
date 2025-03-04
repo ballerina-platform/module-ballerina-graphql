@@ -39,7 +39,7 @@ isolated function getErrorDetailFromError(parser:Error err) returns ErrorDetail 
     };
 }
 
-isolated function validateInterceptorReturnValue(__Type 'type, any|error value, string interceptorName)
+isolated function validateInterceptorReturnValue(readonly & __Type 'type, any|error value, string interceptorName)
     returns anydata|error {
     if value is error|ErrorDetail {
         return value;
@@ -51,12 +51,12 @@ isolated function validateInterceptorReturnValue(__Type 'type, any|error value, 
     return error(interceptorError);
 }
 
-isolated function isValidReturnType(__Type 'type, anydata value) returns boolean {
+isolated function isValidReturnType(readonly & __Type 'type, anydata value) returns boolean {
     if 'type.kind is NON_NULL {
         if value is () {
             return false;
         }
-        return isValidReturnType(unwrapNonNullype('type), value);
+        return isValidReturnType(unwrapNonNullType('type), value);
     } else if value is () {
         return true;
     } else if 'type.kind is ENUM && value is string {
@@ -71,7 +71,7 @@ isolated function isValidReturnType(__Type 'type, anydata value) returns boolean
         }
         return false;
     } else if 'type.kind is UNION|INTERFACE {
-        __Type[] possibleTypes = <__Type[]>'type.possibleTypes;
+        readonly & __Type[] possibleTypes = <readonly & __Type[]>'type.possibleTypes;
         boolean isValidType = false;
         foreach __Type possibleType in possibleTypes {
             isValidType = isValidReturnType(possibleType, value);
@@ -84,12 +84,12 @@ isolated function isValidReturnType(__Type 'type, anydata value) returns boolean
     return false;
 }
 
-isolated function getFieldObject(parser:FieldNode fieldNode, parser:RootOperationType operationType, __Schema schema,
-        Engine engine, any|error fieldValue = ()) returns Field {
+isolated function getFieldObject(parser:FieldNode fieldNode, parser:RootOperationType operationType,
+        readonly & __Schema schema, Engine engine, any|error fieldValue = ()) returns Field {
     readonly & (string|int)[] path = [fieldNode.getAlias()];
     string operationTypeName = getOperationTypeNameFromOperationType(operationType);
-    __Type parentType = <__Type>getTypeFromTypeArray(schema.types, operationTypeName);
-    __Type fieldType = getFieldTypeFromParentType(parentType, schema.types, fieldNode);
+    readonly & __Type parentType = <readonly & __Type>getTypeFromTypeArray(schema.types, operationTypeName);
+    readonly & __Type fieldType = getFieldTypeFromParentType(parentType, schema.types, fieldNode);
     string parentArgHashes = generateArgHash(fieldNode.getArguments());
     return new (fieldNode, fieldType, parentType, engine.getService(), path, operationType, fieldValue = fieldValue,
         cacheConfig = engine.getCacheConfig(), parentArgHashes = [parentArgHashes]

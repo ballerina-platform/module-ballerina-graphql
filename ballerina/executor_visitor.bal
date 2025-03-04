@@ -110,7 +110,6 @@ isolated class ExecutorVisitor {
 
     isolated function execute(parser:FieldNode fieldNode, parser:RootOperationType operationType) {
         any|error result;
-        __Schema schema = self.schema;
         Engine engine;
         Context context;
         lock {
@@ -118,7 +117,7 @@ isolated class ExecutorVisitor {
             engine = self.engine;
             context = self.context;
         }
-        Field 'field = getFieldObject(fieldNode, operationType, schema, engine, result);
+        Field 'field = getFieldObject(fieldNode, operationType, self.schema, engine, result);
         anydata resolvedResult = engine.resolve(context, 'field);
         self.addData(fieldNode.getAlias(), resolvedResult is ErrorDetail ? () : resolvedResult);
     }

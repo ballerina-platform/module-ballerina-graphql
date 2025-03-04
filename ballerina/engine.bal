@@ -415,8 +415,8 @@ isolated class Engine {
             map<anydata> result) {
         string[] resourcePath = 'field.getResourcePath();
         readonly & (string|int)[] path = [...'field.getPath(), fieldNode.getName()];
-        __Type parentType = 'field.getFieldType();
-        __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
+        readonly & __Type parentType = 'field.getFieldType();
+        readonly & __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
         Field selectionField = new (fieldNode, fieldType, parentType, 'field.getServiceObject(), path = path,
             resourcePath = resourcePath
         );

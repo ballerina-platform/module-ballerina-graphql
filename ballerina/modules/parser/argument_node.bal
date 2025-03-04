@@ -82,16 +82,16 @@ public readonly class ArgumentNode {
         return self.containsInvalidValue;
     }
 
-    public isolated function modifyWith(ArgumentType? kind = (), ArgumentValue|ArgumentValue[] value = (), 
+    public isolated function modifyWith(ArgumentType? kind = (), ArgumentValue|ArgumentValue[] value = (),
                                         Location? valueLocation = (),   boolean? isVarDef = (),
-                                        json variableValue = (), boolean? containsInvalidValue = ()) 
+                                        json variableValue = (), boolean? containsInvalidValue = ())
     returns ArgumentNode {
 
         ArgumentType kindParam = kind is () ? self.kind : kind;
         boolean isVarDefParam = isVarDef is () ? self.variableDefinition : isVarDef;
         Location? valueLocationParam = valueLocation is () ? self.valueLocation : valueLocation;
         ArgumentValue|ArgumentValue[] valueParam = value is () ? self.value : value;
-        boolean containsInvalidValueParam = containsInvalidValue is () ? self.containsInvalidValue 
+        boolean containsInvalidValueParam = containsInvalidValue is () ? self.containsInvalidValue
                                                                        : containsInvalidValue;
         json variableValueParam = variableValue is () ? self.variableValue : variableValue;
 

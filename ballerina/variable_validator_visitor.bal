@@ -23,11 +23,12 @@ class VariableValidatorVisitor {
     private map<parser:VariableNode> variableDefinitions = {};
     private final ErrorDetail[] errors = [];
     private final (string|int)[] argumentPath = [];
-    private final __Schema schema;
+    private final readonly & __Schema schema;
     private final map<json> variables;
     private final NodeModifierContext nodeModifierContext;
 
-    isolated function init(__Schema schema, map<json>? variableValues, NodeModifierContext nodeModifierContext) {
+    isolated function init(readonly & __Schema schema, map<json>? variableValues,
+            NodeModifierContext nodeModifierContext) {
         self.schema = schema;
         self.variables = variableValues == () ? {} : variableValues;
         self.nodeModifierContext = nodeModifierContext;
@@ -41,7 +42,7 @@ class VariableValidatorVisitor {
     }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
-        self.variableDefinitions = operationNode.getVaribleDefinitions();
+        self.variableDefinitions = operationNode.getVariableDefinitions();
         __Field? schemaFieldForOperation = createSchemaFieldFromOperation(self.schema.types, operationNode, self.errors,
                                                                           self.nodeModifierContext);
         self.validateDirectiveVariables(operationNode);
@@ -62,10 +63,10 @@ class VariableValidatorVisitor {
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
-        __Field parentField = <__Field>data;
-        __Type parentType = getOfType(parentField.'type);
-        __Field? requiredFieldValue = getRequierdFieldFromType(parentType, self.schema.types, fieldNode);
-        __InputValue[] inputValues = requiredFieldValue is __Field ? requiredFieldValue.args : [];
+        readonly & __Field parentField = <readonly & __Field>data;
+        readonly & __Type parentType = getOfType(parentField.'type);
+        readonly & __Field? requiredFieldValue = getRequiredFieldFromType(parentType, self.schema.types, fieldNode);
+        readonly & __InputValue[] inputValues = requiredFieldValue is __Field ? requiredFieldValue.args : [];
         self.validateDirectiveVariables(fieldNode);
         foreach parser:ArgumentNode argument in fieldNode.getArguments() {
             argument.accept(self, inputValues);
@@ -87,14 +88,14 @@ class VariableValidatorVisitor {
     }
 
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
-        __InputValue[] inputValues = <__InputValue[]>data;
+        (readonly & __InputValue)[] inputValues = <(readonly & __InputValue)[]>data;
         if argumentNode.isVariableDefinition() {
             string variableName = <string>argumentNode.getVariableName();
             self.updatePath(variableName);
             if self.variableDefinitions.hasKey(variableName) {
                 parser:VariableNode variableNode = self.variableDefinitions.get(variableName);
                 string argumentTypeName;
-                __Type? variableType;
+                readonly & __Type? variableType;
                 [variableType, argumentTypeName] = self.getTypeRecordAndTypeFromTypeName(variableNode.getTypeName());
                 if variableType is __Type {
                     self.validateVariableDefinition(argumentNode, variableNode, variableType);
@@ -113,15 +114,15 @@ class VariableValidatorVisitor {
             }
             self.removePath();
         } else {
-            __InputValue? inputValue = getInputValueFromArray(inputValues, argumentNode.getName());
+            readonly & __InputValue? inputValue = getInputValueFromArray(inputValues, argumentNode.getName());
             if inputValue is __InputValue {
                 if getTypeKind(inputValue.'type) is LIST {
-                    __InputValue[] inputFieldValues = [];
+                    (readonly & __InputValue)[] inputFieldValues = [];
                     inputFieldValues.push(createInputValueForListItem(inputValue));
                     inputValues = inputFieldValues;
                 } else {
-                    __Type? inputFieldType = getOfType(inputValue.'type);
-                    __InputValue[]? inputFieldValues = inputFieldType?.inputFields;
+                    readonly & __Type? inputFieldType = getOfType(inputValue.'type);
+                    readonly & __InputValue[]? inputFieldValues = inputFieldType?.inputFields;
                     inputValues = inputFieldValues is __InputValue[] ? inputFieldValues : [];
                 }
             }
@@ -143,7 +144,7 @@ class VariableValidatorVisitor {
     }
 
     isolated function validateVariableDefinition(parser:ArgumentNode argumentNode, parser:VariableNode variable,
-                                                 __Type variableType) {
+            readonly & __Type variableType) {
         string variableName = <string>argumentNode.getVariableName();
         parser:ArgumentNode? defaultValue = variable.getDefaultValue();
         if self.variables.hasKey(variableName) {
@@ -216,13 +217,12 @@ class VariableValidatorVisitor {
     }
 
     isolated function setDefaultValueToArgumentNode(parser:ArgumentNode argumentNode, parser:ArgumentType kind,
-                                                    parser:ArgumentValue|parser:ArgumentValue[] defaultValue,
-                                                    parser:Location valueLocation) {
+            parser:ArgumentValue|parser:ArgumentValue[] defaultValue, parser:Location valueLocation) {
         self.modifyArgumentNode(argumentNode, kind = kind, value = defaultValue, valueLocation = valueLocation, isVarDef = false);
     }
 
     isolated function setArgumentValue(json value, parser:ArgumentNode argument, string variableTypeName,
-                                       __Type variableType) {
+            readonly & __Type variableType) {
         parser:ArgumentNode modifiedArgNode = self.nodeModifierContext.getModifiedArgumentNode(argument);
         if getOfType(variableType).name == UPLOAD {
             return;
@@ -244,9 +244,8 @@ class VariableValidatorVisitor {
         }
     }
 
-    isolated function checkVariableUsageCompatibility(__Type varType, __InputValue[] inputValues,
-                                                      parser:VariableNode variable,
-                                                      parser:ArgumentNode argNode) {
+    isolated function checkVariableUsageCompatibility(__Type varType, (readonly & __InputValue)[] inputValues,
+            parser:VariableNode variable, parser:ArgumentNode argNode) {
         parser:ArgumentNode modifiedArgNode = self.nodeModifierContext.getModifiedArgumentNode(argNode);
         __InputValue? inputValue = getInputValueFromArray(inputValues, modifiedArgNode.getName());
         if inputValue is __InputValue {
@@ -294,29 +293,21 @@ class VariableValidatorVisitor {
         }
     }
 
-    isolated function getTypeRecordAndTypeFromTypeName(string typeName) returns [__Type?, string] {
+    isolated function getTypeRecordAndTypeFromTypeName(string typeName) returns [readonly & __Type?, string] {
         if typeName.endsWith("!") {
-            __Type wrapperType = {
-                kind: NON_NULL
-            };
             string ofTypeName = typeName.substring(0, typeName.length() - 1);
-            __Type? ofType;
+            readonly & __Type? ofType;
             [ofType, ofTypeName] = self.getTypeRecordAndTypeFromTypeName(ofTypeName);
             if ofType is __Type {
-                wrapperType.ofType = ofType;
-                return [wrapperType, ofTypeName];
+                return [{kind: NON_NULL, ofType}, ofTypeName];
             }
             return [(), ofTypeName];
         } else if typeName.startsWith("[") {
-            __Type wrapperType = {
-                kind: LIST
-            };
             string ofTypeName = typeName.substring(1, typeName.length() - 1);
-            __Type? ofType;
+            readonly & __Type? ofType;
             [ofType, ofTypeName] = self.getTypeRecordAndTypeFromTypeName(ofTypeName);
             if ofType is __Type {
-                wrapperType.ofType = ofType;
-                return [wrapperType, ofTypeName];
+                return [{kind: LIST, ofType}, ofTypeName];
             }
             return [(), ofTypeName];
         } else {

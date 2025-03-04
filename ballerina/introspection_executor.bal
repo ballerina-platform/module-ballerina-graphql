@@ -18,9 +18,9 @@ import graphql.parser;
 
 class IntrospectionExecutor {
 
-    private __Schema schema;
+    private readonly & __Schema schema;
 
-    isolated function init(__Schema schema) {
+    isolated function init(readonly & __Schema schema) {
         self.schema = schema;
     }
 
