@@ -55,7 +55,7 @@ public class Lexer {
             return {
                 kind: T_EOF,
                 value: "",
-                location: self.currentLocation.clone()
+                location: self.currentLocation
             };
         }
         int tokenTag = -1;
@@ -78,14 +78,14 @@ public class Lexer {
     }
 
     isolated function readSeparatorToken(string:Char char) returns Token? {
-        Location location = self.currentLocation.clone();
+        Location location = self.currentLocation;
         _ = self.readNextChar();
         int kind = getTokenType(char);
         return getToken(char, kind, location);
     }
 
     isolated function readSpecialCharacterToken(string:Char char) returns Token {
-        Location location = self.currentLocation.clone();
+        Location location = self.currentLocation;
         _ = self.readNextChar();
         int kind = getTokenType(char);
         return getToken(char, kind, location);
@@ -101,7 +101,7 @@ public class Lexer {
 
     isolated function readSingleLineStringLiteral() returns Token|SyntaxError {
         string word = "";
-        Location location = self.currentLocation.clone();
+        Location location = self.currentLocation;
         _ = self.readNextChar(); // Consume first double quote character
 
         string:Char? char = self.charReader.peek();
@@ -133,7 +133,7 @@ public class Lexer {
     }
 
     isolated function readBlockStringLiteral() returns Token|SyntaxError {
-        Location location = self.currentLocation.clone();
+        Location location = self.currentLocation;
         string[] lines = [];
         string line = "";
         self.consumeIgnoreChars(3); // Consume first three double quote characters
@@ -234,7 +234,7 @@ public class Lexer {
     }
 
     isolated function readNumericLiteral(string:Char firstChar) returns Token|SyntaxError {
-        Location location = self.currentLocation.clone();
+        Location location = self.currentLocation;
         string numeral = firstChar; // Passing first char to handle negative numbers.
         _ = self.readNextChar(); // Consume first char
         string:Char? character = self.charReader.peek();
@@ -306,7 +306,7 @@ public class Lexer {
     }
 
     isolated function readCommentToken() returns Token|SyntaxError {
-        Location location = self.currentLocation.clone();
+        Location location = self.currentLocation;
         _ = self.readNextChar(); // Ignore first hash character
         string:Char? character = self.charReader.peek();
         string word = "#";
@@ -329,7 +329,7 @@ public class Lexer {
     }
 
     isolated function readEllipsisToken() returns Token|SyntaxError {
-        Location location = self.currentLocation.clone();
+        Location location = self.currentLocation;
         string ellipsis = "";
         int i = 0;
         while i < 3 {
@@ -352,7 +352,7 @@ public class Lexer {
     }
 
     isolated function readIdentifierToken(string:Char firstChar) returns Token|SyntaxError {
-        Location location = self.currentLocation.clone();
+        Location location = self.currentLocation;
         _ = self.readNextChar();
         check validateFirstChar(firstChar, self.currentLocation);
         string word = firstChar;
@@ -367,7 +367,7 @@ public class Lexer {
             if tokenTag >= WHITE_SPACE_TAG && tokenTag <= SPECIAL_CHARACTER_TAG {
                 break;
             } else {
-                Location charLocation = self.currentLocation.clone();
+                Location charLocation = self.currentLocation;
                 _ = self.readNextChar();
                 check validateChar(char, charLocation);
                 word += char;
