@@ -234,9 +234,7 @@ isolated class ResponseGenerator {
                     locations: [selection.getLocation()],
                     path: clonedPath
                 };
-                lock {
-                    self.context.addError(errorDetail);
-                }
+                self.context.addError(errorDetail);
                 continue;
             }
             result[selection.getAlias()] = fieldValue is ErrorDetail ? () : fieldValue;
@@ -269,9 +267,7 @@ isolated class ResponseGenerator {
                     locations: [selection.getLocation()],
                     path: clonedPath
                 };
-                lock {
-                    self.context.addError(errorDetail);
-                }
+                self.context.addError(errorDetail);
                 continue;
             }
             result[selection.getAlias()] = fieldValue is ErrorDetail ? () : fieldValue;

@@ -42,10 +42,7 @@ isolated class ExecutorVisitor {
         if operationNode.getName() != parser:ANONYMOUS_OPERATION {
             path.push(operationNode.getName());
         }
-        service object {} serviceObject;
-        lock {
-            serviceObject = self.engine.getService();
-        }
+        service object {} serviceObject = self.engine.getService();
         if operationNode.getKind() != parser:OPERATION_MUTATION && serviceObject is isolated service object {} {
             readonly & map<anydata> dataMap = {[OPERATION_TYPE] : operationNode.getKind(), [PATH] : path.cloneReadOnly()};
             return self.visitSelectionsParallelly(operationNode, dataMap);
@@ -109,24 +106,16 @@ isolated class ExecutorVisitor {
     }
 
     isolated function execute(parser:FieldNode fieldNode, parser:RootOperationType operationType) {
-        any|error result;
-        Engine engine;
-        Context context;
-        lock {
-            result = self.getResult();
-            engine = self.engine;
-            context = self.context;
-        }
+        any|error result = self.getResult();
+        Engine engine = self.engine;
+        Context context = self.context;
         Field 'field = getFieldObject(fieldNode, operationType, self.schema, engine, result);
         anydata resolvedResult = engine.resolve(context, 'field);
         self.addData(fieldNode.getAlias(), resolvedResult is ErrorDetail ? () : resolvedResult);
     }
 
     isolated function getOutput() returns OutputObject {
-        Context context;
-        lock {
-            context = self.context;
-        }
+        Context context = self.context;
         Data data = self.getDataMap();
         ErrorDetail[] errors = context.getErrors();
         if !self.context.hasPlaceholders() {
@@ -163,11 +152,9 @@ isolated class ExecutorVisitor {
                 ErrorDetail errorDetail = {
                     message: err.message(),
                     locations: [selection.getLocation()],
-                    path: path
+                    path
                 };
-                lock {
-                    self.context.addError(errorDetail);
-                }
+                self.context.addError(errorDetail);
             }
         }
     }
