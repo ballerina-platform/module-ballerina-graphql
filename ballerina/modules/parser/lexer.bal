@@ -293,7 +293,7 @@ public class Lexer {
         while i < 3 {
             i += 1;
             string? c = self.readNextChar();
-            if c is DOT {
+            if c == DOT {
                 ellipsis += c;
                 continue;
             } else if c == () {
