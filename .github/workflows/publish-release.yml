@@ -14,5 +14,4 @@ jobs:
         with:
             package-name: graphql
             package-org: ballerina
-            additional-build-flags: '-x :graphql-examples:build -P disable=subscriptions'
-            additional-publish-flags: "-P disable=subscriptions"
+            additional-build-flags: '-x :graphql-examples:build'

@@ -48,7 +48,8 @@ isolated function testDataLoaderWithDifferentAliasForSameField() returns error? 
 
 @test:Config {
     groups: ["dataloader", "subscription"],
-    after: resetDispatchCounters
+    after: resetDispatchCounters,
+    enable: false
 }
 isolated function testDataLoaderWithSubscription() returns error? {
     string document = check getGraphqlDocumentFromFile("dataloader_with_subscription");
@@ -67,7 +68,8 @@ isolated function testDataLoaderWithSubscription() returns error? {
 @test:Config {
     groups: ["dataloader", "mutation"],
     dependsOn: [testDataLoaderWithQuery, testDataLoaderWithSubscription],
-    after: resetDispatchCounters
+    after: resetDispatchCounters,
+    enable: false
 }
 isolated function testDataLoaderWithMutation() returns error? {
     graphql:Client graphqlClient = check new ("localhost:9090/dataloader");

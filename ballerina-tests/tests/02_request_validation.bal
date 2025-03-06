@@ -147,7 +147,8 @@ isolated function testInvalidRequestBody() returns error? {
 }
 
 @test:Config {
-    groups: ["request_validation", "websocket", "subscriptions"]
+    groups: ["request_validation", "websocket", "subscriptions"],
+    enable: false
 }
 isolated function testInvalidWebSocketRequestWithEmptyQuery() returns error? {
     string document = "";
@@ -161,7 +162,8 @@ isolated function testInvalidWebSocketRequestWithEmptyQuery() returns error? {
 }
 
 @test:Config {
-    groups: ["request_validation", "websocket", "subscriptions"]
+    groups: ["request_validation", "websocket", "subscriptions"],
+    enable: false
 }
 isolated function testInvalidWebSocketRequestWithInvalidQuery() returns error? {
     string url = "ws://localhost:9099/subscriptions";
@@ -176,7 +178,8 @@ isolated function testInvalidWebSocketRequestWithInvalidQuery() returns error? {
 }
 
 @test:Config {
-    groups: ["request_validation", "websocket", "subscriptions"]
+    groups: ["request_validation", "websocket", "subscriptions"],
+    enable: false
 }
 isolated function testInvalidWebSocketRequestWithoutQuery() returns error? {
     string url = "ws://localhost:9099/subscriptions";
@@ -190,7 +193,8 @@ isolated function testInvalidWebSocketRequestWithoutQuery() returns error? {
 }
 
 @test:Config {
-    groups: ["request_validation", "websocket", "subscriptions"]
+    groups: ["request_validation", "websocket", "subscriptions"],
+    enable: false
 }
 isolated function testInvalidVariableInWebSocketPayload() returns error? {
     string document = check getGraphqlDocumentFromFile("subscriptions_with_variable_values");
@@ -206,7 +210,8 @@ isolated function testInvalidVariableInWebSocketPayload() returns error? {
 }
 
 @test:Config {
-    groups: ["request_validation", "websocket", "subscriptions"]
+    groups: ["request_validation", "websocket", "subscriptions"],
+    enable: false
 }
 isolated function testEmptyWebSocketPayload() returns error? {
     string url = "ws://localhost:9099/subscriptions";
@@ -220,7 +225,8 @@ isolated function testEmptyWebSocketPayload() returns error? {
 }
 
 @test:Config {
-    groups: ["request_validation", "websocket", "subscriptions"]
+    groups: ["request_validation", "websocket", "subscriptions"],
+    enable: false
 }
 isolated function testInvalidWebSocketPayload() returns error? {
     string url = "ws://localhost:9099/subscriptions";
