@@ -37,7 +37,7 @@ isolated service class WsService {
     isolated remote function onIdleTimeout(websocket:Caller caller) returns websocket:Error? {
         lock {
             if !self.initiatedConnection {
-                SubscriptionError err = error("Connection initialisation timeout", code = 4408);
+                SubscriptionError err = error("Connection initialization timeout", code = 4408);
                 return closeConnection(caller, err);
             }
         }
@@ -74,7 +74,7 @@ isolated service class WsService {
     private isolated function handleConnectionInitRequest(websocket:Caller caller) returns websocket:Error? {
         lock {
             if self.initiatedConnection {
-                SubscriptionError err = error("Too many initialisation requests", code = 4429);
+                SubscriptionError err = error("Too many initialization requests", code = 4429);
                 return closeConnection(caller, err);
             }
             ConnectionAckMessage response = {'type: WS_ACK};
@@ -85,7 +85,7 @@ isolated service class WsService {
 
     private isolated function startSendingPingMessages(websocket:Caller caller) {
         lock {
-            if self.pingMessageHandler !is () || !self.initiatedConnection {
+            if self.pingMessageHandler != () || !self.initiatedConnection {
                 return;
             }
             PingMessageJob job = new PingMessageJob(caller);
@@ -128,7 +128,7 @@ isolated service class WsService {
     private isolated function handlePongRequest() {
         lock {
             PongMessageHandlerJob? handler = self.pongMessageHandler;
-            if handler is () {
+            if handler == () {
                 return;
             }
             handler.setPongMessageReceived();

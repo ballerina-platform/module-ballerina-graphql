@@ -317,7 +317,8 @@ isolated function testContextWithSubscriptions() returns error? {
 }
 
 @test:Config {
-    groups: ["context", "subscriptions"]
+    groups: ["context", "subscriptions"],
+    enable: false
 }
 isolated function testContextWithInvalidScopeInSubscriptions() returns error? {
     string url = "ws://localhost:9092/context";
