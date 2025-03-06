@@ -28,12 +28,13 @@ isolated class ResponseGenerator {
 
     private final string functionNameGetFragmentFromService = "";
 
-    isolated function init(Engine engine, Context context, __Type fieldType, readonly & (string|int)[] path = [],
-            ServerCacheConfig? cacheConfig = (), readonly & string[] parentArgHashes = []) {
+    isolated function init(Engine engine, Context context, readonly & __Type fieldType,
+            readonly & (string|int)[] path = [], ServerCacheConfig? cacheConfig = (),
+            readonly & string[] parentArgHashes = []) {
         self.engine = engine;
         self.context = context;
         self.path = path;
-        self.fieldType = fieldType.cloneReadOnly();
+        self.fieldType = fieldType;
         self.cacheConfig = cacheConfig;
         self.parentArgHashes = parentArgHashes;
     }
@@ -81,8 +82,8 @@ isolated class ResponseGenerator {
             }
         } else if parentValue is service object {} {
             readonly & (string|int)[] clonedPath = [...self.path, ...path, fieldNode.getAlias()];
-            __Type parentType = self.fieldType;
-            __Type fieldType = getFieldTypeFromParentType(parentType, self.engine.getSchema().types, fieldNode);
+            readonly & __Type parentType = self.fieldType;
+            readonly & __Type fieldType = getFieldTypeFromParentType(parentType, self.engine.getSchema().types, fieldNode);
             Field 'field = new (fieldNode, fieldType, parentType, parentValue, clonedPath,
                 cacheConfig = self.cacheConfig, parentArgHashes = self.parentArgHashes
             );
@@ -146,13 +147,13 @@ isolated class ResponseGenerator {
     }
 
     isolated function getRecordResult(map<any> parentValue, parser:FieldNode fieldNode, (string|int)[] path = [])
-returns anydata {
+        returns anydata {
         if fieldNode.getName() == TYPE_NAME_FIELD {
             return getTypeNameFromValue(parentValue);
         }
         any fieldValue = parentValue.hasKey(fieldNode.getName()) ? parentValue.get(fieldNode.getName()) : ();
-        __Type parentType = self.fieldType;
-        __Type fieldType = getFieldTypeFromParentType(parentType, self.engine.getSchema().types, fieldNode);
+        readonly & __Type parentType = self.fieldType;
+        readonly & __Type fieldType = getFieldTypeFromParentType(parentType, self.engine.getSchema().types, fieldNode);
         boolean isAlreadyCached = isRecordWithNoOptionalFields(parentValue);
         readonly & (string|int)[] clonedPath = [...self.path, ...path, fieldNode.getAlias()];
         Field 'field = new (fieldNode, fieldType, parentType, path = clonedPath, fieldValue = fieldValue,
@@ -233,9 +234,7 @@ returns anydata {
                     locations: [selection.getLocation()],
                     path: clonedPath
                 };
-                lock {
-                    self.context.addError(errorDetail);
-                }
+                self.context.addError(errorDetail);
                 continue;
             }
             result[selection.getAlias()] = fieldValue is ErrorDetail ? () : fieldValue;
@@ -268,9 +267,7 @@ returns anydata {
                     locations: [selection.getLocation()],
                     path: clonedPath
                 };
-                lock {
-                    self.context.addError(errorDetail);
-                }
+                self.context.addError(errorDetail);
                 continue;
             }
             result[selection.getAlias()] = fieldValue is ErrorDetail ? () : fieldValue;
@@ -311,12 +308,12 @@ returns anydata {
 
     private isolated function isPossibleTypeOfInterface(string interfaceName,
             string implementedTypeName) returns boolean {
-        __Type? interfaceType = getTypeFromTypeArray(self.engine.getSchema().types, interfaceName);
-        if interfaceType is () || interfaceType.kind != INTERFACE {
+        readonly & __Type? interfaceType = getTypeFromTypeArray(self.engine.getSchema().types, interfaceName);
+        if interfaceType == () || interfaceType.kind != INTERFACE {
             return false;
         }
-        __Type[]? possibleTypes = interfaceType.possibleTypes;
-        if possibleTypes is () {
+        readonly & __Type[]? possibleTypes = interfaceType.possibleTypes;
+        if possibleTypes == () {
             return false;
         }
         return getTypeFromTypeArray(possibleTypes, implementedTypeName) is __Type;

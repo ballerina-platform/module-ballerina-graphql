@@ -18,77 +18,77 @@ import graphql.parser;
 
 isolated class NodeModifierContext {
     private map<()> fragmentWithCycles = {};
-    private map<()> unknowFragments = {};
+    private map<()> unknownFragments = {};
     private map<parser:FragmentNode> modifiedFragments = {};
-    private map<parser:ArgumentNode> modfiedArgumentNodes = {};
+    private map<parser:ArgumentNode> modifiedArgumentNodes = {};
     private map<()> nonConfiguredOperations = {};
 
     isolated function addFragmentWithCycles(parser:FragmentNode fragmentNode) {
+        string hashCode = parser:getHashCode(fragmentNode);
         lock {
-            string hashCode = parser:getHashCode(fragmentNode);
             self.fragmentWithCycles[hashCode] = ();
         }
     }
 
     isolated function isFragmentWithCycles(parser:FragmentNode fragmentNode) returns boolean {
+        string hashCode = parser:getHashCode(fragmentNode);
         lock {
-            string hashCode = parser:getHashCode(fragmentNode);
             return self.fragmentWithCycles.hasKey(hashCode);
         }
     }
 
     isolated function addUnknownFragment(parser:FragmentNode fragmentNode) {
+        string hashCode = parser:getHashCode(fragmentNode);
         lock {
-            string hashCode = parser:getHashCode(fragmentNode);
-            self.unknowFragments[hashCode] = ();
+            self.unknownFragments[hashCode] = ();
         }
     }
 
     isolated function isUnknownFragment(parser:FragmentNode fragmentNode) returns boolean {
+        string hashCode = parser:getHashCode(fragmentNode);
         lock {
-            string hashCode = parser:getHashCode(fragmentNode);
-            return self.unknowFragments.hasKey(hashCode);
+            return self.unknownFragments.hasKey(hashCode);
         }
     }
 
     isolated function addNonConfiguredOperation(parser:OperationNode operationNode) {
+        string hashCode = parser:getHashCode(operationNode);
         lock {
-            string hashCode = parser:getHashCode(operationNode);
             self.nonConfiguredOperations[hashCode] = ();
         }
     }
 
     isolated function isNonConfiguredOperation(parser:OperationNode operationNode) returns boolean {
+        string hashCode = parser:getHashCode(operationNode);
         lock {
-            string hashCode = parser:getHashCode(operationNode);
             return self.nonConfiguredOperations.hasKey(hashCode);
         }
     }
 
     isolated function addModifiedArgumentNode(parser:ArgumentNode originalNode, parser:ArgumentNode modifiedNode) {
+        string hashCode = parser:getHashCode(originalNode);
         lock {
-            string hashCode = parser:getHashCode(originalNode);
-            self.modfiedArgumentNodes[hashCode] = modifiedNode;
+            self.modifiedArgumentNodes[hashCode] = modifiedNode;
         }
     }
 
     isolated function getModifiedArgumentNode(parser:ArgumentNode originalNode) returns parser:ArgumentNode {
+        string hashCode = parser:getHashCode(originalNode);
         lock {
-            string hashCode = parser:getHashCode(originalNode);
-            return self.modfiedArgumentNodes.hasKey(hashCode) ? self.modfiedArgumentNodes.get(hashCode) : originalNode;
+            return self.modifiedArgumentNodes.hasKey(hashCode) ? self.modifiedArgumentNodes.get(hashCode) : originalNode;
         }
     }
 
     isolated function addModifiedFragmentNode(parser:FragmentNode originalNode, parser:FragmentNode modifiedNode) {
+        string hashCode = parser:getHashCode(originalNode);
         lock {
-            string hashCode = parser:getHashCode(originalNode);
             self.modifiedFragments[hashCode] = modifiedNode;
         }
     }
 
     isolated function getModifiedFragmentNode(parser:FragmentNode originalNode) returns parser:FragmentNode {
+        string hashCode = parser:getHashCode(originalNode);
         lock {
-            string hashCode = parser:getHashCode(originalNode);
             return self.modifiedFragments.hasKey(hashCode) ? self.modifiedFragments.get(hashCode) : originalNode;
         }
     }
