@@ -14,62 +14,62 @@
 // specific language governing permissions and limitations
 // under the License.
 
-__Field id = {
+readonly & __Field id = {
     name: "id",
     args: [],
     'type: NonNullScalarInt
 };
 
-__Field designation = {
+readonly & __Field designation = {
     name: "designation",
     args: [],
     'type: ScalarString
 };
 
-__Field startDate = {
+readonly & __Field startDate = {
     name: "startDate",
     args: [],
     'type: ScalarString
 };
 
-__Field endDate = {
+readonly & __Field endDate = {
     name: "endDate",
     args: [],
     'type: ScalarString
 };
 
-__Field name = {
+readonly & __Field name = {
     name: "name",
     args: [],
     'type: ScalarString
 };
 
-__Field missions = {
+readonly & __Field missions = {
     name: "missions",
     args: [],
     'type: MissionNonNullList
 };
 
-__Type ScalarString = {
+readonly & __Type ScalarString = {
     kind: "SCALAR",
     name: "String",
     description: "The `String` scalar type represents textual data, represented as UTF-8 character sequences." +
     "The String type is most often used by GraphQL to represent free-form human-readable text."
 };
 
-__Type ScalarInt = {
+readonly & __Type ScalarInt = {
     kind: "SCALAR",
     name: "Int",
     description: "The `Int` scalar type represents non-fractional signed whole numeric values." +
     "Int can represent values between -(2^31) and 2^31 - 1."
 };
 
-__Type NonNullScalarInt = {
+readonly & __Type NonNullScalarInt = {
     kind: "NON_NULL",
     ofType: ScalarInt
 };
 
-__Type Mission = {
+readonly & __Type Mission = {
     kind: "OBJECT",
     name: "Mission",
     fields: [
@@ -81,7 +81,7 @@ __Type Mission = {
     interfaces: []
 };
 
-__Type Astronaut = {
+readonly & __Type Astronaut = {
     kind: "OBJECT",
     name: "Astronaut",
     fields: [
@@ -92,7 +92,7 @@ __Type Astronaut = {
     interfaces: []
 };
 
-__Type MissionNonNullList = {
+readonly & __Type MissionNonNullList = {
     kind: "LIST",
     ofType: {
         kind: "NON_NULL",
@@ -100,7 +100,7 @@ __Type MissionNonNullList = {
     }
 };
 
-__Type AstronautQuery = {
+readonly & __Type AstronautQuery = {
     kind: "OBJECT",
     name: "Query",
     fields: [
@@ -117,7 +117,7 @@ __Type AstronautQuery = {
     ]
 };
 
-__Type AstronautNonNullList = {
+readonly & __Type AstronautNonNullList = {
     kind: "LIST",
     ofType: {
         kind: "NON_NULL",
@@ -125,7 +125,7 @@ __Type AstronautNonNullList = {
     }
 };
 
-__Type PersonQuery = {
+readonly & __Type PersonQuery = {
     kind: "OBJECT",
     name: "Query",
     fields: [
@@ -146,7 +146,7 @@ __Type PersonQuery = {
     ]
 };
 
-__Type Person = {
+readonly & __Type Person = {
     kind: "OBJECT",
     name: "Person",
     fields: [
@@ -156,7 +156,7 @@ __Type Person = {
     interfaces: []
 };
 
-__Type Address = {
+readonly & __Type Address = {
     kind: "OBJECT",
     name: "Address",
     fields: [
@@ -165,34 +165,34 @@ __Type Address = {
     interfaces: []
 };
 
-__Field person = {
+readonly & __Field person = {
     name: "person",
     args: [inputId],
     'type: Person
 };
 
-__InputValue inputId = {
+readonly & __InputValue inputId = {
     name: "id",
     'type: NonNullScalarInt
 };
 
-__Field address = {
+readonly & __Field address = {
     name: "address",
     args: [includeCity],
     'type: Address
 };
 
-__InputValue includeCity = {
+readonly & __InputValue includeCity = {
     name: "includeCity",
     'type: NonNullScalarBoolean
 };
 
-__Type NonNullScalarBoolean = {
+readonly & __Type NonNullScalarBoolean = {
     kind: "SCALAR",
     name: "Boolean"
 };
 
-__Field city = {
+readonly & __Field city = {
     name: "city",
     args: [],
     'type: ScalarString
