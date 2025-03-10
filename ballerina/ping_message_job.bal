@@ -14,8 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/websocket;
 import ballerina/task;
+import ballerina/websocket;
 
 class PingMessageJob {
     *task:Job;
@@ -49,18 +49,19 @@ class PingMessageJob {
 
     private isolated function sendPeriodicPingMessageRequests() {
         do {
+            task:JobId? id;
             lock {
-                task:JobId? id = self.id;
-                if id == () {
-                    return;
-                }
-                if !self.caller.isOpen() {
-                    check self.unschedule();
-                    return;
-                }
-                PingMessage message = {'type: WS_PING};
-                check writeMessage(self.caller, message);
+                id = self.id;
             }
+            if id == () {
+                return;
+            }
+            if !self.caller.isOpen() {
+                check self.unschedule();
+                return;
+            }
+            PingMessage message = {'type: WS_PING};
+            check writeMessage(self.caller, message);
         } on fail error cause {
             string message = cause is websocket:Error ? "Failed to send ping message: "
                 : "Failed to unschedule PingMessageJob: ";
