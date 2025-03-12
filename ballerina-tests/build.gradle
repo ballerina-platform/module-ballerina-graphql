@@ -195,7 +195,6 @@ clean {
 
     testSuites.each { testPackage ->
         delete "${project.projectDir}/${testPackage}/target"
-        delete "${project.projectDir}/${testPackage}/Dependencies.toml"
     }
 }
 
