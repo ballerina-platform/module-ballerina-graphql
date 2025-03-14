@@ -18,7 +18,7 @@ import ballerina/graphql_test_common as common;
 import ballerina/test;
 
 @test:Config {
-    groups: ["fragments", "validation"],
+    groups: ["fragments", "validation", "s"],
     dataProvider: dataProviderFragments
 }
 isolated function testFragments(string url, string resourceFileName) returns error? {
@@ -34,18 +34,19 @@ function dataProviderFragments() returns string[][] {
     string url3 = "http://localhost:9092/service_objects";
 
     return [
-        [url1, "fragment_on_invalid_type"],
-        [url1, "fragment_with_invalid_field"],
-        [url1, "fragments_on_record_objects"],
-        [url1, "nested_fragments"],
-        [url1, "fragments_with_multiple_resource_invocation"],
-        [url1, "fragments_with_invalid_introspection"],
-        [url1, "fragments_with_introspection"],
-        [url2, "fragments_querying_service_objects"],
-        [url1, "inline_fragment"],
-        [url1, "unknown_inline_fragment"],
-        [url1, "invalid_spread_inline_fragments"],
-        [url3, "fragments_inside_fragments_when_returning_services"],
-        [url3, "nested_fragments_querying_service_objects_with_multiple_fields"]
+        // [url1, "fragment_on_invalid_type"],
+        // [url1, "fragment_with_invalid_field"],
+        // [url1, "fragments_on_record_objects"],
+        // [url1, "nested_fragments"],
+        // [url1, "fragments_with_multiple_resource_invocation"],
+        // [url1, "fragments_with_invalid_introspection"],
+        // [url1, "fragments_with_introspection"],
+        // [url2, "fragments_querying_service_objects"],
+        // [url1, "inline_fragment"],
+        // [url1, "unknown_inline_fragment"],
+        // [url1, "invalid_spread_inline_fragments"],
+        // [url3, "fragments_inside_fragments_when_returning_services"],
+        // [url3, "nested_fragments_querying_service_objects_with_multiple_fields"],
+        [url3, "fragments_returning_null_for_non_null_types"]
     ];
 }

@@ -1,0 +1,35 @@
+{
+    "errors": [
+        {
+            "message": "Country is not found",
+            "locations": [
+                {
+                    "line": 9,
+                    "column": 3
+                }
+            ],
+            "path": ["allVehicles", 0,"country"]
+        },
+        {
+            "message": "Country is not found",
+            "locations": [
+                {
+                    "line": 9,
+                    "column": 3
+                }
+            ],
+            "path": ["allVehicles", 1, "country"]
+        },
+        {
+            "message": "Country is not found",
+            "locations": [
+                {
+                    "line": 9,
+                    "column": 3
+                }
+            ],
+            "path": ["allVehicles", 2, "country"]
+        }
+    ],
+    "data":null
+}
