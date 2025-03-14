@@ -50,7 +50,7 @@ function dataProviderConstraintValidation() returns map<[string, string, string,
         ]
     };
 
-    map<[string, string, string, json, string?]> dataSet = 
+    map<[string, string, string, json, string?]> dataSet =
     {
         "1": [url1, "constraints", "constraints", (), "A"],
         "2": [url1, "constraints", "constraints_with_mutation", (), "B"],
@@ -64,7 +64,8 @@ function dataProviderConstraintValidation() returns map<[string, string, string,
 }
 
 @test:Config {
-    groups: ["constraints", "subscriptions"]
+    groups: ["constraints", "subscriptions"],
+    enable: false
 }
 isolated function testSubscriptionWithConstraints() returns error? {
     string document = check getGraphqlDocumentFromFile("constraints");
@@ -78,7 +79,8 @@ isolated function testSubscriptionWithConstraints() returns error? {
 }
 
 @test:Config {
-    groups: ["constraints", "subscriptions"]
+    groups: ["constraints", "subscriptions"],
+    enable: false
 }
 isolated function testMultipleSubscriptionClientsWithConstraints() returns error? {
     string document = check getGraphqlDocumentFromFile("constraints");

@@ -53,18 +53,18 @@ public class Utils {
     public static final String PACKAGE_ORG = "ballerina";
 
     public static final StrandMetadata RESOURCE_EXECUTION_STRAND = new StrandMetadata(getModule().getOrg(),
-                                                                                      getModule().getName(),
-                                                                                      getModule().getMajorVersion(),
-                                                                                      EXECUTE_RESOURCE_FUNCTION);
+            getModule().getName(),
+            getModule().getMajorVersion(),
+            EXECUTE_RESOURCE_FUNCTION);
     public static final StrandMetadata REMOTE_EXECUTION_STRAND = new StrandMetadata(getModule().getOrg(),
-                                                                                    getModule().getName(),
-                                                                                    getModule().getMajorVersion(),
-                                                                                    EXECUTE_RESOURCE_FUNCTION);
+            getModule().getName(),
+            getModule().getMajorVersion(),
+            EXECUTE_RESOURCE_FUNCTION);
 
     public static final StrandMetadata INTERCEPTOR_EXECUTION_STRAND = new StrandMetadata(getModule().getOrg(),
-                                                                                         getModule().getName(),
-                                                                                         getModule().getMajorVersion(),
-                                                                                         EXECUTE_INTERCEPTOR_FUNCTION);
+            getModule().getName(),
+            getModule().getMajorVersion(),
+            EXECUTE_INTERCEPTOR_FUNCTION);
 
     public static BError createError(String message, String errorTypeName) {
         return ErrorCreator.createError(getModule(), errorTypeName, StringUtils.fromString(message), null, null);

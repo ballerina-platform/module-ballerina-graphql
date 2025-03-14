@@ -17,7 +17,7 @@
 public type Scalar int|float|decimal|string|boolean;
 
 type CharIteratorNode record {
-    string:Char value;
+    string value;
 };
 
 type CharIterator object {

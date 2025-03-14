@@ -22,9 +22,9 @@ public class Field {
     private final parser:FieldNode internalNode;
     private final service object {}? serviceObject;
     private final any|error fieldValue;
-    private final __Type fieldType;
-    private final __Type parentType;
-    private (string|int)[] path;
+    private final readonly & __Type fieldType;
+    private final readonly & __Type parentType;
+    private final readonly & (string|int)[] path;
     private string[] resourcePath;
     private readonly & Interceptor[] fieldInterceptors;
     private final ServerCacheConfig? cacheConfig;
@@ -33,11 +33,13 @@ public class Field {
     private final decimal cacheMaxAge;
     private boolean hasRequestedNullableFields;
     private final boolean alreadyCached;
+    private int nextInterceptor = 0;
 
-    isolated function init(parser:FieldNode internalNode, __Type fieldType, __Type parentType,
-            service object {}? serviceObject = (), (string|int)[] path = [],
+    isolated function init(parser:FieldNode internalNode, readonly & __Type fieldType, readonly & __Type parentType,
+            service object {}? serviceObject = (), readonly & (string|int)[] path = [],
             parser:RootOperationType operationType = parser:OPERATION_QUERY, string[] resourcePath = [],
-            any|error fieldValue = (), ServerCacheConfig? cacheConfig = (), readonly & string[] parentArgHashes = [], boolean isAlreadyCached = false) {
+            any|error fieldValue = (), ServerCacheConfig? cacheConfig = (), readonly & string[] parentArgHashes = [],
+            boolean isAlreadyCached = false) {
         self.internalNode = internalNode;
         self.serviceObject = serviceObject;
         self.fieldType = fieldType;
@@ -86,7 +88,7 @@ public class Field {
     # Returns the current path of the field. If the field returns an array, the path will include the index of the
     # element.
     # + return - The path of the field
-    public isolated function getPath() returns (string|int)[] {
+    public isolated function getPath() returns readonly & (string|int)[] {
         return self.path;
     }
 
@@ -134,7 +136,7 @@ public class Field {
         return self.resourcePath;
     }
 
-    isolated function getFieldType() returns __Type {
+    isolated function getFieldType() returns readonly & __Type {
         return self.fieldType;
     }
 
@@ -146,20 +148,20 @@ public class Field {
         return self.fieldValue;
     }
 
-    isolated function getFieldObjects(parser:SelectionNode selectionNode, __Type 'type) returns Field[] {
-        string[] currentPath = self.path.clone().'map((item) => item is int ? "@" : item);
+    isolated function getFieldObjects(parser:SelectionNode selectionNode, readonly & __Type 'type) returns Field[] {
+        string[] currentPath = self.path.'map((item) => item is int ? "@" : item);
         string[] unwrappedPath = getUnwrappedPath('type);
-        __Type parentType = getOfType('type);
+        readonly & __Type parentType = getOfType('type);
 
-        __Field[]? typeFields = parentType.fields;
-        if typeFields is () {
+        readonly & __Field[]? typeFields = parentType.fields;
+        if typeFields == () {
             return [];
         }
 
         Field[] result = [];
         foreach parser:SelectionNode selection in selectionNode.getSelections() {
             if selection is parser:FieldNode {
-                foreach __Field 'field in typeFields {
+                foreach readonly & __Field 'field in typeFields {
                     if 'field.name == selection.getName() {
                         result.push(new Field(selection, 'field.'type, parentType, (), [
                                 ...currentPath,
@@ -241,5 +243,40 @@ public class Field {
             }
         }
         return requestedNullableFields.sort();
+    }
+
+    isolated function getNextInterceptor(Engine? engine) returns (readonly & Interceptor)? {
+        if engine is Engine {
+            (readonly & Interceptor)[] interceptors = engine.getInterceptors();
+            if interceptors.length() > self.getInterceptorCount() {
+                (readonly & Interceptor) next = interceptors[self.getInterceptorCount()];
+                if !isGlobalInterceptor(next) && self.getPath().length() > 1 {
+                    self.increaseInterceptorCount();
+                    return self.getNextInterceptor(engine);
+                }
+                self.increaseInterceptorCount();
+                return next;
+            }
+            int nextFieldInterceptor = self.getInterceptorCount() - engine.getInterceptors().length();
+            if self.getFieldInterceptors().length() > nextFieldInterceptor {
+                readonly & Interceptor next = self.getFieldInterceptors()[nextFieldInterceptor];
+                self.increaseInterceptorCount();
+                return next;
+            }
+        }
+        self.resetInterceptorCount();
+        return;
+    }
+
+    isolated function resetInterceptorCount() {
+        self.nextInterceptor = 0;
+    }
+
+    isolated function getInterceptorCount() returns int {
+        return self.nextInterceptor;
+    }
+
+    isolated function increaseInterceptorCount() {
+        self.nextInterceptor += 1;
     }
 }

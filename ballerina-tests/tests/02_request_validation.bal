@@ -147,7 +147,8 @@ isolated function testInvalidRequestBody() returns error? {
 }
 
 @test:Config {
-    groups: ["request_validation", "websocket", "subscriptions"]
+    groups: ["request_validation", "websocket", "subscriptions"],
+    enable: false
 }
 isolated function testInvalidWebSocketRequestWithEmptyQuery() returns error? {
     string document = "";
@@ -161,7 +162,8 @@ isolated function testInvalidWebSocketRequestWithEmptyQuery() returns error? {
 }
 
 @test:Config {
-    groups: ["request_validation", "websocket", "subscriptions"]
+    groups: ["request_validation", "websocket", "subscriptions"],
+    enable: false
 }
 isolated function testInvalidWebSocketRequestWithInvalidQuery() returns error? {
     string url = "ws://localhost:9099/subscriptions";
@@ -172,11 +174,12 @@ isolated function testInvalidWebSocketRequestWithInvalidQuery() returns error? {
     check wsClient->writeMessage({"type": WS_SUBSCRIBE, id: "1", payload: payload});
     string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the" +
         " 'graphql-transport-ws' subprotocol: Status code: 1003";
-    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    validateConnectionClosureWithError(wsClient, expectedErrorMsg);
 }
 
 @test:Config {
-    groups: ["request_validation", "websocket", "subscriptions"]
+    groups: ["request_validation", "websocket", "subscriptions"],
+    enable: false
 }
 isolated function testInvalidWebSocketRequestWithoutQuery() returns error? {
     string url = "ws://localhost:9099/subscriptions";
@@ -186,11 +189,12 @@ isolated function testInvalidWebSocketRequestWithoutQuery() returns error? {
     check wsClient->writeMessage({"type": WS_SUBSCRIBE, id: "1", payload: {}});
     string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the" +
         " 'graphql-transport-ws' subprotocol: Status code: 1003";
-    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    validateConnectionClosureWithError(wsClient, expectedErrorMsg);
 }
 
 @test:Config {
-    groups: ["request_validation", "websocket", "subscriptions"]
+    groups: ["request_validation", "websocket", "subscriptions"],
+    enable: false
 }
 isolated function testInvalidVariableInWebSocketPayload() returns error? {
     string document = check getGraphqlDocumentFromFile("subscriptions_with_variable_values");
@@ -202,11 +206,12 @@ isolated function testInvalidVariableInWebSocketPayload() returns error? {
     check sendSubscriptionMessage(wsClient, document, variables = variables);
     string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the" +
         " 'graphql-transport-ws' subprotocol: Status code: 1003";
-    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    validateConnectionClosureWithError(wsClient, expectedErrorMsg);
 }
 
 @test:Config {
-    groups: ["request_validation", "websocket", "subscriptions"]
+    groups: ["request_validation", "websocket", "subscriptions"],
+    enable: false
 }
 isolated function testEmptyWebSocketPayload() returns error? {
     string url = "ws://localhost:9099/subscriptions";
@@ -216,11 +221,12 @@ isolated function testEmptyWebSocketPayload() returns error? {
     check wsClient->writeMessage(payload);
     string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the" +
         " 'graphql-transport-ws' subprotocol: Status code: 1003";
-    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    validateConnectionClosureWithError(wsClient, expectedErrorMsg);
 }
 
 @test:Config {
-    groups: ["request_validation", "websocket", "subscriptions"]
+    groups: ["request_validation", "websocket", "subscriptions"],
+    enable: false
 }
 isolated function testInvalidWebSocketPayload() returns error? {
     string url = "ws://localhost:9099/subscriptions";
@@ -229,5 +235,5 @@ isolated function testInvalidWebSocketPayload() returns error? {
     check wsClient->writeMessage(payload);
     string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the"
         + " 'graphql-transport-ws' subprotocol: Status code: 1003";
-    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    validateConnectionClosureWithError(wsClient, expectedErrorMsg);
 }

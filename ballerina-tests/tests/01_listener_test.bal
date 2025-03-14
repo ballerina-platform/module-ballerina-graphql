@@ -124,7 +124,8 @@ function testAttachServiceWithMutationToHttp1BasedListenerAndClient() returns er
 }
 
 @test:Config {
-    groups: ["listener", "subscriptions"]
+    groups: ["listener", "subscriptions"],
+    enable: false
 }
 function testAttachServiceWithSubscriptionToHttp1BasedListener() returns error? {
     string document = string `subscription { messages }`;

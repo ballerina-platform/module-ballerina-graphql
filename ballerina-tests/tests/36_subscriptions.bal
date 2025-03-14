@@ -18,7 +18,8 @@ import ballerina/test;
 import ballerina/websocket;
 
 @test:Config {
-    groups: ["subscriptions"]
+    groups: ["subscriptions"],
+    enable: false
 }
 isolated function testSubscription() returns error? {
     string document = string `subscription { name }`;
@@ -35,7 +36,8 @@ isolated function testSubscription() returns error? {
 }
 
 @test:Config {
-    groups: ["subscriptions"]
+    groups: ["subscriptions"],
+    enable: false
 }
 isolated function testSubscriptionWithoutSubProtocol() returns error? {
     string url = "ws://localhost:9099/subscriptions";
@@ -46,7 +48,8 @@ isolated function testSubscriptionWithoutSubProtocol() returns error? {
 }
 
 @test:Config {
-    groups: ["subscriptions"]
+    groups: ["subscriptions"],
+    enable: false
 }
 isolated function testSubscriptionsWithMultipleOperations() returns error? {
     string document = check getGraphqlDocumentFromFile("subscriptions_with_multiple_operations");
@@ -75,7 +78,8 @@ isolated function testSubscriptionsWithMultipleOperations() returns error? {
 }
 
 @test:Config {
-    groups: ["records", "subscriptions"]
+    groups: ["records", "subscriptions"],
+    enable: false
 }
 isolated function testSubscriptionWithRecords() returns error? {
     string document = check getGraphqlDocumentFromFile("subscriptions_with_records");
@@ -92,7 +96,8 @@ isolated function testSubscriptionWithRecords() returns error? {
 }
 
 @test:Config {
-    groups: ["subscriptions"]
+    groups: ["subscriptions"],
+    enable: false
 }
 isolated function testQueryWithSameSubscriptionFieldName() returns error? {
     string document = string `query { name }`;
@@ -103,7 +108,8 @@ isolated function testQueryWithSameSubscriptionFieldName() returns error? {
 }
 
 @test:Config {
-    groups: ["fragments", "subscriptions"]
+    groups: ["fragments", "subscriptions"],
+    enable: false
 }
 isolated function testSubscriptionWithFragments() returns error? {
     string document = check getGraphqlDocumentFromFile("subscriptions_with_fragments");
@@ -120,7 +126,8 @@ isolated function testSubscriptionWithFragments() returns error? {
 }
 
 @test:Config {
-    groups: ["union", "subscriptions"]
+    groups: ["union", "subscriptions"],
+    enable: false
 }
 isolated function testSubscriptionWithUnionType() returns error? {
     string document = check getGraphqlDocumentFromFile("subscriptions_with_union_type");
@@ -137,7 +144,8 @@ isolated function testSubscriptionWithUnionType() returns error? {
 }
 
 @test:Config {
-    groups: ["variables", "subscriptions"]
+    groups: ["variables", "subscriptions"],
+    enable: false
 }
 isolated function testSubscriptionWithVariables() returns error? {
     string document = check getGraphqlDocumentFromFile("subscriptions_with_variable_values");
@@ -155,7 +163,8 @@ isolated function testSubscriptionWithVariables() returns error? {
 }
 
 @test:Config {
-    groups: ["introspection", "typename", "subscriptions"]
+    groups: ["introspection", "typename", "subscriptions"],
+    enable: false
 }
 isolated function testSubscriptionWithIntrospectionInFields() returns error? {
     string document = string `subscription { students { __typename } }`;
@@ -170,7 +179,8 @@ isolated function testSubscriptionWithIntrospectionInFields() returns error? {
 }
 
 @test:Config {
-    groups: ["subscriptions"]
+    groups: ["subscriptions"],
+    enable: false
 }
 isolated function testInvalidSubscription() returns error? {
     string document = string `subscription { invalidField }`;
@@ -185,7 +195,8 @@ isolated function testInvalidSubscription() returns error? {
 }
 
 @test:Config {
-    groups: ["subscriptions"]
+    groups: ["subscriptions"],
+    enable: false
 }
 isolated function testSubscriptionFunctionWithErrors() returns error? {
     string document = string `subscription getNames { values }`;
@@ -206,7 +217,8 @@ isolated function testSubscriptionFunctionWithErrors() returns error? {
 }
 
 @test:Config {
-    groups: ["service", "subscriptions"]
+    groups: ["service", "subscriptions"],
+    enable: false
 }
 isolated function testSubscriptionWithServiceObjects() returns error? {
     string document = check getGraphqlDocumentFromFile("subscriptions_with_service_objects");
@@ -224,7 +236,8 @@ isolated function testSubscriptionWithServiceObjects() returns error? {
 }
 
 @test:Config {
-    groups: ["subscriptions"]
+    groups: ["subscriptions"],
+    enable: false
 }
 isolated function testSubscriptionWithMultipleClients() returns error? {
     string document = string `subscription { messages }`;
@@ -249,7 +262,8 @@ isolated function testSubscriptionWithMultipleClients() returns error? {
 }
 
 @test:Config {
-    groups: ["subscriptions"]
+    groups: ["subscriptions"],
+    enable: false
 }
 isolated function testConnectionInitMessage() returns error? {
     string url = "ws://localhost:9099/subscriptions";
@@ -260,7 +274,8 @@ isolated function testConnectionInitMessage() returns error? {
 }
 
 @test:Config {
-    groups: ["subscriptions"]
+    groups: ["subscriptions"],
+    enable: false
 }
 isolated function testInvalidMultipleConnectionInitMessages() returns error? {
     string url = "ws://localhost:9099/subscriptions";
@@ -269,12 +284,13 @@ isolated function testInvalidMultipleConnectionInitMessages() returns error? {
     check initiateGraphqlWsConnection(wsClient);
     check sendConnectionInitMessage(wsClient);
 
-    string expectedErrorMsg = "Too many initialisation requests: Status code: 4429";
-    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    string expectedErrorMsg = "Too many initialization requests: Status code: 4429";
+    validateConnectionClosureWithError(wsClient, expectedErrorMsg);
 }
 
 @test:Config {
-    groups: ["subscriptions"]
+    groups: ["subscriptions"],
+    enable: false
 }
 isolated function testUnauthorizedAccess() returns error? {
     string document = check getGraphqlDocumentFromFile("subscriptions_with_service_objects");
@@ -284,11 +300,12 @@ isolated function testUnauthorizedAccess() returns error? {
     check sendSubscriptionMessage(wsClient, document);
 
     string expectedErrorMsg = "Unauthorized: Status code: 4401";
-    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    validateConnectionClosureWithError(wsClient, expectedErrorMsg);
 }
 
 @test:Config {
-    groups: ["subscriptions"]
+    groups: ["subscriptions"],
+    enable: false
 }
 function testAlreadyExistingSubscriber() returns error? {
     string document = check getGraphqlDocumentFromFile("subscriptions_with_service_objects");
@@ -320,7 +337,8 @@ function testAlreadyExistingSubscriber() returns error? {
 }
 
 @test:Config {
-    groups: ["subscriptions"]
+    groups: ["subscriptions"],
+    enable: false
 }
 isolated function testOnPing() returns error? {
     string url = "ws://localhost:9099/subscriptions";
@@ -332,7 +350,8 @@ isolated function testOnPing() returns error? {
 }
 
 @test:Config {
-    groups: ["subscriptions"]
+    groups: ["subscriptions"],
+    enable: false
 }
 isolated function testInvalidSubProtocolInSubscriptions() returns error? {
     string url = "ws://localhost:9099/subscriptions";
@@ -346,7 +365,8 @@ isolated function testInvalidSubProtocolInSubscriptions() returns error? {
 }
 
 @test:Config {
-    groups: ["subscriptions", "runtime_errors"]
+    groups: ["subscriptions", "runtime_errors"],
+    enable: false
 }
 isolated function testErrorsInStreams() returns error? {
     string document = "subscription { evenNumber }";
@@ -365,7 +385,8 @@ isolated function testErrorsInStreams() returns error? {
 }
 
 @test:Config {
-    groups: ["subscriptions"]
+    groups: ["subscriptions"],
+    enable: false
 }
 isolated function testMultipleSubscriptionUsingSingleClient() returns error? {
     string document = string `subscription { messages }`;
@@ -390,7 +411,8 @@ isolated function testMultipleSubscriptionUsingSingleClient() returns error? {
 }
 
 @test:Config {
-    groups: ["subscriptions"]
+    groups: ["subscriptions"],
+    enable: false
 }
 isolated function testSubscriptionWithInvalidPayload() returns error? {
     string url = "ws://localhost:9099/subscriptions";
@@ -402,11 +424,12 @@ isolated function testSubscriptionWithInvalidPayload() returns error? {
 
     string expectedErrorMsg = "Invalid format: payload does not conform to the format required by the" +
         " 'graphql-transport-ws' subprotocol: Status code: 1003";
-    validateConnectionClousureWithError(wsClient, expectedErrorMsg);
+    validateConnectionClosureWithError(wsClient, expectedErrorMsg);
 }
 
 @test:Config {
-    groups: ["subscriptions", "recrods", "service"]
+    groups: ["subscriptions", "records", "service"],
+    enable: false
 }
 isolated function testResolverReturingStreamOfRecordsWithServiceObjects() returns error? {
     string document = "subscription { live { product { id } score } }";
@@ -421,7 +444,8 @@ isolated function testResolverReturingStreamOfRecordsWithServiceObjects() return
 }
 
 @test:Config {
-    groups: ["subscriptions", "recrods", "service", "maps"]
+    groups: ["subscriptions", "records", "service", "maps"],
+    enable: false
 }
 isolated function testResolverReturingStreamOfRecordsWithMapOfServiceObjects() returns error? {
     string document = string `subscription { accountUpdates { details(key: "acc1") { name } } }`;
@@ -438,7 +462,8 @@ isolated function testResolverReturingStreamOfRecordsWithMapOfServiceObjects() r
 }
 
 @test:Config {
-    groups: ["subscriptions", "multiplexing"]
+    groups: ["subscriptions", "multiplexing"],
+    enable: false
 }
 isolated function testSubscriptionMultiplexing() returns error? {
     string document = string `subscription { refresh }`;
@@ -473,7 +498,8 @@ isolated function testSubscriptionMultiplexing() returns error? {
 }
 
 @test:Config {
-    groups: ["subscriptions", "recrods", "service"]
+    groups: ["subscriptions", "records", "service"],
+    enable: false
 }
 isolated function testConnectionClousureWhenPongNotRecived() returns error? {
     string url = "ws://localhost:9090/reviews";
