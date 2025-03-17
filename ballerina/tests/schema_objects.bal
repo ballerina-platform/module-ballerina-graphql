@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-__Schema schemaWithInputValues = {
+readonly & __Schema schemaWithInputValues = {
   "queryType": {
     "kind": "OBJECT",
     "name": "Query"
@@ -788,55 +788,55 @@ __Schema schemaWithInputValues = {
   "directives": directives
 };
 
-__Type scalarStringType = {
+readonly & __Type scalarStringType = {
   "kind": "SCALAR",
   "name": "String",
   "ofType": null
 };
 
-__Type scalarBooleanType = {
+readonly & __Type scalarBooleanType = {
   "kind": "SCALAR",
   "name": "Boolean",
   "ofType": null
 };
 
-__Type scalarDecimalType = {
+readonly & __Type scalarDecimalType = {
   "kind": "SCALAR",
   "name": "Decimal",
   "ofType": null
 };
 
-__Type objectType = {
+readonly & __Type objectType = {
   "kind": "OBJECT",
   "name": "__Type",
   "ofType": null
 };
 
-__Type nonNullTypeWithString = {
+readonly & __Type nonNullTypeWithString = {
   "kind": "NON_NULL",
   "name": null,
   "ofType": scalarStringType
 };
 
-__Type nonNullTypeWithBoolean = {
+readonly & __Type nonNullTypeWithBoolean = {
   "kind": "NON_NULL",
   "name": null,
   "ofType": scalarBooleanType
 };
 
-__Type nonNullTypeWithDecimal = {
+readonly & __Type nonNullTypeWithDecimal = {
   "kind": "NON_NULL",
   "name": null,
   "ofType": scalarDecimalType
 };
 
-__Type nonNullTypeWithObject = {
+readonly & __Type nonNullTypeWithObject = {
   "kind": "NON_NULL",
   "name": null,
   "ofType": objectType
 };
 
-__Field fieldDescription = {
+readonly & __Field fieldDescription = {
   "name": "description",
   "args": [],
   "type": scalarStringType,
@@ -844,7 +844,7 @@ __Field fieldDescription = {
   "deprecationReason": null
 };
 
-__Directive[] directives = [
+readonly & __Directive[] directives = [
   {
     "name": "include",
     "locations": [
@@ -891,7 +891,7 @@ __Directive[] directives = [
   }
 ];
 
-__EnumValue[] typeKinds = [
+readonly & __EnumValue[] typeKinds = [
   {
     "name": "SCALAR",
     "isDeprecated": false,
@@ -934,7 +934,7 @@ __EnumValue[] typeKinds = [
   }
 ];
 
-__EnumValue[] directiveLocations = [
+readonly & __EnumValue[] directiveLocations = [
   {
     "name": "QUERY",
     "isDeprecated": false,
