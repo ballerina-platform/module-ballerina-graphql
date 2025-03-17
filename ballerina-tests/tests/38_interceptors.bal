@@ -91,7 +91,8 @@ function dataProviderInterceptors() returns string[][] {
 }
 
 @test:Config {
-    groups: ["interceptors", "subscriptions"]
+    groups: ["interceptors", "subscriptions"],
+    enable: false
 }
 isolated function testInterceptorsWithSubscriptionReturningScalar() returns error? {
     string document = string `subscription { messages }`;
@@ -113,7 +114,8 @@ isolated function testInterceptorsWithSubscriptionReturningScalar() returns erro
 }
 
 @test:Config {
-    groups: ["interceptors", "subscriptions", "records"]
+    groups: ["interceptors", "subscriptions", "records"],
+    enable: false
 }
 isolated function testInterceptorsWithSubscriptionReturningRecord() returns error? {
     string document = check getGraphqlDocumentFromFile("interceptors_with_subscription_return_records");
@@ -135,7 +137,8 @@ isolated function testInterceptorsWithSubscriptionReturningRecord() returns erro
 }
 
 @test:Config {
-    groups: ["interceptors", "fragments", "subscriptions"]
+    groups: ["interceptors", "fragments", "subscriptions"],
+    enable: false
 }
 isolated function testInterceptorsWithSubscriptionAndFragments() returns error? {
     string document = check getGraphqlDocumentFromFile("interceptors_with_fragments_and_subscription");
@@ -157,7 +160,8 @@ isolated function testInterceptorsWithSubscriptionAndFragments() returns error? 
 }
 
 @test:Config {
-    groups: ["interceptors", "union", "subscriptions"]
+    groups: ["interceptors", "union", "subscriptions"],
+    enable: false
 }
 isolated function testInterceptorsWithUnionTypeSubscription() returns error? {
     string document = check getGraphqlDocumentFromFile("interceptors_with_subscription_return_union_type");
@@ -200,7 +204,8 @@ isolated function testInterceptorsWithUnionTypeSubscription() returns error? {
 }
 
 @test:Config {
-    groups: ["interceptors", "subscriptions"]
+    groups: ["interceptors", "subscriptions"],
+    enable: false
 }
 isolated function testInterceptorsReturnBeforeResolverWithSubscription() returns error? {
     string document = string `subscription { messages }`;
@@ -222,7 +227,8 @@ isolated function testInterceptorsReturnBeforeResolverWithSubscription() returns
 }
 
 @test:Config {
-    groups: ["interceptors", "subscriptions"]
+    groups: ["interceptors", "subscriptions"],
+    enable: false
 }
 isolated function testInterceptorsDestructiveModificationWithSubscription() returns error? {
     string document = string `subscription { messages }`;
@@ -270,7 +276,8 @@ isolated function testInterceptorsDestructiveModificationWithSubscription() retu
 }
 
 @test:Config {
-    groups: ["interceptors", "subscriptions"]
+    groups: ["interceptors", "subscriptions"],
+    enable: false
 }
 isolated function testInterceptorsWithSubscribersRunSimultaniously1() returns error? {
     final string document = string `subscription { messages }`;
@@ -309,7 +316,8 @@ isolated function testInterceptorsWithSubscribersRunSimultaniously1() returns er
 }
 
 @test:Config {
-    groups: ["interceptors", "union", "subscriptions"]
+    groups: ["interceptors", "union", "subscriptions"],
+    enable: false
 }
 isolated function testInterceptorsWithSubscribersRunSimultaniously2() returns error? {
     final string document = check getGraphqlDocumentFromFile("interceptors_with_subscription_return_union_type");

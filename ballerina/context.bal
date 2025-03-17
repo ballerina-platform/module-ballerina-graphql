@@ -22,92 +22,82 @@ import ballerina/lang.value;
 
 # The GraphQL context object used to pass the meta information between resolvers.
 public isolated class Context {
-    private final map<value:Cloneable|isolated object {}> attributes = {};
     private final ErrorDetail[] errors = [];
     private Engine? engine = ();
-    private int nextInterceptor = 0;
     private boolean hasFileInfo = false; // This field value changed by setFileInfo method
-    private map<dataloader:DataLoader> idDataLoaderMap = {}; // Provides mapping between user defined id and DataLoader
-    private map<Placeholder> uuidPlaceholderMap = {};
-    private Placeholder[] unResolvedPlaceholders = [];
-    private boolean containPlaceholders = false;
-    private int unResolvedPlaceholderCount = 0; // Tracks the number of Placeholders needs to be resolved
-    private int unResolvedPlaceholderNodeCount = 0; // Tracks the number of nodes to be replaced in the value tree
+
+    public isolated function init() {
+        self.initializeContext();
+    }
+
+    isolated function initializeContext() = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
 
     # Sets a given value for a given key in the GraphQL context.
     #
     # + key - The key for the value to be set
     # + value - Value to be set
     public isolated function set(string 'key, value:Cloneable|isolated object {} value) {
-        lock {
-            if value is value:Cloneable {
-                self.attributes['key] = value.clone();
-            } else {
-                self.attributes['key] = value;
-            }
-        }
+        self.setAttribute('key, value is value:Cloneable ? value.clone() : value);
     }
 
     # Retrieves a value using the given key from the GraphQL context.
+    # ```ballerina
+    # string userId = check context.get("userId").ensureType();
+    # ```
     #
     # + key - The key corresponding to the required value
     # + return - The value if the key is present in the context, a `graphql:Error` otherwise
     public isolated function get(string 'key) returns value:Cloneable|isolated object {}|Error {
-        lock {
-            if self.attributes.hasKey('key) {
-                value:Cloneable|isolated object {} value = self.attributes.get('key);
-                if value is value:Cloneable {
-                    return value.clone();
-                } else {
-                    return value;
-                }
-            }
-            return error Error(string`Attribute with the key "${'key}" not found in the context`);
+        value:Cloneable|isolated object {}? value = self.getAttribute('key);
+        if value == () {
+            return error Error(string `Attribute with the key "${'key}" not found in the context`);
         }
+        return value is value:Cloneable ? value.clone() : value;
     }
 
     # Removes a value using the given key from the GraphQL context.
+    # ```ballerina
+    # string userId = check context.remove("userId").ensureType();
+    # ```
     #
     # + key - The key corresponding to the value to be removed
     # + return - The value if the key is present in the context, a `graphql:Error` otherwise
     public isolated function remove(string 'key) returns value:Cloneable|isolated object {}|Error {
-        lock {
-            if self.attributes.hasKey('key) {
-                value:Cloneable|isolated object {} value = self.attributes.remove('key);
-                if value is value:Cloneable {
-                    return value.clone();
-                } else {
-                    return value;
-                }
-            }
-            return error Error(string`Attribute with the key "${'key}" not found in the context`);
+        value:Cloneable|isolated object {}? value = self.removeAttribute('key);
+        if value == () {
+            return error Error(string `Attribute with the key "${'key}" not found in the context`);
         }
+        return value is value:Cloneable ? value.clone() : value;
     }
 
     # Register a given DataLoader instance for a given key in the GraphQL context.
+    # ```ballerina
+    # dataloader:DataLoader userDataLoader = new dataloader:DefaultDataLoader(batchUsers);
+    # check context.registerDataLoader("user", userDataLoader);
+    # ```
     #
     # + key - The key for the DataLoader to be registered
     # + dataloader - The DataLoader instance to be registered
-    public isolated function registerDataLoader(string key, dataloader:DataLoader dataloader) {
-        lock {
-            self.idDataLoaderMap[key] = dataloader;
-        }
-    }
+    public isolated function registerDataLoader(string key, dataloader:DataLoader dataloader) = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
 
     # Retrieves a DataLoader instance using the given key from the GraphQL context.
-    #
+    # ```ballerina
+    # dataloader:DataLoader userDataLoader = check context.getDataLoader("user");
+    # ```
     # + key - The key corresponding to the required DataLoader instance
     # + return - The DataLoader instance if the key is present in the context otherwise panics
-    public isolated function getDataLoader(string key) returns dataloader:DataLoader {
-        lock {
-            return self.idDataLoaderMap.get(key);
-        }
-    }
+    public isolated function getDataLoader(string key) returns dataloader:DataLoader = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
 
     # Remove cache entries related to the given path.
     #
     # + path - The path corresponding to the cache entries to be removed (Ex: "person.address.city")
-    # + return - The error if the cache invalidateion fails or nil otherwise
+    # + return - The error if the cache invalidation fails or nil otherwise
     public isolated function invalidate(string path) returns error? {
         Engine? engine = self.getEngine();
         if engine is Engine {
@@ -118,7 +108,7 @@ public isolated class Context {
 
     # Remove all cache entries.
     #
-    # + return - The error if the cache invalidateion fails or nil otherwise
+    # + return - The error if the cache invalidation fails or nil otherwise
     public isolated function invalidateAll() returns error? {
         Engine? engine = self.getEngine();
         if engine is Engine {
@@ -127,24 +117,17 @@ public isolated class Context {
         return;
     }
 
-    isolated function addError(ErrorDetail err) {
-        lock {
-            self.errors.push(err.clone());
-        }
-    }
+    isolated function addError(ErrorDetail err) = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
 
-    isolated function addErrors(ErrorDetail[] errs) {
-        readonly & ErrorDetail[] errors = errs.cloneReadOnly();
-        lock {
-            self.errors.push(...errors);
-        }
-    }
+    isolated function addErrors(ErrorDetail[] errs) = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
 
-    isolated function getErrors() returns ErrorDetail[] {
-        lock {
-            return self.errors.clone();
-        }
-    }
+    isolated function getErrors() returns ErrorDetail[] = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
 
     isolated function setFileInfo(map<Upload|Upload[]> fileInfo) = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
@@ -162,136 +145,133 @@ public isolated class Context {
         return;
     }
 
-    isolated function setEngine(Engine engine) {
-        lock {
-            self.engine = engine;
-        }
-    }
+    isolated function setEngine(Engine engine) = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
 
-    isolated function getEngine() returns Engine? {
-        lock {
-            return self.engine;
-        }
-    }
+    isolated function getEngine() returns Engine? = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
 
-    isolated function getNextInterceptor(Field 'field) returns (readonly & Interceptor)? {
-        Engine? engine = self.getEngine();
-        if engine is Engine {
-            (readonly & Interceptor)[] interceptors = engine.getInterceptors();
-            if interceptors.length() > self.getInterceptorCount() {
-                (readonly & Interceptor) next = interceptors[self.getInterceptorCount()];
-                if !isGlobalInterceptor(next) && 'field.getPath().length() > 1 {
-                    self.increaseInterceptorCount();
-                    return self.getNextInterceptor('field);
-                }
-                self.increaseInterceptorCount();
-                return next;
-            }
-            int nextFieldInterceptor = self.getInterceptorCount() - engine.getInterceptors().length();
-            if 'field.getFieldInterceptors().length() > nextFieldInterceptor {
-                readonly & Interceptor next = 'field.getFieldInterceptors()[nextFieldInterceptor];
-                self.increaseInterceptorCount();
-                return next;
-            }
-        }
-        self.resetInterceptorCount();
-        return;
-    }
-
-    isolated function resetInterceptorCount() {
-        lock {
-            self.nextInterceptor = 0;
-        }
-    }
-
-    isolated function getInterceptorCount() returns int {
-        lock {
-            return self.nextInterceptor;
-        }
-    }
-
-    isolated function increaseInterceptorCount() {
-        lock {
-            self.nextInterceptor += 1;
-        }
-    }
-
-    isolated function resetErrors() {
-        lock {
-            self.errors.removeAll();
-        }
-    }
-
-    isolated function addUnresolvedPlaceholder(string uuid, Placeholder placeholder) {
-        lock {
-            self.containPlaceholders = true;
-            self.uuidPlaceholderMap[uuid] = placeholder;
-            self.unResolvedPlaceholders.push(placeholder);
-            self.unResolvedPlaceholderCount += 1;
-            self.unResolvedPlaceholderNodeCount += 1;
-        }
-    }
+    isolated function resetErrors() = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
 
     isolated function resolvePlaceholders() {
-        lock {
-            string[] nonDispatchedDataLoaderIds = self.idDataLoaderMap.keys();
-            Placeholder[] unResolvedPlaceholders = self.unResolvedPlaceholders;
-            self.unResolvedPlaceholders = [];
-            foreach string dataLoaderId in nonDispatchedDataLoaderIds {
-                self.idDataLoaderMap.get(dataLoaderId).dispatch();
+        self.dispatchDataloaders();
+        Placeholder[] unResolvedPlaceholders = self.getUnresolvedPlaceholders();
+        self.removeAllUnresolvedPlaceholders();
+        [Placeholder, future<anydata>][] placeholderValues = [];
+        foreach Placeholder placeholder in unResolvedPlaceholders {
+            Engine? engine = self.getEngine();
+            if engine == () {
+                continue;
             }
-            foreach Placeholder placeholder in unResolvedPlaceholders {
-                Engine? engine = self.getEngine();
-                if engine is () {
-                    continue;
-                }
-                anydata resolvedValue = engine.resolve(self, 'placeholder.getField(), false);
-                placeholder.setValue(resolvedValue);
-                self.unResolvedPlaceholderCount -= 1;
+            future<anydata> resolvedValue = start engine.resolve(self, placeholder.getField(), false);
+            placeholderValues.push([placeholder, resolvedValue]);
+        }
+        foreach [Placeholder, future<anydata>] [placeholder, 'future] in placeholderValues {
+            anydata|error resolvedValue = wait 'future;
+            if resolvedValue is error {
+                self.addError({message: resolvedValue.message()});
+                self.decrementUnresolvedPlaceholderCount();
+                continue;
+            }
+            placeholder.setValue(resolvedValue);
+            self.decrementUnresolvedPlaceholderCount();
+        }
+    }
+
+    isolated function dispatchDataloaders() {
+        string[] nonDispatchedDataLoaderIds = self.getDataLoaderIds();
+        future<()>[] dataloaders = [];
+        foreach string dataLoaderId in nonDispatchedDataLoaderIds {
+            dataloader:DataLoader dataloader = self.getDataLoader(dataLoaderId);
+            future<()> 'future = start dataloader.dispatch();
+            dataloaders.push('future);
+        }
+        foreach future<()> 'future in dataloaders {
+            error? err = wait 'future;
+            if err is error {
+                ErrorDetail errorDetail = {
+                    message: err.message()
+                };
+                self.addError(errorDetail);
+                continue;
             }
         }
     }
 
     isolated function getPlaceholderValue(string uuid) returns anydata {
-        lock {
-            return self.uuidPlaceholderMap.remove(uuid).getValue();
-        }
-    }
-
-    isolated function getUnresolvedPlaceholderCount() returns int {
-        lock {
-            return self.unResolvedPlaceholderCount;
-        }
-    }
-
-    isolated function getUnresolvedPlaceholderNodeCount() returns int {
-        lock {
-            return self.unResolvedPlaceholderNodeCount;
-        }
-    }
-
-    isolated function decrementUnresolvedPlaceholderNodeCount() {
-        lock {
-            self.unResolvedPlaceholderNodeCount-=1;
-        }
-    }
-
-    isolated function hasPlaceholders() returns boolean {
-        lock {
-            return self.containPlaceholders;
-        }
+        Placeholder placeholder = self.getPlaceholder(uuid);
+        return placeholder.getValue();
     }
 
     isolated function clearDataLoadersCachesAndPlaceholders() {
-        // This function is called at the end of each subscription loop execution to prevent using old values 
+        // This function is called at the end of each subscription loop execution to prevent using old values
         // from DataLoader caches in the next iteration and to avoid filling up the idPlaceholderMap.
-        lock {
-            self.idDataLoaderMap.forEach(dataloader => dataloader.clearAll());
-            self.unResolvedPlaceholders.removeAll();
-            self.uuidPlaceholderMap.removeAll();
-            self.containPlaceholders = false;
+        string[] nonDispatchedDataLoaderIds = self.getDataLoaderIds();
+        foreach string dataLoaderId in nonDispatchedDataLoaderIds {
+            self.getDataLoader(dataLoaderId).clearAll();
         }
+        self.clearPlaceholders();
     }
+
+    isolated function setAttribute(string uuid, value:Cloneable|isolated object {} value) = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
+
+    isolated function getAttribute(string uuid) returns value:Cloneable|isolated object {}? = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
+
+    isolated function removeAttribute(string uuid) returns value:Cloneable|isolated object {}? = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
+
+    isolated function getPlaceholder(string uuid) returns Placeholder = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
+
+    isolated function clearPlaceholders() = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
+
+    isolated function getUnresolvedPlaceholders() returns Placeholder[] = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
+
+    isolated function getDataLoaderIds() returns string[] = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
+
+    isolated function getUnresolvedPlaceholderCount() returns int = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
+
+    isolated function getUnresolvedPlaceholderNodeCount() returns int = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
+
+    isolated function decrementUnresolvedPlaceholderNodeCount() = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
+
+    isolated function hasPlaceholders() returns boolean = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
+
+    isolated function addUnresolvedPlaceholder(string uuid, Placeholder placeholder) = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
+
+    isolated function removeAllUnresolvedPlaceholders() = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
+
+    isolated function decrementUnresolvedPlaceholderCount() = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
+    } external;
 }
 
 isolated function initDefaultContext(http:RequestContext requestContext, http:Request request) returns Context|error {

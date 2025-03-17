@@ -116,7 +116,7 @@ isolated function readMessageExcludingPingMessages(websocket:Client wsClient) re
         message = check wsClient->readMessage();
         if message == null {
             continue;
-        } 
+        }
         if message.'type == WS_PING {
             check sendPongMessage(wsClient);
             continue;
@@ -169,7 +169,7 @@ isolated function validateCompleteMessage(websocket:Client wsClient, string id =
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-isolated function validateConnectionClousureWithError(websocket:Client wsClient, string expectedErrorMsg) {
+isolated function validateConnectionClosureWithError(websocket:Client wsClient, string expectedErrorMsg) {
     json|error response = readMessageExcludingPingMessages(wsClient);
     if response is error {
         test:assertEquals(response.message(), expectedErrorMsg);
