@@ -141,7 +141,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.13.0"
+version = "2.13.5"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "auth"},
@@ -413,7 +413,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "websocket"
-version = "2.13.0"
+version = "2.13.1"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "auth"},
