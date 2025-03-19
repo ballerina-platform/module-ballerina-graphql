@@ -73,7 +73,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql"
-version = "1.15.0"
+version = "1.15.1"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -105,7 +105,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql_test_common"
-version = "1.15.0"
+version = "1.15.1"
 dependencies = [
 	{org = "ballerina", name = "file"},
 	{org = "ballerina", name = "graphql"},
