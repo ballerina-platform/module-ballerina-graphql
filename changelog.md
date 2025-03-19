@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.16.1] - 2025-03-19
+
 ### Fixed
 
 - [[#7689] Fix Fragments Returning null Values for non-null Types](https://github.com/ballerina-platform/ballerina-library/issues/7689)
