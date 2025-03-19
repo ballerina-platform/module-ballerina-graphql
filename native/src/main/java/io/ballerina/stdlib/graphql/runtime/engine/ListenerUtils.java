@@ -54,6 +54,7 @@ public final class ListenerUtils {
     private static final String SAMPLE_URL = "http://localhost:9000/";
     public static final String GRAPHIQL_RESOURCE = "graphiql.html";
     private static final String REGEX_URL = "${url}";
+    private static final String SUBSCRIPTION_URL = "${subscriptionUrl}";
     private static final String FORWARD_SLASH = "/";
 
     private ListenerUtils() {
@@ -141,13 +142,11 @@ public final class ListenerUtils {
         try {
             byte[] bytes = htmlAsStream.readAllBytes();
             String htmlAsString = new String(bytes, StandardCharsets.UTF_8);
-            StringBuilder graphiqlUrl = new StringBuilder("{ url: \"" + url.getValue() + "\"");
+            String urlValue = url.getValue();
+            htmlAsString = htmlAsString.replace(REGEX_URL, urlValue);
             if (subscriptionUrl != null) {
-                graphiqlUrl.append(" , subscriptionUrl: \"")
-                        .append(((BString) subscriptionUrl).getValue()).append("\"");
+                htmlAsString = htmlAsString.replace(SUBSCRIPTION_URL, ((BString) subscriptionUrl).getValue());
             }
-            graphiqlUrl.append(" }");
-            htmlAsString = htmlAsString.replace(REGEX_URL, graphiqlUrl.toString());
             return StringUtils.fromString(htmlAsString);
         } catch (IOException e) {
             return createError("Error occurred while loading the GraphiQL client", ERROR_TYPE);
