@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 
 - [[#7689] Fix Fragments Returning null Values for non-null Types](https://github.com/ballerina-platform/ballerina-library/issues/7689)
+- [[#7614] Fix Broken GraphiQL Client](https://github.com/ballerina-platform/ballerina-library/issues/7614)
 
 ## [1.16.0] - 2025-03-12
 
