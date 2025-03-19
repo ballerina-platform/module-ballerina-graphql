@@ -61,7 +61,10 @@ class ResponseFormatter {
             Data result = {};
             foreach parser:SelectionNode selection in parentNode.getSelections() {
                 if selection is parser:FragmentNode {
-                    self.coerceFragmentValues(data, result, selection, parentType, selection.getOnType());
+                    Data? fieldResult = self.coerceFragmentValues(data, result, selection, parentType, selection.getOnType());
+                    if fieldResult == () {
+                        return;
+                    }
                 } else if selection is parser:FieldNode {
                     __Type fieldType = self.getFieldType(selection.getName(), parentType, onType);
                     anydata|anydata[] fieldResult = ();
@@ -82,18 +85,28 @@ class ResponseFormatter {
     }
 
     isolated function coerceFragmentValues(Data data, Data result, parser:FragmentNode fragmentNode, __Type parentType,
-                                           string onType) {
+                                           string onType) returns Data? {
         foreach parser:SelectionNode selection in fragmentNode.getSelections() {
             if selection is parser:FragmentNode {
-                self.coerceFragmentValues(data, result, selection, parentType, selection.getOnType());
+                Data? fieldResult = self.coerceFragmentValues(data, result, selection, parentType, selection.getOnType());
+                if fieldResult == () {
+                    return;
+                }
             } else if selection is parser:FieldNode {
                 if data.hasKey(selection.getAlias()) || data.hasKey(selection.getName()) {
-                    result[selection.getAlias()] = self.coerceObjectField(data, selection, parentType, onType);
+                    anydata|anydata[] fieldResult = self.coerceObjectField(data, selection, parentType, onType);
+                    __Type fieldType = self.getFieldType(selection.getName(), parentType, onType);
+                    if fieldType.kind == NON_NULL && fieldResult == () {
+                        return;
+                    } else {
+                        result[selection.getAlias()] = fieldResult;
+                    }
                 }
             } else {
                 panic error("Invalid selection node passed.");
             }
         }
+        return result;
     }
 
     isolated function coerceArray(anydata[] value, parser:FieldNode fieldNode, __Type fieldType, string? onType)

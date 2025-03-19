@@ -254,7 +254,11 @@ public isolated service class Vehicle {
         return self.name;
     }
 
-    isolated resource function get registeredYear() returns int|error {
+    isolated resource function get country() returns string|error {
+        return error("Country is not found");
+    }
+
+    isolated resource function get registeredYear() returns int?|error {
         int? registeredYear = self.registeredYear;
         if registeredYear == () {
             return error("Registered Year is Not Found");

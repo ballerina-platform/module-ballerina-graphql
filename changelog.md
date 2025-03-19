@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 
+- [[#7689] Fix Fragments Returning null Values for non-null Types](https://github.com/ballerina-platform/ballerina-library/issues/7689)
+
+## [1.16.0] - 2025-03-12
+
+### Fixed
+
 - [[#7555] Fix Compiler Crash when Listener Init Parameters are Passed as Named Parameters](https://github.com/ballerina-platform/ballerina-library/issues/7555)
 
 ## [1.15.0] - 2025-02-08

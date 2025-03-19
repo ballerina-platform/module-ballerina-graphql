@@ -46,6 +46,7 @@ function dataProviderFragments() returns string[][] {
         [url1, "unknown_inline_fragment"],
         [url1, "invalid_spread_inline_fragments"],
         [url3, "fragments_inside_fragments_when_returning_services"],
-        [url3, "nested_fragments_querying_service_objects_with_multiple_fields"]
+        [url3, "nested_fragments_querying_service_objects_with_multiple_fields"],
+        [url3, "fragments_returning_null_for_non_null_types"]
     ];
 }
