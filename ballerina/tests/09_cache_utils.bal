@@ -55,3 +55,25 @@ function testCacheConfigInferring() returns error? {
     }
 }
 
+@test:Config {
+    groups: ["document_cache"],
+    dataProvider: dataProviderDocumentCacheUtils
+}
+function testDocumentCacheUtils(string resourceDocName, string standardizeDocName) returns error? {
+    string document = check getGraphqlDocumentFromFile(resourceDocName);
+    string standardizeDocument = getStandardizeDocument(document);
+    string expectedStadardizedDocument = check getGraphqlDocumentFromFile(standardizeDocName);
+    test:assertEquals(standardizeDocument, expectedStadardizedDocument);
+}
+
+function dataProviderDocumentCacheUtils() returns (string[][]) {
+    return [
+        ["cache_utils", "cache_utils_standardize"],
+        ["fragments_with_multiple_cycles", "fragments_with_multiple_cycles_standardize"],
+        ["intersection_types", "intersection_types_standardize"],
+        ["introspection_for_person_and_greet", "introspection_for_person_and_greet_standardize"],
+        ["document_with_comments", "document_with_comments_standardize"],
+        ["input_object_include_fields_with_variables", "input_object_include_fields_with_variables_standardize"],
+        ["block_string", "block_string_standardize"]
+    ];
+}

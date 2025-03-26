@@ -18,6 +18,7 @@ import graphql.parser;
 
 import ballerina/cache;
 import ballerina/jballerina.java;
+import ballerina/log;
 import ballerina/uuid;
 
 isolated class Engine {
@@ -28,11 +29,13 @@ isolated class Engine {
     private final readonly & boolean validation;
     private final cache:Cache? cache;
     private final readonly & ServerCacheConfig? cacheConfig;
+    private final readonly & boolean documentCaching;
+    private final cache:Cache? documentCache;
 
     isolated function init(string schemaString, int? maxQueryDepth, Service s,
             readonly & (readonly & Interceptor)[] interceptors, boolean introspection,
             boolean validation, ServerCacheConfig? cacheConfig = (),
-            ServerCacheConfig? fieldCacheConfig = ())
+            ServerCacheConfig? fieldCacheConfig = (), DocumentCacheConfig? documentCacheConfig = ())
     returns Error? {
         if maxQueryDepth is int && maxQueryDepth < 1 {
             return error Error("Max query depth value must be a positive integer");
@@ -43,7 +46,9 @@ isolated class Engine {
         self.introspection = introspection;
         self.validation = validation;
         self.cacheConfig = cacheConfig;
+        self.documentCaching = documentCacheConfig is DocumentCacheConfig && documentCacheConfig.enabled;
         self.cache = initCacheTable(cacheConfig, fieldCacheConfig);
+        self.documentCache = initDocumentCacheTable(documentCacheConfig);
         self.addService(s);
     }
 
@@ -80,6 +85,22 @@ isolated class Engine {
             return cache.get(key);
         }
         return error("Cache table not found. Caching functionality requires Ballerina version 2201.8.5 or newer.");
+    }
+
+    isolated function addToDocumentCache(string key, any value) returns error? {
+        cache:Cache? cache = self.documentCache;
+        if cache is cache:Cache {
+            return cache.put(key, value);
+        }
+        return error("Document cache table not found. Document caching functionality requires Ballerina version 2201.9.6 or newer.");
+    }
+
+    isolated function getFromDocumentCache(string key) returns any|error {
+        cache:Cache? cache = self.documentCache;
+        if cache is cache:Cache {
+            return cache.get(key);
+        }
+        return error("Document cache table not found. Document caching functionality requires Ballerina version 2201.9.6 or newer.");
     }
 
     isolated function validate(string documentString, string? operationName, map<json>? variables)
@@ -137,10 +158,25 @@ isolated class Engine {
     }
 
     isolated function parse(string documentString) returns ParseResult|OutputObject {
+        if self.documentCaching {
+            string cacheKey = generateDocumentCacheKey(documentString);
+            any|error result = self.getFromDocumentCache(cacheKey);
+            if result is parser:DocumentNode {
+                return {document: result, validationErrors: []};
+            }
+        }
         parser:Parser parser = new (documentString);
         parser:DocumentNode|parser:Error parseResult = parser.parse();
         if parseResult is parser:DocumentNode {
-            return {document: parseResult, validationErrors: parser.getErrors()};
+            ParseResult result = {document: parseResult, validationErrors: parser.getErrors()};
+            if self.documentCaching && result.validationErrors.length() == 0 {
+                string cacheKey = generateDocumentCacheKey(documentString);
+                error? cacheStatus = self.addToDocumentCache(cacheKey, parseResult);
+                if cacheStatus is error {
+                    log:printError("Failed to cache the document.", cacheStatus);
+                }
+            }
+            return result;
         }
         ErrorDetail errorDetail = getErrorDetailFromError(<parser:Error>parseResult);
         return getOutputObjectFromErrorDetail(errorDetail);

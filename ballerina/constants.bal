@@ -99,3 +99,6 @@ const GRPAHQL_ANONYMOUS_OPERATION = "anonymous";
 // Observability Tracing
 const OPERATION_VALIDATION = "validation";
 const OPERATION_EXECUTION = "execution";
+
+// Document Standardization constants
+const STRING_PLACEHOLDER = "-STRING-";
