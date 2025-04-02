@@ -62,8 +62,8 @@ function testCacheConfigInferring() returns error? {
 function testDocumentCacheUtils(string resourceDocName, string standardizeDocName) returns error? {
     string document = check getGraphqlDocumentFromFile(resourceDocName);
     string standardizeDocument = getStandardizeDocument(document);
-    string expectedStadardizedDocument = check getGraphqlDocumentFromFile(standardizeDocName);
-    test:assertEquals(standardizeDocument, expectedStadardizedDocument);
+    string expectedStandardizedDocument = check getGraphqlDocumentFromFile(standardizeDocName);
+    test:assertEquals(standardizeDocument, expectedStandardizedDocument);
 }
 
 function dataProviderDocumentCacheUtils() returns (string[][]) {

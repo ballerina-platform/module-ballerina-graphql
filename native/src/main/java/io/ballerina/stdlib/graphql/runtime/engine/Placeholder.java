@@ -26,9 +26,18 @@ import io.ballerina.runtime.api.values.BString;
  * This class provides native implementations of the Ballerina Placeholder class.
  */
 public class Placeholder {
+    private static final BString PLACE_HOLDER_VALUE_OBJECT = StringUtils.fromString("value");
     private static final BString PLACE_HOLDER_FIELD_OBJECT = StringUtils.fromString("field");
 
     private Placeholder() {
+    }
+
+    public static void setValue(BObject placeholder, Object value) {
+        placeholder.set(PLACE_HOLDER_VALUE_OBJECT, value);
+    }
+
+    public static Object getValue(BObject placeholder) {
+        return placeholder.get(PLACE_HOLDER_VALUE_OBJECT);
     }
 
     public static void setFieldValue(BObject placeholder, BObject field) {

@@ -4,7 +4,11 @@ This file contains all the notable changes done to the Ballerina GraphQL package
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.13.4] - 2025-03-19
+
+### Fixed
+
+- [[#7614] Fix Broken GraphiQL Client](https://github.com/ballerina-platform/ballerina-library/issues/7614)
 
 ### Added
 - [[#7711] Introduce GraphQL Document Caching](https://github.com/ballerina-platform/ballerina-library/issues/7711)

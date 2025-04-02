@@ -24,17 +24,13 @@ isolated class Placeholder {
         self.setField('field);
     }
 
-    isolated function setValue(anydata value) {
-        lock {
-            self.value = value.clone();
-        }
-    }
+    isolated function setValue(anydata value) = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Placeholder"
+    } external;
 
-    isolated function getValue() returns anydata {
-        lock {
-            return self.value.clone();
-        }
-    }
+    isolated function getValue() returns anydata = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.engine.Placeholder"
+    } external;
 
     isolated function setField(Field 'field) = @java:Method {
         name: "setFieldValue",
