@@ -27,6 +27,7 @@
 # + validation - Whether to enable or disable the constraint validation
 # + cacheConfig - The cache configurations for the operations
 # + fieldCacheConfig - The field cache config derived from the resource annotations. This is auto-generated at the compile time
+# + documentCacheConfig - The document cache configurations for the service
 public type GraphqlServiceConfig record {|
     int maxQueryDepth?;
     ListenerAuthConfig[] auth?;
@@ -39,6 +40,7 @@ public type GraphqlServiceConfig record {|
     boolean validation = true;
     ServerCacheConfig cacheConfig?;
     readonly ServerCacheConfig? fieldCacheConfig = ();
+    DocumentCacheConfig documentCacheConfig?;
 |};
 
 # The annotation to configure a GraphQL service.
