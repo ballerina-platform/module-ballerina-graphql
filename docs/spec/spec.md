@@ -108,7 +108,7 @@ The conforming implementation of the specification is released and included in t
             * 7.1.9.1 [The `enabled` Field](#7191-the-enabled-field)
             * 7.1.9.2 [The `maxAge` Field](#7192-the-maxage-field)
             * 7.1.9.3 [The `maxSize` Field](#7193-the-maxsize-field)
-        * 7.1.10 [Document Cahe Configurations](#7110-document-cache-configurations)
+        * 7.1.10 [Document Cache Configurations](#7110-document-cache-configurations)
             * 7.1.10.1 [The `enabled` Field](#71101-the-enabled-field)
             * 7.1.10.2 [The `maxSize` Field](#71102-the-maxsize-field)
     * 7.2 [Resource Configuration](#72-resource-configuration)
@@ -213,6 +213,8 @@ The conforming implementation of the specification is released and included in t
         * 10.7.2 [Document Caching](#1072-document-caching)
             * 10.7.2.1[Enable Document Caching](#10721-enable-document-caching)
             * 10.7.2.2[Recommended Best Practices](#10722-recommended-best-practices)
+                * 10.7.2.2.1 [Arguments](#107221-arguments)
+                * 10.7.2.2.2 [Cache Size](#107222-cache-size)
     * 10.8 [Observability](#108-observability)
         * 10.8.1 [Metrics](#1081-metrics)
             * 10.8.1.1 [Operation Type](#10811-operation-type)
@@ -1869,7 +1871,7 @@ The field `maxSize` accepts an int that denotes the maximum number of cache entr
 
 #### 7.1.10 Document Cache Configurations
 
-The `documentCacheConfig` field is used to provide the document cache configuration to enable the [GraphQL document caching](#1072-document-caching).
+The `documentCacheConfig` field is used to provide the document cache configuration to enable the [GraphQL document caching](#1072-document-caching). By default, document caching is disabled for Ballerina GraphQL services.
 
 ###### Example: Enable Document Cache with Default Values
 
@@ -1899,6 +1901,8 @@ service on new graphql:Listener(9090) {
 ##### 7.1.10.1 The `enabled` Field
 
 The field `enabled` accepts a `boolean` that denotes whether the document cache is enabled or not. By default, it has been set to `true`.
+
+>**Note:** Even if this value is set to true, document caching is not enabled if the `documentCacheConfig` field is specified in the `ServiceConfig` annotation.
 
 ##### 7.1.10.2 The `maxSize` Field
 
@@ -4072,6 +4076,8 @@ service /graphql on new graphql:Listener(9090) {
 
 #### 10.7.2.2 Recommended Best Practices
 
+##### 10.7.2.2.1 Arguments
+
 * If a query includes literal values as arguments, those literals become part of the cached document. As a result, similar requests with different argument values will be treated as separate entries, requiring parsing and caching each time. To maximize cache efficiency, it is recommended to pass arguments using variables instead of literals within the document.
 
 ###### Example: Recomemnded way
@@ -4100,7 +4106,9 @@ query GetProfile {
 }
 ```
 
-* Cache eviction follows the LRU policy. Ensure that the cache's [`maxSize`](#71102-the-maxsize-field) is configured appropriately based on available memory since this does not cover memory limiting for the cache.
+##### 10.7.2.2.2 Cache Size
+
+* Cache size is measured by the number of cache entries, not by memory usage. Ensure that the cache's [maxSize](#71102-the-maxsize-field) is configured appropriately based on the available memory and the average size of a query.
 
 ### 10.8 Observability
 
