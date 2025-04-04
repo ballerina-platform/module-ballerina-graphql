@@ -25,11 +25,11 @@ isolated class Engine {
     private final readonly & __Schema schema;
     private final int? maxQueryDepth;
     private final readonly & (readonly & Interceptor)[] interceptors;
-    private final readonly & boolean introspection;
-    private final readonly & boolean validation;
+    private final readonly & boolean isIntrospectionEnabled;
+    private final readonly & boolean isValidationEnabled;
     private final cache:Cache? cache;
     private final readonly & ServerCacheConfig? cacheConfig;
-    private final readonly & boolean documentCaching;
+    private final readonly & boolean isDocumentCachingEnabled;
     private final cache:Cache? documentCache;
 
     isolated function init(string schemaString, int? maxQueryDepth, Service s,
@@ -43,10 +43,10 @@ isolated class Engine {
         self.maxQueryDepth = maxQueryDepth;
         self.schema = check createSchema(schemaString);
         self.interceptors = interceptors;
-        self.introspection = introspection;
-        self.validation = validation;
+        self.isIntrospectionEnabled = introspection;
+        self.isValidationEnabled = validation;
         self.cacheConfig = cacheConfig;
-        self.documentCaching = documentCacheConfig is DocumentCacheConfig && documentCacheConfig.enabled;
+        self.isDocumentCachingEnabled = documentCacheConfig is DocumentCacheConfig && documentCacheConfig.enabled;
         self.cache = initCacheTable(cacheConfig, fieldCacheConfig);
         self.documentCache = initDocumentCacheTable(documentCacheConfig);
         self.addService(s);
@@ -61,7 +61,7 @@ isolated class Engine {
     }
 
     isolated function getValidation() returns readonly & boolean {
-        return self.validation;
+        return self.isValidationEnabled;
     }
 
     isolated function getCacheConfig() returns readonly & ServerCacheConfig? {
@@ -158,7 +158,7 @@ isolated class Engine {
     }
 
     isolated function parse(string documentString) returns ParseResult|OutputObject {
-        if self.documentCaching {
+        if self.isDocumentCachingEnabled {
             string cacheKey = generateDocumentCacheKey(documentString);
             any|error result = self.getFromDocumentCache(cacheKey);
             if result is parser:DocumentNode {
@@ -169,7 +169,7 @@ isolated class Engine {
         parser:DocumentNode|parser:Error parseResult = parser.parse();
         if parseResult is parser:DocumentNode {
             ParseResult result = {document: parseResult, validationErrors: parser.getErrors()};
-            if self.documentCaching && result.validationErrors.length() == 0 {
+            if self.isDocumentCachingEnabled && result.validationErrors.length() == 0 {
                 string cacheKey = generateDocumentCacheKey(documentString);
                 error? cacheStatus = self.addToDocumentCache(cacheKey, parseResult);
                 if cacheStatus is error {
@@ -223,7 +223,7 @@ isolated class Engine {
         final int? maxQueryDepth = self.maxQueryDepth;
         final readonly & __Schema schema = self.schema;
         final readonly & map<json>? vars = variables.cloneReadOnly();
-        final boolean introspection = self.introspection;
+        final boolean introspection = self.isIntrospectionEnabled;
 
         map<parser:OperationNode> operations = {};
         operations[operationNode.getName()] = operationNode;
@@ -408,7 +408,7 @@ isolated class Engine {
             if resourceMethod == () {
                 return self.resolveHierarchicalResource(context, 'field);
             }
-            return self.executeQueryResource(context, serviceObject, resourceMethod, 'field, responseGenerator, self.validation);
+            return self.executeQueryResource(context, serviceObject, resourceMethod, 'field, responseGenerator, self.isValidationEnabled);
         }
         return 'field.getFieldValue();
     }
@@ -416,7 +416,7 @@ isolated class Engine {
     isolated function resolveRemoteMethod(Context context, Field 'field, ResponseGenerator responseGenerator) returns any|error {
         service object {}? serviceObject = 'field.getServiceObject();
         if serviceObject is service object {} {
-            return self.executeMutationMethod(context, serviceObject, 'field, responseGenerator, self.validation);
+            return self.executeMutationMethod(context, serviceObject, 'field, responseGenerator, self.isValidationEnabled);
         }
         return 'field.getFieldValue();
     }

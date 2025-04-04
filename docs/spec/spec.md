@@ -1,6 +1,6 @@
 # Specification: Ballerina GraphQL Library
 
-_Owners_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge @MohamedSabthar \
+_Authors_: @shafreenAnfar @DimuthuMadushan @ThisaruGuruge @MohamedSabthar \
 _Reviewers_: @shafreenAnfar @ThisaruGuruge @DimuthuMadushan @ldclakmal \
 _Created_: 2022/01/06 \
 _Updated_: 2025/04/02 \
@@ -4035,7 +4035,9 @@ In this example, caching is enabled at the operation level. Therefore, the field
 
 #### 10.7.2 Document Caching
 
-The Ballerina GraphQL module supports server-side document caching, which can be enabled through service configuration. The Ballerina cache module manages the cache internally using a single in-memory cache table. The GraphQL engine automatically generates cache keys by hashing the standardized document. It uses an LRU eviction policy, and cache entries remain valid until they are evicted by the LRU policy. Once the cache hits, it skips the document parsing process.
+The Ballerina GraphQL module supports server-side document caching, which can be enabled through service configuration. The Ballerina cache module manages the cache internally using a single in-memory cache table. The GraphQL engine automatically generates cache keys by hashing the document. Before hashing, the engine normalizes the document by removing unnecessary elements such as whitespace, new lines, and comments while preserving its logical structure. This ensures consistent cache keys for equivalent queries, regardless of formatting differences.
+
+The internal cache table uses an LRU eviction policy, and cache entries remain valid until they are evicted by the LRU policy. Once the cache hits, it skips the document parsing process.
 
 > **Note**: Documents are cached only if they are parsed successfully without errors.
 

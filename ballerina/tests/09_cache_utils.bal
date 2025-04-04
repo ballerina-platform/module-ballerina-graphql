@@ -77,3 +77,13 @@ function dataProviderDocumentCacheUtils() returns (string[][]) {
         ["block_string", "block_string_standardize"]
     ];
 }
+
+@test:Config {
+    groups: ["document_cache"]
+}
+function testDocumentCacheUtilsWithLineTerminators() returns error? {
+    string document = "query { person { name \r age \r\n address \n { number \r\n street}} }";
+    string standardizeDocument = getStandardizeDocument(document);
+    string expectedStandardizedDocument = "query{person{name,age,address{number,street}}}";
+    test:assertEquals(standardizeDocument, expectedStandardizedDocument);
+}

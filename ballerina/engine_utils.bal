@@ -155,10 +155,10 @@ isolated function getStandardizeDocument(string document) returns string {
     pattern = re `#.*`;
     formattedDocument = pattern.replaceAll(formattedDocument, "");
     // Replace multiple spaces and new lines between fields and args with a single comma
-    pattern = re `[a-zA-Z0-9_"}\-\]](\s+|\n+)[_a-zA-Z]`;
+    pattern = re `[a-zA-Z0-9_"}\-\]]([\s]+)[_a-zA-Z]`;
     formattedDocument = pattern.replaceAll(formattedDocument, replaceFunction);
     // Remove remaining spaces and new lines
-    pattern = re `\s+|\n+`;
+    pattern = re `[\s]+`;
     formattedDocument = pattern.replaceAll(formattedDocument, "");
     // Replace placeholder `-STRING-` with original string values
     foreach regexp:Span span in strings {
