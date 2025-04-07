@@ -67,12 +67,13 @@ public class Listener {
         boolean validation = getValidation(serviceConfig);
         ServerCacheConfig? operationCacheConfig = getCacheConfig(serviceConfig);
         ServerCacheConfig? fieldCacheConfig = getFieldCacheConfigFromServiceConfig(serviceConfig);
+        DocumentCacheConfig? documentCacheConfig = getDocumentCacheConfig(serviceConfig);
         Engine engine;
         if self.graphiql.enabled {
             check validateGraphiqlPath(self.graphiql.path);
             string gqlServiceBasePath = name == () ? "" : getBasePath(name);
             engine = check new (schemaString, maxQueryDepth, s, interceptors, introspection, validation,
-                                operationCacheConfig, fieldCacheConfig);
+                                operationCacheConfig, fieldCacheConfig, documentCacheConfig);
             __Schema & readonly schema = engine.getSchema();
             __Type? subscriptionType = schema.subscriptionType;
             string graphqlUrl = string `${self.httpEndpoint}/${gqlServiceBasePath}`;
@@ -87,7 +88,7 @@ public class Listener {
             }
         } else {
             engine = check new (schemaString, maxQueryDepth, s, interceptors, introspection, validation,
-                                operationCacheConfig, fieldCacheConfig);
+                                operationCacheConfig, fieldCacheConfig, documentCacheConfig);
         }
 
         HttpService httpService = getHttpService(engine, serviceConfig);
