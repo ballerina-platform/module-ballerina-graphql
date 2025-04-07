@@ -24,7 +24,7 @@ import ballerina/uuid;
 isolated class Engine {
     private final readonly & __Schema schema;
     private final int? maxQueryDepth;
-    private final readonly & (readonly & Interceptor)[] interceptors;
+    private final readonly & Interceptor[] interceptors;
     private final readonly & boolean isIntrospectionEnabled;
     private final readonly & boolean isValidationEnabled;
     private final cache:Cache? cache;
