@@ -71,6 +71,7 @@ public class Listener {
         boolean validation = getValidation(serviceConfig);
         ServerCacheConfig? operationCacheConfig = getCacheConfig(serviceConfig);
         ServerCacheConfig? fieldCacheConfig = getFieldCacheConfigFromServiceConfig(serviceConfig);
+        DocumentCacheConfig? documentCacheConfig = getDocumentCacheConfig(serviceConfig);
         QueryComplexityConfig? queryComplexityConfig = serviceConfig.queryComplexityConfig;
         Engine engine  = check new (schemaString, maxQueryDepth, s, interceptors, introspection, validation,
                                     operationCacheConfig, fieldCacheConfig, queryComplexityConfig);
