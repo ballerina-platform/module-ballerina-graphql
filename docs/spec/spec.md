@@ -1902,7 +1902,7 @@ service on new graphql:Listener(9090) {
 
 The field `enabled` accepts a `boolean` that denotes whether the document cache is enabled or not. By default, it has been set to `true`.
 
->**Note:** Even if this value is set to true, document caching is not enabled if the `documentCacheConfig` field is specified in the `ServiceConfig` annotation.
+> **Note:** Even if this value is set to `true` by default, document caching is not enabled if the `documentCacheConfig` field is specified in the `ServiceConfig` annotation.
 
 ##### 7.1.10.2 The `maxSize` Field
 
