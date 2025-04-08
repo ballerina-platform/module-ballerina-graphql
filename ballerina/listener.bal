@@ -69,7 +69,7 @@ public class Listener {
         QueryComplexityConfig? queryComplexityConfig = serviceConfig.queryComplexityConfig;
         DocumentCacheConfig? documentCacheConfig = serviceConfig.documentCacheConfig;
         Engine engine  = check new (schemaString, maxQueryDepth, s, interceptors, introspection, validation,
-                                    operationCacheConfig, fieldCacheConfig, queryComplexityConfig
+                                    operationCacheConfig, fieldCacheConfig, queryComplexityConfig,
                                     documentCacheConfig);
         HttpService httpService = getHttpService(engine, serviceConfig);
         attachHttpServiceToGraphqlService(s, httpService);
