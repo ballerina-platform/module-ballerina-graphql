@@ -85,7 +85,7 @@ class ResponseFormatter {
     }
 
     isolated function coerceFragmentValues(Data data, Data result, parser:FragmentNode fragmentNode,
-            readonly & __Type parentType, string onType) {
+            readonly & __Type parentType, string onType) returns Data? {
         foreach parser:SelectionNode selection in fragmentNode.getSelections() {
             if selection is parser:FragmentNode {
                 Data? fieldResult = self.coerceFragmentValues(data, result, selection, parentType, selection.getOnType());

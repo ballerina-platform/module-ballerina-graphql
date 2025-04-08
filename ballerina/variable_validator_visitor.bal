@@ -43,10 +43,10 @@ class VariableValidatorVisitor {
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
         self.variableDefinitions = operationNode.getVariableDefinitions();
-        __Field? schemaFieldForOperation = createSchemaFieldFromOperation(self.schema.types, operationNode, self.errors,
+        readonly & __Field? schemaFieldForOperation = createSchemaFieldFromOperation(self.schema.types, operationNode, self.errors,
                                                                           self.nodeModifierContext);
         self.validateDirectiveVariables(operationNode);
-        if schemaFieldForOperation is __Field {
+        if schemaFieldForOperation is readonly & __Field {
             foreach parser:SelectionNode selection in operationNode.getSelections() {
                 selection.accept(self, schemaFieldForOperation);
             }
