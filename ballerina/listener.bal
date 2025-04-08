@@ -71,9 +71,10 @@ public class Listener {
         boolean validation = getValidation(serviceConfig);
         ServerCacheConfig? operationCacheConfig = getCacheConfig(serviceConfig);
         ServerCacheConfig? fieldCacheConfig = getFieldCacheConfigFromServiceConfig(serviceConfig);
+        DocumentCacheConfig? documentCacheConfig = getDocumentCacheConfig(serviceConfig);
         QueryComplexityConfig? queryComplexityConfig = serviceConfig.queryComplexityConfig;
         Engine engine  = check new (schemaString, maxQueryDepth, s, interceptors, introspection, validation,
-                                    operationCacheConfig, fieldCacheConfig, queryComplexityConfig);
+                                    operationCacheConfig, fieldCacheConfig, queryComplexityConfig, documentCacheConfig);
         if self.graphiql.enabled {
             check validateGraphiqlPath(self.graphiql.path);
             check self.initGraphiqlService(s, engine, name, serviceConfig);
