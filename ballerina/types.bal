@@ -76,6 +76,15 @@ public type ServerCacheConfig  readonly & record{|
     int maxSize = 120;
 |};
 
+# Represent the document cache configurations of GraphQL server.
+#
+# + enabled - State of the document caching
+# + maxSize - Maximum number of cache entries
+public type DocumentCacheConfig readonly & record{|
+    boolean enabled = true;
+    int maxSize = 100;
+|};
+
 # Internal HTTP service class for GraphQL services
 isolated service class HttpService {
     *http:Service;

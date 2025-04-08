@@ -41,6 +41,8 @@ public type GraphqlServiceConfig record {|
     readonly ServerCacheConfig? fieldCacheConfig = ();
     # The query complexity configuration for the service.
     QueryComplexityConfig queryComplexityConfig?;
+    # The document cache configurations for the service
+    DocumentCacheConfig documentCacheConfig?;
 |};
 
 # The annotation to configure a GraphQL service.
