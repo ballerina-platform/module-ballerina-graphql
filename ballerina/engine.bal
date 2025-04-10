@@ -18,22 +18,26 @@ import graphql.parser;
 
 import ballerina/cache;
 import ballerina/jballerina.java;
+import ballerina/log;
 import ballerina/uuid;
 
 isolated class Engine {
     private final readonly & __Schema schema;
     private final int? maxQueryDepth;
     private final readonly & Interceptor[] interceptors;
-    private final readonly & boolean introspection;
-    private final readonly & boolean validation;
+    private final readonly & boolean isIntrospectionEnabled;
+    private final readonly & boolean isValidationEnabled;
     private final cache:Cache? cache;
     private final readonly & ServerCacheConfig? cacheConfig;
     private final readonly & QueryComplexityConfig? queryComplexityConfig;
+    private final readonly & boolean isDocumentCachingEnabled;
+    private final cache:Cache? documentCache;
 
     isolated function init(string schemaString, int? maxQueryDepth, Service s,
             readonly & (readonly & Interceptor)[] interceptors, boolean introspection,
             boolean validation, ServerCacheConfig? cacheConfig = (),
-            ServerCacheConfig? fieldCacheConfig = (), QueryComplexityConfig? queryComplexityConfig = ())
+            ServerCacheConfig? fieldCacheConfig = (), QueryComplexityConfig? queryComplexityConfig = (),
+            DocumentCacheConfig? documentCacheConfig = ())
     returns Error? {
         if maxQueryDepth is int && maxQueryDepth < 1 {
             return error Error("Max query depth value must be a positive integer");
@@ -49,11 +53,13 @@ isolated class Engine {
         self.maxQueryDepth = maxQueryDepth;
         self.schema = check createSchema(schemaString);
         self.interceptors = interceptors;
-        self.introspection = introspection;
-        self.validation = validation;
+        self.isIntrospectionEnabled = introspection;
+        self.isValidationEnabled = validation;
         self.cacheConfig = cacheConfig;
         self.queryComplexityConfig = queryComplexityConfig;
+        self.isDocumentCachingEnabled = documentCacheConfig is DocumentCacheConfig && documentCacheConfig.enabled;
         self.cache = initCacheTable(cacheConfig, fieldCacheConfig);
+        self.documentCache = initDocumentCacheTable(documentCacheConfig);
         self.addService(s);
     }
 
@@ -66,7 +72,7 @@ isolated class Engine {
     }
 
     isolated function getValidation() returns readonly & boolean {
-        return self.validation;
+        return self.isValidationEnabled;
     }
 
     isolated function getCacheConfig() returns readonly & ServerCacheConfig? {
@@ -90,6 +96,22 @@ isolated class Engine {
             return cache.get(key);
         }
         return error("Cache table not found. Caching functionality requires Ballerina version 2201.8.5 or newer.");
+    }
+
+    isolated function addToDocumentCache(string key, any value) returns error? {
+        cache:Cache? cache = self.documentCache;
+        if cache is cache:Cache {
+            return cache.put(key, value);
+        }
+        return error("Document cache table is not initialized.");
+    }
+
+    isolated function getFromDocumentCache(string key) returns any|error {
+        cache:Cache? cache = self.documentCache;
+        if cache is cache:Cache {
+            return cache.get(key);
+        }
+        return error("Document cache table is not initialized.");
     }
 
     isolated function validate(string documentString, string? operationName, map<json>? variables)
@@ -147,10 +169,25 @@ isolated class Engine {
     }
 
     isolated function parse(string documentString) returns ParseResult|OutputObject {
+        if self.isDocumentCachingEnabled {
+            string cacheKey = generateDocumentCacheKey(documentString);
+            any|error result = self.getFromDocumentCache(cacheKey);
+            if result is parser:DocumentNode {
+                return {document: result, validationErrors: []};
+            }
+        }
         parser:Parser parser = new (documentString);
         parser:DocumentNode|parser:Error parseResult = parser.parse();
         if parseResult is parser:DocumentNode {
-            return {document: parseResult, validationErrors: parser.getErrors()};
+            ParseResult result = {document: parseResult, validationErrors: parser.getErrors()};
+            if self.isDocumentCachingEnabled && result.validationErrors.length() == 0 {
+                string cacheKey = generateDocumentCacheKey(documentString);
+                error? cacheStatus = self.addToDocumentCache(cacheKey, parseResult);
+                if cacheStatus is error {
+                    log:printError("Failed to cache the document.", cacheStatus);
+                }
+            }
+            return result;
         }
         ErrorDetail errorDetail = getErrorDetailFromError(<parser:Error>parseResult);
         return getOutputObjectFromErrorDetail(errorDetail);
@@ -197,7 +234,7 @@ isolated class Engine {
         final int? maxQueryDepth = self.maxQueryDepth;
         final readonly & __Schema schema = self.schema;
         final readonly & map<json>? vars = variables.cloneReadOnly();
-        final boolean introspection = self.introspection;
+        final boolean introspection = self.isIntrospectionEnabled;
 
         map<parser:OperationNode> operations = {};
         operations[operationNode.getName()] = operationNode;
@@ -396,7 +433,7 @@ isolated class Engine {
             if resourceMethod == () {
                 return self.resolveHierarchicalResource(context, 'field);
             }
-            return self.executeQueryResource(context, serviceObject, resourceMethod, 'field, responseGenerator, self.validation);
+            return self.executeQueryResource(context, serviceObject, resourceMethod, 'field, responseGenerator, self.isValidationEnabled);
         }
         return 'field.getFieldValue();
     }
@@ -404,7 +441,7 @@ isolated class Engine {
     isolated function resolveRemoteMethod(Context context, Field 'field, ResponseGenerator responseGenerator) returns any|error {
         service object {}? serviceObject = 'field.getServiceObject();
         if serviceObject is service object {} {
-            return self.executeMutationMethod(context, serviceObject, 'field, responseGenerator, self.validation);
+            return self.executeMutationMethod(context, serviceObject, 'field, responseGenerator, self.isValidationEnabled);
         }
         return 'field.getFieldValue();
     }
