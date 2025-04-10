@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.13.5] - 2025-04-10
+
 ### Added
 
 - [[#7711] Introduce GraphQL Document Caching](https://github.com/ballerina-platform/ballerina-library/issues/7711)
