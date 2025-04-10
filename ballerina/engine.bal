@@ -103,7 +103,7 @@ isolated class Engine {
         if cache is cache:Cache {
             return cache.put(key, value);
         }
-        return error("Document cache table not found. Document caching functionality requires Ballerina version 2201.9.6 or newer.");
+        return error("Document cache table is not initialized.");
     }
 
     isolated function getFromDocumentCache(string key) returns any|error {
@@ -111,7 +111,7 @@ isolated class Engine {
         if cache is cache:Cache {
             return cache.get(key);
         }
-        return error("Document cache table not found. Document caching functionality requires Ballerina version 2201.9.6 or newer.");
+        return error("Document cache table is not initialized.");
     }
 
     isolated function validate(string documentString, string? operationName, map<json>? variables)
