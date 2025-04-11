@@ -92,7 +92,6 @@ dependencies = [
 	{org = "ballerina", name = "observe"},
 	{org = "ballerina", name = "task"},
 	{org = "ballerina", name = "test"},
-	{org = "ballerina", name = "time"},
 	{org = "ballerina", name = "uuid"},
 	{org = "ballerina", name = "websocket"}
 ]
@@ -106,7 +105,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.12.8"
+version = "2.12.0"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -138,7 +137,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "io"
-version = "1.6.3"
+version = "1.6.1"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.value"}
@@ -282,7 +281,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "mime"
-version = "2.10.1"
+version = "2.10.0"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -359,12 +358,9 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "time"
-version = "2.5.0"
+version = "2.4.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
-]
-modules = [
-	{org = "ballerina", packageName = "time", moduleName = "time"}
 ]
 
 [[package]]
@@ -392,7 +388,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "websocket"
-version = "2.12.2"
+version = "2.12.0"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "constraint"},
