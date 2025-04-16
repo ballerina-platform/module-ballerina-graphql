@@ -48,13 +48,13 @@ class ResponseFormatter {
     isolated function coerceData(OutputObject outputObject, parser:OperationNode operationNode) {
         if outputObject.hasKey(DATA_FIELD) {
             Data? originalData = outputObject?.data;
-            __Type parentType = getTypeForOperationNode(self.schema, operationNode);
+            readonly & __Type parentType = getTypeForOperationNode(self.schema, operationNode);
             self.coercedOutputObject[DATA_FIELD] = self.coerceObject(originalData, operationNode, parentType);
         }
     }
 
-    isolated function coerceObject(Data? data, parser:SelectionParentNode parentNode, __Type parentType, string? onType = ())
-    returns Data? {
+    isolated function coerceObject(Data? data, parser:SelectionParentNode parentNode, readonly & __Type parentType,
+    string? onType = ()) returns Data? {
         if data == () {
             return ();
         } else {
@@ -84,8 +84,8 @@ class ResponseFormatter {
         }
     }
 
-    isolated function coerceFragmentValues(Data data, Data result, parser:FragmentNode fragmentNode, __Type parentType,
-                                           string onType) returns Data? {
+    isolated function coerceFragmentValues(Data data, Data result, parser:FragmentNode fragmentNode,
+            readonly & __Type parentType, string onType) returns Data? {
         foreach parser:SelectionNode selection in fragmentNode.getSelections() {
             if selection is parser:FragmentNode {
                 Data? fieldResult = self.coerceFragmentValues(data, result, selection, parentType, selection.getOnType());
@@ -109,15 +109,15 @@ class ResponseFormatter {
         return result;
     }
 
-    isolated function coerceArray(anydata[] value, parser:FieldNode fieldNode, __Type fieldType, string? onType)
+    isolated function coerceArray(anydata[] value, parser:FieldNode fieldNode, readonly & __Type fieldType, string? onType)
     returns anydata[]? {
         anydata[] result = [];
-        __Type elementType = fieldType;
+        readonly & __Type elementType = fieldType;
         if fieldType.kind == NON_NULL {
             __Type listType = <__Type>fieldType?.ofType;
-            elementType = <__Type>listType?.ofType;
+            elementType = <readonly & __Type>listType?.ofType;
         } else if fieldType.kind == LIST {
-            elementType = <__Type>fieldType?.ofType;
+            elementType = <readonly & __Type>fieldType?.ofType;
         }
         foreach anydata element in value {
             if element is Data {
@@ -136,17 +136,17 @@ class ResponseFormatter {
         return result;
     }
 
-    isolated function coerceObjectField(Data data, parser:FieldNode fieldNode, __Type parentType, string? onType)
-    returns anydata|anydata[] {
-        __Type objectType = unwrapNonNullype(parentType);
+    isolated function coerceObjectField(Data data, parser:FieldNode fieldNode, readonly & __Type parentType,
+            string? onType) returns anydata|anydata[] {
+        readonly & __Type objectType = unwrapNonNullType(parentType);
         anydata|anydata[] fieldValue = self.getFieldValue(data, fieldNode);
         if fieldValue == () {
             return fieldValue;
         } else if fieldValue is anydata[] {
-            __Type fieldType = self.getFieldType(fieldNode.getName(), objectType, onType);
+            readonly & __Type fieldType = self.getFieldType(fieldNode.getName(), objectType, onType);
             return self.coerceArray(fieldValue, fieldNode, fieldType, onType);
         } else if fieldValue is Data {
-            __Type fieldType = self.getFieldType(fieldNode.getName(), parentType, onType);
+            readonly & __Type fieldType = self.getFieldType(fieldNode.getName(), parentType, onType);
             if isMap(fieldValue) && getKeyArgument(fieldNode) is string {
                 Data updatedData = {};
                 fieldValue = fieldValue[<string>getKeyArgument(fieldNode)];
@@ -159,43 +159,45 @@ class ResponseFormatter {
         }
     }
 
-    isolated function getFieldType(string fieldName, __Type parentType, string? onType) returns __Type {
-        __Type objectType = getOfType(parentType);
-        __Field selectionField = self.getField(objectType, fieldName, onType);
+    isolated function getFieldType(string fieldName, readonly & __Type parentType, string? onType)
+    returns readonly & __Type {
+        readonly & __Type objectType = getOfType(parentType);
+        readonly & __Field selectionField = self.getField(objectType, fieldName, onType);
         return selectionField.'type;
     }
 
-    isolated function getField(__Type parentType, string fieldName, string? onType) returns __Field {
+    isolated function getField(readonly & __Type parentType, string fieldName, string? onType)
+    returns readonly & __Field {
         if fieldName == SCHEMA_FIELD {
-            __Type fieldType = <__Type>getTypeFromTypeArray(self.schema.types, SCHEMA_TYPE_NAME);
+            readonly & __Type fieldType = <readonly & __Type>getTypeFromTypeArray(self.schema.types, SCHEMA_TYPE_NAME);
             return createField(SCHEMA_FIELD, fieldType);
         } else if fieldName == TYPE_FIELD {
-            __Type fieldType = <__Type>getTypeFromTypeArray(self.schema.types, TYPE_TYPE_NAME);
-            __Type argumentType = <__Type>getTypeFromTypeArray(self.schema.types, STRING);
-            __Type wrapperType = { kind: NON_NULL, ofType: argumentType };
-            __InputValue[] args = [{ name: NAME_ARGUMENT, 'type: wrapperType }];
+            readonly & __Type fieldType = <readonly & __Type>getTypeFromTypeArray(self.schema.types, TYPE_TYPE_NAME);
+            readonly & __Type argumentType = <readonly & __Type>getTypeFromTypeArray(self.schema.types, STRING);
+            readonly & __Type wrapperType = { kind: NON_NULL, ofType: argumentType };
+            readonly & __InputValue[] args = [{ name: NAME_ARGUMENT, 'type: wrapperType }];
             return createField(TYPE_FIELD, fieldType, args);
         } else if fieldName == TYPE_NAME_FIELD {
-            __Type ofType = <__Type>getTypeFromTypeArray(self.schema.types, STRING);
-            __Type wrappingType = { kind: NON_NULL, ofType: ofType };
+            readonly & __Type ofType = <readonly & __Type>getTypeFromTypeArray(self.schema.types, STRING);
+            readonly & __Type wrappingType = { kind: NON_NULL, ofType };
             return createField(TYPE_NAME_FIELD, wrappingType);
         } else {
             if parentType.kind is UNION && onType is string {
                 __Type[] possibleTypes = <__Type[]>parentType?.possibleTypes;
-                __Type exactType = <__Type>getTypeFromPossibleTypes(possibleTypes, onType);
+                readonly & __Type exactType = <readonly & __Type>getTypeFromPossibleTypes(possibleTypes, onType);
                 return self.getField(exactType, fieldName, onType);
             } else if parentType.kind is INTERFACE {
-                __Field[] fields = <__Field[]>parentType?.fields;
-                __Field? exactField = getFieldFromFieldArray(fields, fieldName);
+                readonly & __Field[] fields = <readonly & __Field[]>parentType?.fields;
+                readonly & __Field? exactField = getFieldFromFieldArray(fields, fieldName);
                 if exactField is __Field {
                     return exactField;
                 }
                 __Type[] possibleTypes = <__Type[]>parentType?.possibleTypes;
-                __Type exactType = <__Type>getTypeFromPossibleTypes(possibleTypes, <string>onType);
+                readonly & __Type exactType = <readonly & __Type>getTypeFromPossibleTypes(possibleTypes, <string>onType);
                 return self.getField(exactType, fieldName, onType);
             }
-            __Field[] fields = <__Field[]>parentType?.fields;
-            return <__Field>getFieldFromFieldArray(fields, fieldName);
+            readonly & __Field[] fields = <readonly & __Field[]>parentType?.fields;
+            return <readonly & __Field>getFieldFromFieldArray(fields, fieldName);
         }
     }
 
@@ -216,20 +218,21 @@ isolated function sortErrorDetail(ErrorDetail errorDetail) returns int {
     }
 }
 
-isolated function getTypeForOperationNode(__Schema schema, parser:OperationNode operationNode) returns __Type {
+isolated function getTypeForOperationNode(readonly & __Schema schema, parser:OperationNode operationNode)
+returns readonly & __Type {
     parser:RootOperationType operationType = operationNode.getKind();
     if operationType == parser:OPERATION_QUERY {
         return schema.queryType;
     } else if operationType == parser:OPERATION_MUTATION {
-        return <__Type>schema?.mutationType;
+        return <readonly & __Type>schema?.mutationType;
     } else {
-        return <__Type>schema?.subscriptionType;
+        return <readonly & __Type>schema?.subscriptionType;
     }
 }
 
-isolated function unwrapNonNullype(__Type 'type) returns __Type {
+isolated function unwrapNonNullType(readonly & __Type 'type) returns readonly & __Type {
     if 'type.kind == NON_NULL {
-        return <__Type>'type?.ofType;
+        return <readonly & __Type>'type?.ofType;
     }
     return 'type;
 }

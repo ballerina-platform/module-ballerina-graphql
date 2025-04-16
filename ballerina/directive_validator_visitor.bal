@@ -22,10 +22,10 @@ class DirectiveValidatorVisitor {
     private __InputValue[] missingArguments = [];
     private final ErrorDetail[] errors = [];
     private final map<parser:DirectiveNode> visitedDirectives = {};
-    private final __Schema schema;
+    private final readonly & __Schema schema;
     private final NodeModifierContext nodeModifierContext;
 
-    isolated function init(__Schema schema, NodeModifierContext nodeModifierContext) {
+    isolated function init(readonly & __Schema schema, NodeModifierContext nodeModifierContext) {
         self.schema = schema;
         self.nodeModifierContext = nodeModifierContext;
     }
@@ -61,7 +61,7 @@ class DirectiveValidatorVisitor {
 
     // TODO: Check invalid argument type for valid argument name
     public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
-        __Directive directive = <__Directive>data;
+        readonly & __Directive directive = <readonly & __Directive>data;
         string argumentName = argumentNode.getName();
         __InputValue? inputValue = getInputValueFromArray(directive.args, argumentName);
         if inputValue == () {
@@ -81,7 +81,7 @@ class DirectiveValidatorVisitor {
         } else {
             self.visitedDirectives[directiveNode.getName()] = directiveNode;
         }
-        foreach __Directive definedDirective in self.schema.directives {
+        foreach readonly & __Directive definedDirective in self.schema.directives {
             if definedDirective.name == directiveNode.getName() {
                 self.validateDirective(directiveNode, definedDirective);
                 return;
@@ -94,7 +94,8 @@ class DirectiveValidatorVisitor {
 
     public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
 
-    private isolated function validateDirective(parser:DirectiveNode directiveNode, __Directive definedDirective) {
+    private isolated function validateDirective(parser:DirectiveNode directiveNode,
+            readonly & __Directive definedDirective) {
         parser:DirectiveLocation[] validLocations = definedDirective.locations;
         if validLocations.indexOf(directiveNode.getDirectiveLocation()) == () {
             string name = directiveNode.getName();

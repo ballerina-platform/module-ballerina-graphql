@@ -30,7 +30,7 @@ isolated function executeOperation(Engine engine, Context context, readonly & __
         sourceStream = getSubscriptionResponse(engine, schema, context, 'field, node);
         if sourceStream is stream<any, error?> {
             record {|any value;|}|error? next = sourceStream.next();
-            while next !is () {
+            while next != () {
                 if handler.getUnsubscribed() {
                     closeStream(sourceStream);
                     return;
