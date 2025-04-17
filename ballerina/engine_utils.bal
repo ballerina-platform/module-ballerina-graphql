@@ -17,6 +17,7 @@
 import graphql.parser;
 
 import ballerina/cache;
+import ballerina/crypto;
 import ballerina/jballerina.java;
 import ballerina/lang.regexp;
 
@@ -132,6 +133,43 @@ returns cache:Cache? {
     }
     return;
 }
+
+isolated function initDocumentCacheTable(DocumentCacheConfig? documentCacheConfig) returns cache:Cache? {
+    if documentCacheConfig is DocumentCacheConfig && documentCacheConfig.enabled {
+        return new ({capacity: documentCacheConfig.maxSize, evictionFactor: 0.2, defaultMaxAge: -1});
+    }
+    return;
+}
+
+isolated function generateDocumentCacheKey(string document) returns string {
+    string standardizeDocument = getStandardizeDocument(document);
+    byte[] hash = crypto:hashMd5(standardizeDocument.toBytes());
+    return hash.toBase64();
+}
+
+isolated function getStandardizeDocument(string document) returns string {
+    // Find all string & block string values and replace them with placeholder `-STRING-`
+    string:RegExp pattern = re `"""([\s\S]*?)"""|"((?:[^"\\]|\\["\\/bfnrt]|\\u[0-9A-Fa-f]{4})*)"`;
+    regexp:Span[] strings = pattern.findAll(document);
+    string formattedDocument = pattern.replaceAll(document.trim(), STRING_PLACEHOLDER);
+    // Remove all comments
+    pattern = re `#.*`;
+    formattedDocument = pattern.replaceAll(formattedDocument, "");
+    // Replace multiple spaces and new lines between fields and args with a single comma
+    pattern = re `[a-zA-Z0-9_"}\-\]]([\s]+)[_a-zA-Z]`;
+    formattedDocument = pattern.replaceAll(formattedDocument, replaceFunction);
+    // Remove remaining spaces and new lines
+    pattern = re `[\s]+`;
+    formattedDocument = pattern.replaceAll(formattedDocument, "");
+    // Replace placeholder `-STRING-` with original string values
+    foreach regexp:Span span in strings {
+        pattern = re `-STRING-`;
+        formattedDocument = pattern.replace(formattedDocument, span.substring());
+    }
+    return formattedDocument;
+}
+
+isolated function replaceFunction(regexp:Groups groups) returns string => re `\s+`.replaceAll(groups[0].substring(), ",");
 
 isolated function hasRecordReturnType(service object {} serviceObject, string[] path)
     returns boolean = @java:Method {
