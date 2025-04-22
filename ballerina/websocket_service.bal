@@ -51,6 +51,18 @@ isolated service class WsService {
         return {'type: WS_PONG};
     }
 
+    @websocket:DispatcherMapping {
+        value: "pong"
+    }
+    isolated remote function onPongMessage(Pong pong) {
+        lock {
+            PongMessageHandlerJob? handler = self.pongMessageHandler;
+            if handler !is () {
+                handler.setPongMessageReceived();
+            }
+        }
+    }
+
     isolated remote function onComplete(Complete message) {
         lock {
             if self.activeConnections.hasKey(message.id) {
@@ -72,9 +84,6 @@ isolated service class WsService {
         }
         if message is SubscribeMessage {
             return self.handleSubscriptionRequest(caller, message);
-        }
-        if message is Pong {
-            return self.handlePongRequest();
         }
     }
 
@@ -123,16 +132,6 @@ isolated service class WsService {
     private isolated function handlePingRequest(websocket:Caller caller) returns websocket:Error? {
         Pong response = {'type: WS_PONG};
         check writeMessage(caller, response);
-    }
-
-    private isolated function handlePongRequest() {
-        lock {
-            PongMessageHandlerJob? handler = self.pongMessageHandler;
-            if handler is () {
-                return;
-            }
-            handler.setPongMessageReceived();
-        }
     }
 
     private isolated function schedulePongMessageHandler(websocket:Caller caller) {
