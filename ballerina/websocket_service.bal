@@ -99,11 +99,10 @@ isolated service class WsService {
         return {'type: WS_ERROR, id: handler.getId(), payload: node};
     }
 
-    isolated remote function onMessage(websocket:Caller caller, string text) returns websocket:Error? {
-        InboundMessage|SubscriptionError message = castToMessage(text);
-        if message is SubscriptionError {
-            return closeConnection(caller, message);
-        }
+    isolated remote function onMessage() returns websocket:UnsupportedData {
+        string detail = "payload does not conform to the format required by the '" +
+            GRAPHQL_TRANSPORT_WS + "' subprotocol";
+        return {status: 1003, reason: string `Invalid format: ${detail}`};
     }
 
     isolated remote function onError(error errorMessage) returns websocket:UnsupportedData|error? {
