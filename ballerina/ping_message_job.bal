@@ -58,7 +58,7 @@ class PingMessageJob {
                     check self.unschedule();
                     return;
                 }
-                PingMessage message = {'type: WS_PING};
+                Ping message = {'type: WS_PING};
                 check writeMessage(self.caller, message);
             }
         } on fail error cause {

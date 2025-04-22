@@ -26,12 +26,12 @@ type ConnectionAckMessage record {|
     map<json> payload?;
 |};
 
-type PingMessage record {|
+type Ping record {|
     WS_PING 'type;
     map<json> payload?;
 |};
 
-type PongMessage record {|
+type Pong record {|
     WS_PONG 'type;
     map<json> payload?;
 |};
@@ -72,5 +72,5 @@ type ConnectionInitialisationTimeout record {|
 
 public final readonly & ConnectionInitialisationTimeout CONNECTION_INITIALISATION_TIMEOUT = {};
 
-type InboundMessage ConnectionInitMessage|PingMessage|PongMessage|SubscribeMessage|CompleteMessage;
-type OutboundMessage ConnectionAckMessage|PingMessage|PongMessage|NextMessage|ErrorMessage|CompleteMessage;
+type InboundMessage ConnectionInitMessage|Ping|Pong|SubscribeMessage|CompleteMessage;
+type OutboundMessage ConnectionAckMessage|Ping|Pong|NextMessage|ErrorMessage|CompleteMessage;

@@ -43,6 +43,14 @@ isolated service class WsService {
         return;
     }
 
+
+    @websocket:DispatcherMapping {
+        value: "ping"
+    }
+    isolated remote function onPingMessage(Ping ping) returns Pong {
+        return {'type: WS_PONG};
+    }
+
     isolated remote function onMessage(websocket:Caller caller, string text) returns websocket:Error? {
         InboundMessage|SubscriptionError message = castToMessage(text);
         if message is SubscriptionError {
@@ -59,10 +67,7 @@ isolated service class WsService {
         if message is CompleteMessage {
             return self.handleCompleteRequest(message);
         }
-        if message is PingMessage {
-            return self.handlePingRequest(caller);
-        }
-        if message is PongMessage {
+        if message is Pong {
             return self.handlePongRequest();
         }
     }
@@ -121,7 +126,7 @@ isolated service class WsService {
     }
 
     private isolated function handlePingRequest(websocket:Caller caller) returns websocket:Error? {
-        PongMessage response = {'type: WS_PONG};
+        Pong response = {'type: WS_PONG};
         check writeMessage(caller, response);
     }
 
