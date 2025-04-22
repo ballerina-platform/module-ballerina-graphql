@@ -14,6 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/websocket;
+
 type ConnectionInitMessage record {|
     WS_INIT 'type;
     map<json> payload?;
@@ -61,6 +63,14 @@ type CompleteMessage record {|
     WS_COMPLETE 'type;
     string id;
 |};
+
+type ConnectionInitialisationTimeout record {|
+    *websocket:CustomCloseFrame;
+    4408 status = 4408;
+    string reason = "Connection initialisation timeout";
+|};
+
+public final readonly & ConnectionInitialisationTimeout CONNECTION_INITIALISATION_TIMEOUT = {};
 
 type InboundMessage ConnectionInitMessage|PingMessage|PongMessage|SubscribeMessage|CompleteMessage;
 type OutboundMessage ConnectionAckMessage|PingMessage|PongMessage|NextMessage|ErrorMessage|CompleteMessage;

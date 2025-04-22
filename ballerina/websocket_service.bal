@@ -34,13 +34,13 @@ isolated service class WsService {
         self.context = context;
     }
 
-    isolated remote function onIdleTimeout(websocket:Caller caller) returns websocket:Error? {
+    isolated remote function onIdleTimeout() returns ConnectionInitialisationTimeout? {
         lock {
             if !self.initiatedConnection {
-                SubscriptionError err = error("Connection initialisation timeout", code = 4408);
-                return closeConnection(caller, err);
+                return CONNECTION_INITIALISATION_TIMEOUT;
             }
         }
+        return;
     }
 
     isolated remote function onMessage(websocket:Caller caller, string text) returns websocket:Error? {
