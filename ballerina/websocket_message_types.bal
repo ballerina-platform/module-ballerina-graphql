@@ -59,7 +59,7 @@ type ErrorMessage record {|
     json payload;
 |};
 
-type CompleteMessage record {|
+type Complete record {|
     WS_COMPLETE 'type;
     string id;
 |};
@@ -72,5 +72,5 @@ type ConnectionInitialisationTimeout record {|
 
 public final readonly & ConnectionInitialisationTimeout CONNECTION_INITIALISATION_TIMEOUT = {};
 
-type InboundMessage ConnectionInitMessage|Ping|Pong|SubscribeMessage|CompleteMessage;
-type OutboundMessage ConnectionAckMessage|Ping|Pong|NextMessage|ErrorMessage|CompleteMessage;
+type InboundMessage ConnectionInitMessage|Ping|Pong|SubscribeMessage|Complete;
+type OutboundMessage ConnectionAckMessage|Ping|Pong|NextMessage|ErrorMessage|Complete;

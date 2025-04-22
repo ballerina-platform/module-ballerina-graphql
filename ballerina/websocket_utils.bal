@@ -63,7 +63,7 @@ isolated function handleStreamCompletion(websocket:Caller caller, SubscriptionHa
         closeStream(sourceStream);
         return;
     }
-    CompleteMessage response = {'type: WS_COMPLETE, id: handler.getId()};
+    Complete response = {'type: WS_COMPLETE, id: handler.getId()};
     check writeMessage(caller, response);
     closeStream(sourceStream);
 }

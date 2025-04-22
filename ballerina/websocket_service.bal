@@ -14,8 +14,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/websocket;
 import graphql.parser;
+
+import ballerina/websocket;
 
 isolated service class WsService {
     *websocket:Service;
@@ -43,12 +44,20 @@ isolated service class WsService {
         return;
     }
 
-
     @websocket:DispatcherMapping {
         value: "ping"
     }
     isolated remote function onPingMessage(Ping ping) returns Pong {
         return {'type: WS_PONG};
+    }
+
+    isolated remote function onComplete(Complete message) {
+        lock {
+            if self.activeConnections.hasKey(message.id) {
+                SubscriptionHandler handler = self.activeConnections.remove(message.id);
+                handler.setUnsubscribed();
+            }
+        }
     }
 
     isolated remote function onMessage(websocket:Caller caller, string text) returns websocket:Error? {
@@ -63,9 +72,6 @@ isolated service class WsService {
         }
         if message is SubscribeMessage {
             return self.handleSubscriptionRequest(caller, message);
-        }
-        if message is CompleteMessage {
-            return self.handleCompleteRequest(message);
         }
         if message is Pong {
             return self.handlePongRequest();
@@ -112,17 +118,6 @@ isolated service class WsService {
         }
         ErrorMessage response = {'type: WS_ERROR, id: handler.getId(), payload: node};
         check writeMessage(caller, response);
-    }
-
-    private isolated function handleCompleteRequest(CompleteMessage message) {
-        lock {
-            if !self.activeConnections.hasKey(message.id) {
-                return;
-            }
-            SubscriptionHandler handler = self.activeConnections.remove(message.id);
-            handler.setUnsubscribed();
-        }
-        return;
     }
 
     private isolated function handlePingRequest(websocket:Caller caller) returns websocket:Error? {
