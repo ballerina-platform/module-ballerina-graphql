@@ -72,15 +72,23 @@ isolated service class WsService {
         }
     }
 
+    isolated remote function onConnectionInit(websocket:Caller caller, ConnectionInit message)
+    returns ConnectionAck|TooManyInitializationRequests|error? {
+        lock {
+            if self.initiatedConnection {
+                return TOO_MANY_INITIALIZATION_REQUESTS;
+            }
+            self.initiatedConnection = true;
+        }
+        self.startSendingPingMessages(caller);
+        self.schedulePongMessageHandler(caller);
+        return {'type: WS_ACK};
+    }
+
     isolated remote function onMessage(websocket:Caller caller, string text) returns websocket:Error? {
         InboundMessage|SubscriptionError message = castToMessage(text);
         if message is SubscriptionError {
             return closeConnection(caller, message);
-        }
-        if message is ConnectionInitMessage {
-            check self.handleConnectionInitRequest(caller);
-            self.startSendingPingMessages(caller);
-            return self.schedulePongMessageHandler(caller);
         }
         if message is SubscribeMessage {
             return self.handleSubscriptionRequest(caller, message);
@@ -89,18 +97,6 @@ isolated service class WsService {
 
     remote function onClose(websocket:Caller caller) {
         self.unschedulePingPongHandlers();
-    }
-
-    private isolated function handleConnectionInitRequest(websocket:Caller caller) returns websocket:Error? {
-        lock {
-            if self.initiatedConnection {
-                SubscriptionError err = error("Too many initialisation requests", code = 4429);
-                return closeConnection(caller, err);
-            }
-            ConnectionAckMessage response = {'type: WS_ACK};
-            check writeMessage(caller, response);
-            self.initiatedConnection = true;
-        }
     }
 
     private isolated function startSendingPingMessages(websocket:Caller caller) {

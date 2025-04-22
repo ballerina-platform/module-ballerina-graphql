@@ -14,8 +14,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/websocket;
 import ballerina/task;
+import ballerina/time;
+import ballerina/websocket;
 
 class PingMessageJob {
     *task:Job;
@@ -31,7 +32,8 @@ class PingMessageJob {
     }
 
     public isolated function schedule() {
-        task:JobId|error id = task:scheduleJobRecurByFrequency(self, PING_MESSAGE_SCHEDULE_INTERVAL);
+        time:Civil startTime = time:utcToCivil(time:utcAddSeconds(time:utcNow(), MESSAGE_SCHEDULE_INITIAL_DELAY));
+        task:JobId|error id = task:scheduleJobRecurByFrequency(self, PING_MESSAGE_SCHEDULE_INTERVAL, startTime = startTime);
         if id is error {
             return logError("Failed to schedule PingMessageJob", id);
         }

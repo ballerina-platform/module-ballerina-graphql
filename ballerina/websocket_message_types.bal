@@ -16,12 +16,12 @@
 
 import ballerina/websocket;
 
-type ConnectionInitMessage record {|
+type ConnectionInit record {|
     WS_INIT 'type;
     map<json> payload?;
 |};
 
-type ConnectionAckMessage record {|
+type ConnectionAck record {|
     WS_ACK 'type;
     map<json> payload?;
 |};
@@ -70,7 +70,14 @@ type ConnectionInitialisationTimeout record {|
     string reason = "Connection initialisation timeout";
 |};
 
-public final readonly & ConnectionInitialisationTimeout CONNECTION_INITIALISATION_TIMEOUT = {};
+type TooManyInitializationRequests record {|
+    *websocket:CustomCloseFrame;
+    4429 status = 4429;
+    string reason = "Too many initialisation requests";
+|};
 
-type InboundMessage ConnectionInitMessage|Ping|Pong|SubscribeMessage|Complete;
-type OutboundMessage ConnectionAckMessage|Ping|Pong|NextMessage|ErrorMessage|Complete;
+public final readonly & ConnectionInitialisationTimeout CONNECTION_INITIALISATION_TIMEOUT = {};
+public final readonly & TooManyInitializationRequests TOO_MANY_INITIALIZATION_REQUESTS = {};
+
+type InboundMessage ConnectionInit|Ping|Pong|SubscribeMessage|Complete;
+type OutboundMessage ConnectionAck|Ping|Pong|NextMessage|ErrorMessage|Complete;
