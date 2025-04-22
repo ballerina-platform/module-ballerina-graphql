@@ -36,7 +36,7 @@ type Pong record {|
     map<json> payload?;
 |};
 
-type SubscribeMessage record {|
+type Subscribe record {|
     WS_SUBSCRIBE 'type;
     string id;
     record {|
@@ -76,8 +76,21 @@ type TooManyInitializationRequests record {|
     string reason = "Too many initialisation requests";
 |};
 
+type Unauthorized record {|
+    *websocket:CustomCloseFrame;
+    4401 status = 4401;
+    string reason = "Unauthorized";
+|};
+
+type SubscriberAlreadyExists record {|
+    *websocket:CustomCloseFrame;
+    4409 status = 4409;
+|};
+
 public final readonly & ConnectionInitialisationTimeout CONNECTION_INITIALISATION_TIMEOUT = {};
 public final readonly & TooManyInitializationRequests TOO_MANY_INITIALIZATION_REQUESTS = {};
+public final readonly & Unauthorized UNAUTHORIZED = {};
 
-type InboundMessage ConnectionInit|Ping|Pong|SubscribeMessage|Complete;
+type InboundMessage ConnectionInit|Ping|Pong|Subscribe|Complete;
+
 type OutboundMessage ConnectionAck|Ping|Pong|NextMessage|ErrorMessage|Complete;

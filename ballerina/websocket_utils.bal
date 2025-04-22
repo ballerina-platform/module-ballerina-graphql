@@ -77,7 +77,7 @@ returns websocket:Error? {
     check writeMessage(caller, response);
 }
 
-isolated function validateSubscriptionPayload(SubscribeMessage data, Engine engine) returns parser:OperationNode|json {
+isolated function validateSubscriptionPayload(Subscribe data, Engine engine) returns parser:OperationNode|json {
     string document = data.payload.query.trim();
     if document == "" {
         return {errors: [{message: "An empty query is found"}]};

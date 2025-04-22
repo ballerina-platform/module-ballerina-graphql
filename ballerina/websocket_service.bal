@@ -85,14 +85,34 @@ isolated service class WsService {
         return {'type: WS_ACK};
     }
 
+    isolated remote function onSubscribe(websocket:Caller caller, Subscribe message)
+    returns Unauthorized|SubscriberAlreadyExists|ErrorMessage? {
+        SubscriptionHandler|Unauthorized|SubscriberAlreadyExists handler = self.validateSubscriptionRequest(message);
+        if handler is Unauthorized|SubscriberAlreadyExists {
+            return handler;
+        }
+        parser:OperationNode|json node = validateSubscriptionPayload(message, self.engine);
+        if node is parser:OperationNode {
+            _ = start executeOperation(self.engine, self.context, self.schema, caller, node, handler);
+            return;
+        }
+        return {'type: WS_ERROR, id: handler.getId(), payload: node};
+    }
+
     isolated remote function onMessage(websocket:Caller caller, string text) returns websocket:Error? {
         InboundMessage|SubscriptionError message = castToMessage(text);
         if message is SubscriptionError {
             return closeConnection(caller, message);
         }
-        if message is SubscribeMessage {
-            return self.handleSubscriptionRequest(caller, message);
+    }
+
+    isolated remote function onError(error errorMessage) returns websocket:UnsupportedData|error? {
+        if errorMessage.message().endsWith("ConversionError") {
+            string detail = "payload does not conform to the format required by the '" +
+            GRAPHQL_TRANSPORT_WS + "' subprotocol";
+            return {status: 1003, reason: string `Invalid format: ${detail}`};
         }
+        return errorMessage;
     }
 
     remote function onClose(websocket:Caller caller) {
@@ -108,21 +128,6 @@ isolated service class WsService {
             job.schedule();
             self.pingMessageHandler = job;
         }
-    }
-
-    private isolated function handleSubscriptionRequest(websocket:Caller caller, SubscribeMessage message)
-    returns websocket:Error? {
-        SubscriptionHandler|SubscriptionError handler = self.validateSubscriptionRequest(message);
-        if handler is SubscriptionError {
-            return closeConnection(caller, handler);
-        }
-        parser:OperationNode|json node = validateSubscriptionPayload(message, self.engine);
-        if node is parser:OperationNode {
-            _ = start executeOperation(self.engine, self.context, self.schema, caller, node, handler);
-            return;
-        }
-        ErrorMessage response = {'type: WS_ERROR, id: handler.getId(), payload: node};
-        check writeMessage(caller, response);
     }
 
     private isolated function handlePingRequest(websocket:Caller caller) returns websocket:Error? {
@@ -141,15 +146,15 @@ isolated service class WsService {
         }
     }
 
-    private isolated function validateSubscriptionRequest(SubscribeMessage message)
-    returns SubscriptionHandler|SubscriptionError {
+    private isolated function validateSubscriptionRequest(Subscribe message)
+    returns SubscriptionHandler|Unauthorized|SubscriberAlreadyExists {
         SubscriptionHandler handler = new (message.id);
         lock {
             if !self.initiatedConnection {
-                return error("Unauthorized", code = 4401);
+                return UNAUTHORIZED;
             }
             if self.activeConnections.hasKey(message.id) {
-                return error(string `Subscriber for ${message.id} already exists`, code = 4409);
+                return {status: 4409, reason: string `Subscriber for ${message.id} already exists`};
             }
             self.activeConnections[message.id] = handler;
         }
