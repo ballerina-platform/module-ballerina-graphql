@@ -14,13 +14,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/log;
-import ballerina/websocket;
-import ballerina/lang.value;
 import graphql.parser;
 
+import ballerina/log;
+import ballerina/websocket;
+
 isolated function executeOperation(Engine engine, Context context, readonly & __Schema schema, websocket:Caller caller,
-                                   parser:OperationNode node, SubscriptionHandler subscriptionHandler) {
+        parser:OperationNode node, SubscriptionHandler subscriptionHandler) {
     stream<any, error?>|json sourceStream;
     do {
         SubscriptionHandler handler = subscriptionHandler;
@@ -58,7 +58,7 @@ isolated function executeOperation(Engine engine, Context context, readonly & __
 }
 
 isolated function handleStreamCompletion(websocket:Caller caller, SubscriptionHandler handler,
-                                         stream<any, error?> sourceStream) returns websocket:Error? {
+        stream<any, error?> sourceStream) returns websocket:Error? {
     if handler.getUnsubscribed() {
         closeStream(sourceStream);
         return;
@@ -92,7 +92,7 @@ isolated function validateSubscriptionPayload(Subscribe data, Engine engine) ret
 }
 
 isolated function getSubscriptionResponse(Engine engine, __Schema schema, Context context,
-                                          Field 'field, parser:OperationNode operationNode)
+        Field 'field, parser:OperationNode operationNode)
 returns stream<any, error?>|json {
     ResponseGenerator responseGenerator = new (engine, context, 'field.getFieldType(), 'field.getPath().clone());
     any|error result = engine.executeSubscriptionResource(context, engine.getService(), 'field, responseGenerator, engine.getValidation());
@@ -122,18 +122,6 @@ isolated function closeStream(stream<any, error?> sourceStream) {
     error? result = sourceStream.close();
     if result is error {
         logError("Failed to close stream", result);
-    }
-}
-
-isolated function castToMessage(string text) returns InboundMessage|SubscriptionError {
-    do {
-        json jsonValue = check value:fromJsonString(text);
-        InboundMessage message = check jsonValue.cloneWithType();
-        return message;
-    } on fail {
-        string detail = "payload does not conform to the format required by the '" +
-            GRAPHQL_TRANSPORT_WS + "' subprotocol";
-        return error(string `Invalid format: ${detail}`, code = 1003);
     }
 }
 
