@@ -105,7 +105,7 @@ isolated service class WsService {
         return {status: 1003, reason: string `Invalid format: ${detail}`};
     }
 
-    isolated remote function onError(error errorMessage) returns websocket:UnsupportedData|error? {
+    isolated remote function onError(error errorMessage) returns websocket:UnsupportedData|error {
         if errorMessage.message().endsWith("ConversionError") {
             string detail = "payload does not conform to the format required by the '" +
             GRAPHQL_TRANSPORT_WS + "' subprotocol";
@@ -127,11 +127,6 @@ isolated service class WsService {
             job.schedule();
             self.pingMessageHandler = job;
         }
-    }
-
-    private isolated function handlePingRequest(websocket:Caller caller) returns websocket:Error? {
-        Pong response = {'type: WS_PONG};
-        check writeMessage(caller, response);
     }
 
     private isolated function schedulePongMessageHandler(websocket:Caller caller) {
