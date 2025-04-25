@@ -47,7 +47,7 @@ type Subscribe record {|
     |} payload;
 |};
 
-type NextMessage record {|
+type Next record {|
     WS_NEXT 'type;
     string id;
     json payload;
@@ -93,4 +93,4 @@ public final readonly & Unauthorized UNAUTHORIZED = {};
 
 type InboundMessage ConnectionInit|Ping|Pong|Subscribe|Complete;
 
-type OutboundMessage ConnectionAck|Ping|Pong|NextMessage|ErrorMessage|Complete;
+type OutboundMessage ConnectionAck|Ping|Pong|Next|ErrorMessage|Complete;
