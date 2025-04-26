@@ -85,18 +85,14 @@ isolated service class WsService {
         return {'type: WS_ACK};
     }
 
-    isolated remote function onSubscribe(websocket:Caller caller, Subscribe message)
-    returns Unauthorized|SubscriberAlreadyExists|ErrorMessage? {
+    remote function onSubscribe(Subscribe message)
+    returns stream<Next|Complete|ErrorMessage, error?>|Unauthorized|SubscriberAlreadyExists {
         SubscriptionHandler|Unauthorized|SubscriberAlreadyExists handler = self.validateSubscriptionRequest(message);
         if handler is Unauthorized|SubscriberAlreadyExists {
             return handler;
         }
         parser:OperationNode|json node = validateSubscriptionPayload(message, self.engine);
-        if node is parser:OperationNode {
-            _ = start executeOperation(self.engine, self.context, self.schema, caller, node, handler);
-            return;
-        }
-        return {'type: WS_ERROR, id: handler.getId(), payload: node};
+        return getResultStream(self.engine, self.context, self.schema, node, handler);
     }
 
     isolated remote function onMessage() returns websocket:UnsupportedData {
