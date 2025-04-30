@@ -44,15 +44,15 @@ isolated service class WsService {
         return;
     }
 
-    @websocket:DispatcherMapping {
-        value: "ping"
+    @websocket:DispatcherConfig {
+        dispatcherValue: "ping"
     }
     isolated remote function onPingMessage(Ping ping) returns Pong {
         return {'type: WS_PONG};
     }
 
-    @websocket:DispatcherMapping {
-        value: "pong"
+    @websocket:DispatcherConfig {
+        dispatcherValue: "pong"
     }
     isolated remote function onPongMessage(Pong pong) {
         lock {
