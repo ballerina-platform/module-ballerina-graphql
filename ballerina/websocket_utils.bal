@@ -16,49 +16,64 @@
 
 import graphql.parser;
 
+import ballerina/jballerina.java;
 import ballerina/log;
 import ballerina/websocket;
 
-class ResultGenerator {
-    private Engine engine;
-    private stream<any, error?> sourceStream;
-    private SubscriptionHandler handler;
-    private parser:OperationNode node;
-    private Context context;
+isolated class ResultGenerator {
+    private final Engine engine;
+    private final SubscriptionHandler handler;
+    private final parser:OperationNode node;
+    private final Context context;
     private boolean isCompleted = false;
 
-    isolated function init(Engine engine, stream<any, error?> sourceStream, SubscriptionHandler handler, parser:OperationNode node,
-            Context context) {
+    isolated function init(Engine engine, SubscriptionHandler handler, parser:OperationNode node, Context context) {
         self.engine = engine;
-        self.sourceStream = sourceStream;
         self.handler = handler;
         self.node = node;
         self.context = context;
     }
 
     public isolated function next() returns record {|Next|Complete|ErrorMessage value;|}|error? {
+        lock {
             if self.isCompleted {
                 return;
             }
-            if self.handler.getUnsubscribed() {
-                closeStream(self.sourceStream);
-                return;
+        }
+        stream<any, error?> sourceStream = check self.getSourceStream();
+        if self.handler.getUnsubscribed() {
+            closeStream(sourceStream);
+            return;
+        }
+        record {|any value;|}|error? nextValue = sourceStream.next();
+        if self.handler.getUnsubscribed() {
+            closeStream(sourceStream);
+            return;
+        }
+        if nextValue !is () {
+            any|error resultValue = nextValue is error ? nextValue : nextValue.value;
+            OutputObject outputObject = self.engine.getResult(self.node, self.context, resultValue);
+            self.context.clearDataLoadersCachesAndPlaceholders();
+            self.context.resetErrors(); //Remove previous event's errors before the next one
+            if outputObject.hasKey(DATA_FIELD) || outputObject.hasKey(ERRORS_FIELD) {
+                Next response = {'type: 'WS_NEXT, id: self.handler.getId(), payload: outputObject.toJson()};
+                return {value: response};
             }
-            record {|any value;|}|error? nextValue = self.sourceStream.next();
-            if nextValue !is () {
-                any|error resultValue = nextValue is error ? nextValue : nextValue.value;
-                OutputObject outputObject = self.engine.getResult(self.node, self.context, resultValue);
-                self.context.clearDataLoadersCachesAndPlaceholders();
-                self.context.resetErrors(); //Remove previous event's errors before the next one
-                if outputObject.hasKey(DATA_FIELD) || outputObject.hasKey(ERRORS_FIELD) {
-                    Next response = {'type: 'WS_NEXT, id: self.handler.getId(), payload: outputObject.toJson()};
-                    return {value: response};
-                }
-            }
+        }
+        lock {
             self.isCompleted = true;
-            Complete response = {'type: WS_COMPLETE, id: self.handler.getId()};
-            return {value: response};
+        }
+        Complete response = {'type: WS_COMPLETE, id: self.handler.getId()};
+        return {value: response};
     }
+
+    isolated function setSourceStream(stream<any, error?> sourceStream) = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.utils.Utils"
+    } external;
+
+    isolated function getSourceStream() returns stream<any, error?>|error = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.utils.Utils"
+    } external;
 }
 
 isolated function getResultStream(Engine engine, Context context, readonly & __Schema schema,
@@ -72,7 +87,8 @@ returns stream<Next|Complete|ErrorMessage, error?> {
     if sourceStream is json {
         return getErrorMessageStream(handler, sourceStream);
     }
-    ResultGenerator resultGenerator = new (engine, sourceStream, handler, node, context);
+    ResultGenerator resultGenerator = new (engine, handler, node, context);
+    resultGenerator.setSourceStream(sourceStream);
     stream<Next|Complete|ErrorMessage, error?> result = new (resultGenerator);
     return result;
 }
