@@ -102,9 +102,9 @@ public class Utils {
     }
 
     public static Object getSourceStream(BObject bObject) {
-        Object bStream = bObject.getNativeData(SOURCE_STREAM);
-        if (bStream instanceof BStream) {
-            return (BStream) bStream;
+        Object streamObj = bObject.getNativeData(SOURCE_STREAM);
+        if (streamObj instanceof BStream bStream) {
+            return bStream;
         }
         return ErrorCreator.createError(StringUtils.fromString(SOURCE_STREAM + " not found"));
     }
