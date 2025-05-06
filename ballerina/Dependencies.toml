@@ -18,6 +18,9 @@ dependencies = [
 	{org = "ballerina", name = "lang.string"},
 	{org = "ballerina", name = "log"}
 ]
+modules = [
+	{org = "ballerina", packageName = "auth", moduleName = "auth"}
+]
 
 [[package]]
 org = "ballerina"
@@ -29,6 +32,9 @@ dependencies = [
 	{org = "ballerina", name = "task"},
 	{org = "ballerina", name = "time"}
 ]
+modules = [
+	{org = "ballerina", packageName = "cache", moduleName = "cache"}
+]
 
 [[package]]
 org = "ballerina"
@@ -36,9 +42,6 @@ name = "constraint"
 version = "1.7.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
-]
-modules = [
-	{org = "ballerina", packageName = "constraint", moduleName = "constraint"}
 ]
 
 [[package]]
@@ -48,6 +51,9 @@ version = "2.9.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "time"}
+]
+modules = [
+	{org = "ballerina", packageName = "crypto", moduleName = "crypto"}
 ]
 
 [[package]]
@@ -68,6 +74,9 @@ dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "os"},
 	{org = "ballerina", name = "time"}
+]
+modules = [
+	{org = "ballerina", packageName = "file", moduleName = "file"}
 ]
 
 [[package]]
@@ -91,6 +100,7 @@ dependencies = [
 	{org = "ballerina", name = "oauth2"},
 	{org = "ballerina", name = "observe"},
 	{org = "ballerina", name = "task"},
+	{org = "ballerina", name = "test"},
 	{org = "ballerina", name = "time"},
 	{org = "ballerina", name = "uuid"},
 	{org = "ballerina", name = "websocket"}
@@ -100,41 +110,6 @@ modules = [
 	{org = "ballerina", packageName = "graphql", moduleName = "graphql.dataloader"},
 	{org = "ballerina", packageName = "graphql", moduleName = "graphql.parser"},
 	{org = "ballerina", packageName = "graphql", moduleName = "graphql.subgraph"}
-]
-
-[[package]]
-org = "ballerina"
-name = "graphql_advanced_test_suite"
-version = "1.16.2"
-dependencies = [
-	{org = "ballerina", name = "constraint"},
-	{org = "ballerina", name = "graphql"},
-	{org = "ballerina", name = "graphql_test_common"},
-	{org = "ballerina", name = "http"},
-	{org = "ballerina", name = "io"},
-	{org = "ballerina", name = "lang.runtime"},
-	{org = "ballerina", name = "mime"},
-	{org = "ballerina", name = "test"}
-]
-modules = [
-	{org = "ballerina", packageName = "graphql_advanced_test_suite", moduleName = "graphql_advanced_test_suite"}
-]
-
-[[package]]
-org = "ballerina"
-name = "graphql_test_common"
-version = "1.16.2"
-scope = "testOnly"
-dependencies = [
-	{org = "ballerina", name = "file"},
-	{org = "ballerina", name = "graphql"},
-	{org = "ballerina", name = "http"},
-	{org = "ballerina", name = "io"},
-	{org = "ballerina", name = "test"},
-	{org = "ballerina", name = "websocket"}
-]
-modules = [
-	{org = "ballerina", packageName = "graphql_test_common", moduleName = "graphql_test_common"}
 ]
 
 [[package]]
@@ -186,6 +161,9 @@ modules = [
 org = "ballerina"
 name = "jballerina.java"
 version = "0.0.0"
+modules = [
+	{org = "ballerina", packageName = "jballerina.java", moduleName = "jballerina.java"}
+]
 
 [[package]]
 org = "ballerina"
@@ -200,6 +178,9 @@ dependencies = [
 	{org = "ballerina", name = "lang.string"},
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "time"}
+]
+modules = [
+	{org = "ballerina", packageName = "jwt", moduleName = "jwt"}
 ]
 
 [[package]]
@@ -218,6 +199,9 @@ version = "0.0.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.__internal"}
+]
+modules = [
+	{org = "ballerina", packageName = "lang.array", moduleName = "lang.array"}
 ]
 
 [[package]]
@@ -259,6 +243,9 @@ version = "0.0.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
+modules = [
+	{org = "ballerina", packageName = "lang.regexp", moduleName = "lang.regexp"}
+]
 
 [[package]]
 org = "ballerina"
@@ -266,9 +253,6 @@ name = "lang.runtime"
 version = "0.0.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
-]
-modules = [
-	{org = "ballerina", packageName = "lang.runtime", moduleName = "lang.runtime"}
 ]
 
 [[package]]
@@ -287,6 +271,9 @@ version = "0.0.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
+modules = [
+	{org = "ballerina", packageName = "lang.value", moduleName = "lang.value"}
+]
 
 [[package]]
 org = "ballerina"
@@ -297,6 +284,9 @@ dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.value"},
 	{org = "ballerina", name = "observe"}
+]
+modules = [
+	{org = "ballerina", packageName = "log", moduleName = "log"}
 ]
 
 [[package]]
@@ -325,6 +315,9 @@ dependencies = [
 	{org = "ballerina", name = "time"},
 	{org = "ballerina", name = "url"}
 ]
+modules = [
+	{org = "ballerina", packageName = "oauth2", moduleName = "oauth2"}
+]
 
 [[package]]
 org = "ballerina"
@@ -332,6 +325,10 @@ name = "observe"
 version = "1.5.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
+]
+modules = [
+	{org = "ballerina", packageName = "observe", moduleName = "observe"},
+	{org = "ballerina", packageName = "observe", moduleName = "observe.mockextension"}
 ]
 
 [[package]]
@@ -350,6 +347,9 @@ version = "2.9.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "time"}
+]
+modules = [
+	{org = "ballerina", packageName = "task", moduleName = "task"}
 ]
 
 [[package]]
@@ -373,6 +373,9 @@ version = "2.7.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
+modules = [
+	{org = "ballerina", packageName = "time", moduleName = "time"}
+]
 
 [[package]]
 org = "ballerina"
@@ -391,6 +394,9 @@ dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.int"},
 	{org = "ballerina", name = "time"}
+]
+modules = [
+	{org = "ballerina", packageName = "uuid", moduleName = "uuid"}
 ]
 
 [[package]]
@@ -411,5 +417,8 @@ dependencies = [
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "oauth2"},
 	{org = "ballerina", name = "time"}
+]
+modules = [
+	{org = "ballerina", packageName = "websocket", moduleName = "websocket"}
 ]
 
