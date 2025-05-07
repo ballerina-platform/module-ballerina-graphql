@@ -50,7 +50,7 @@ class DocumentNodeModifierVisitor {
             parser:SelectionNode modifiedSelectionNode = <parser:SelectionNode>self.getModifiedNode(selectionNode);
             selections.push(modifiedSelectionNode);
         }
-        parser:OperationNode modifiedOperationNode = operationNode.modifyWith(operationNode.getVaribleDefinitions(),
+        parser:OperationNode modifiedOperationNode = operationNode.modifyWith(operationNode.getVariableDefinitions(),
                                                                               selections, directives);
         self.addModifiedNode(operationNode, modifiedOperationNode);
     }

@@ -72,10 +72,10 @@ class QueryComplexityValidatorVisitor {
     }
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data = ()) {
-        __Type? 'type = <__Type?>data;
-        __Type fieldType;
+        readonly & __Type? 'type = <readonly & __Type?>data;
+        readonly & __Type fieldType;
         if 'type is __Type {
-            __Type parentType = getOfType('type);
+            readonly & __Type parentType = getOfType('type);
             string coordinate = string `${parentType.name.toString()}.${fieldNode.getName()}`;
             int|Error fieldComplexity = getFieldComplexity(self.engine, coordinate);
             if fieldComplexity is Error {
@@ -83,7 +83,7 @@ class QueryComplexityValidatorVisitor {
             }
             int complexity = fieldComplexity is int ? fieldComplexity : self.defaultFieldComplexity;
             self.queryComplexity += complexity;
-            __Field? requiredFieldValue = getRequiredFieldFromType(parentType, self.schema.types, fieldNode);
+            readonly & __Field? requiredFieldValue = getRequiredFieldFromType(parentType, self.schema.types, fieldNode);
             if requiredFieldValue is () {
                 return;
             }
