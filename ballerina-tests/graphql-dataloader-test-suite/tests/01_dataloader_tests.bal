@@ -70,8 +70,7 @@ isolated function testDataLoaderWithSubscription() returns error? {
     dependsOn: [
         testDataLoaderWithQuery, testDataLoaderWithSubscription
     ],
-    after: resetDispatchCounters,
-    enable: false
+    after: resetDispatchCounters
 }
 isolated function testDataLoaderWithMutation() returns error? {
     graphql:Client graphqlClient = check new ("localhost:9090/dataloader");
