@@ -14,8 +14,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/websocket;
 import graphql.parser;
+
+import ballerina/websocket;
 
 isolated service class WsService {
     *websocket:Service;
@@ -34,53 +35,83 @@ isolated service class WsService {
         self.context = context;
     }
 
-    isolated remote function onIdleTimeout(websocket:Caller caller) returns websocket:Error? {
+    isolated remote function onIdleTimeout() returns ConnectionInitialisationTimeout? {
         lock {
             if !self.initiatedConnection {
-                SubscriptionError err = error("Connection initialisation timeout", code = 4408);
-                return closeConnection(caller, err);
+                return CONNECTION_INITIALISATION_TIMEOUT;
+            }
+        }
+        return;
+    }
+
+    @websocket:DispatcherConfig {
+        dispatcherValue: "ping"
+    }
+    isolated remote function onPingMessage(Ping ping) returns Pong {
+        return {'type: WS_PONG};
+    }
+
+    @websocket:DispatcherConfig {
+        dispatcherValue: "pong"
+    }
+    isolated remote function onPongMessage(Pong pong) {
+        lock {
+            PongMessageHandlerJob? handler = self.pongMessageHandler;
+            if handler !is () {
+                handler.setPongMessageReceived();
             }
         }
     }
 
-    isolated remote function onMessage(websocket:Caller caller, string text) returns websocket:Error? {
-        InboundMessage|SubscriptionError message = castToMessage(text);
-        if message is SubscriptionError {
-            return closeConnection(caller, message);
+    isolated remote function onComplete(Complete message) {
+        lock {
+            if self.activeConnections.hasKey(message.id) {
+                SubscriptionHandler handler = self.activeConnections.remove(message.id);
+                handler.setUnsubscribed();
+            }
         }
-        if message is ConnectionInitMessage {
-            check self.handleConnectionInitRequest(caller);
-            self.startSendingPingMessages(caller);
-            return self.schedulePongMessageHandler(caller);
+    }
+
+    isolated remote function onConnectionInit(websocket:Caller caller, ConnectionInit message)
+    returns ConnectionAck|TooManyInitializationRequests|error? {
+        lock {
+            if self.initiatedConnection {
+                return TOO_MANY_INITIALIZATION_REQUESTS;
+            }
+            self.initiatedConnection = true;
         }
-        if message is SubscribeMessage {
-            return self.handleSubscriptionRequest(caller, message);
+        self.startSendingPingMessages(caller);
+        self.schedulePongMessageHandler(caller);
+        return {'type: WS_ACK};
+    }
+
+    remote function onSubscribe(Subscribe message)
+    returns stream<Next|Complete|ErrorMessage, error?>|Unauthorized|SubscriberAlreadyExists {
+        SubscriptionHandler|Unauthorized|SubscriberAlreadyExists handler = self.validateSubscriptionRequest(message);
+        if handler is Unauthorized|SubscriberAlreadyExists {
+            return handler;
         }
-        if message is CompleteMessage {
-            return self.handleCompleteRequest(message);
+        parser:OperationNode|json node = validateSubscriptionPayload(message, self.engine);
+        return getResultStream(self.engine, self.context, self.schema, node, handler);
+    }
+
+    isolated remote function onMessage() returns websocket:UnsupportedData {
+        string detail = "payload does not conform to the format required by the '" +
+            GRAPHQL_TRANSPORT_WS + "' subprotocol";
+        return {status: 1003, reason: string `Invalid format: ${detail}`};
+    }
+
+    isolated remote function onError(error errorMessage) returns websocket:UnsupportedData|error {
+        if errorMessage.message().endsWith("ConversionError") {
+            string detail = "payload does not conform to the format required by the '" +
+            GRAPHQL_TRANSPORT_WS + "' subprotocol";
+            return {status: 1003, reason: string `Invalid format: ${detail}`};
         }
-        if message is PingMessage {
-            return self.handlePingRequest(caller);
-        }
-        if message is PongMessage {
-            return self.handlePongRequest();
-        }
+        return errorMessage;
     }
 
     remote function onClose(websocket:Caller caller) {
         self.unschedulePingPongHandlers();
-    }
-
-    private isolated function handleConnectionInitRequest(websocket:Caller caller) returns websocket:Error? {
-        lock {
-            if self.initiatedConnection {
-                SubscriptionError err = error("Too many initialisation requests", code = 4429);
-                return closeConnection(caller, err);
-            }
-            ConnectionAckMessage response = {'type: WS_ACK};
-            check writeMessage(caller, response);
-            self.initiatedConnection = true;
-        }
     }
 
     private isolated function startSendingPingMessages(websocket:Caller caller) {
@@ -91,47 +122,6 @@ isolated service class WsService {
             PingMessageJob job = new PingMessageJob(caller);
             job.schedule();
             self.pingMessageHandler = job;
-        }
-    }
-
-    private isolated function handleSubscriptionRequest(websocket:Caller caller, SubscribeMessage message)
-    returns websocket:Error? {
-        SubscriptionHandler|SubscriptionError handler = self.validateSubscriptionRequest(message);
-        if handler is SubscriptionError {
-            return closeConnection(caller, handler);
-        }
-        parser:OperationNode|json node = validateSubscriptionPayload(message, self.engine);
-        if node is parser:OperationNode {
-            _ = start executeOperation(self.engine, self.context, self.schema, caller, node, handler);
-            return;
-        }
-        ErrorMessage response = {'type: WS_ERROR, id: handler.getId(), payload: node};
-        check writeMessage(caller, response);
-    }
-
-    private isolated function handleCompleteRequest(CompleteMessage message) {
-        lock {
-            if !self.activeConnections.hasKey(message.id) {
-                return;
-            }
-            SubscriptionHandler handler = self.activeConnections.remove(message.id);
-            handler.setUnsubscribed();
-        }
-        return;
-    }
-
-    private isolated function handlePingRequest(websocket:Caller caller) returns websocket:Error? {
-        PongMessage response = {'type: WS_PONG};
-        check writeMessage(caller, response);
-    }
-
-    private isolated function handlePongRequest() {
-        lock {
-            PongMessageHandlerJob? handler = self.pongMessageHandler;
-            if handler is () {
-                return;
-            }
-            handler.setPongMessageReceived();
         }
     }
 
@@ -146,15 +136,15 @@ isolated service class WsService {
         }
     }
 
-    private isolated function validateSubscriptionRequest(SubscribeMessage message)
-    returns SubscriptionHandler|SubscriptionError {
+    private isolated function validateSubscriptionRequest(Subscribe message)
+    returns SubscriptionHandler|Unauthorized|SubscriberAlreadyExists {
         SubscriptionHandler handler = new (message.id);
         lock {
             if !self.initiatedConnection {
-                return error("Unauthorized", code = 4401);
+                return UNAUTHORIZED;
             }
             if self.activeConnections.hasKey(message.id) {
-                return error(string `Subscriber for ${message.id} already exists`, code = 4409);
+                return {status: 4409, reason: string `Subscriber for ${message.id} already exists`};
             }
             self.activeConnections[message.id] = handler;
         }

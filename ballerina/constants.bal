@@ -72,6 +72,7 @@ const WS_COMPLETE = "complete";
 const GRAPHQL_TRANSPORT_WS = "graphql-transport-ws";
 const WS_SUB_PROTOCOL = "Sec-WebSocket-Protocol";
 
+configurable decimal MESSAGE_SCHEDULE_INITIAL_DELAY = 5;
 const decimal PING_MESSAGE_SCHEDULE_INTERVAL = 15;
 const decimal PONG_MESSAGE_HANDLER_SCHEDULE_INTERVAL = 15;
 
