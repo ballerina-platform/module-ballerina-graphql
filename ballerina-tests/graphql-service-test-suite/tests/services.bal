@@ -351,6 +351,9 @@ service /list_inputs on basicListener {
     }
 }
 
+@graphql:ServiceConfig {
+    documentCacheConfig: {}
+}
 service /records on basicListener {
     isolated resource function get detective() returns Person {
         return {
