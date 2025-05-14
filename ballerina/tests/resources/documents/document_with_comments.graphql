@@ -1,0 +1,47 @@
+# This is a comment at the beginning of the query document
+query FetchUserData(
+    # This is a comment inside the variable definitions
+    $id: ID! 
+    $includePosts: Boolean! 
+    $postLimit: Int = 5 # This is an inline comment inside the variable definition
+) 
+{
+  # Fetch user details
+  user(id: $id) @deprecated(reason: "Use `newUser` instead") {
+    id
+    name
+    email
+    # Fetch posts if enabled
+    posts(first: $postLimit) @include(if: $includePosts) @skip(if: false) {
+      edges {
+        node {
+          id
+          title
+          content
+          comments(first: 3) @skip(if: false) { # Always fetch 3 comments
+            text
+          }
+        }
+      }
+    }
+  }
+  
+  # Fetch additional user metadata
+  userMetadata(id: $id) {
+    lastLogin
+    preferences
+  }
+}
+
+mutation UpdateUserProfile(
+  $id: ID! 
+  $newEmail: String 
+  $newName: String
+) {
+  # Update user details
+  updateUser(id: $id, email: $newEmail, name: $newName) {
+    id
+    name
+    email
+  }
+}

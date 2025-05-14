@@ -1,6 +1,6 @@
 query {
     person(id: "1") {
-        name
+        name,age
         address(includeCity: true) {
             city
         }
