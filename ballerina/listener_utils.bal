@@ -377,7 +377,8 @@ isolated function getWebsocketService(Engine gqlEngine, readonly & __Schema sche
         GraphqlServiceConfig? serviceConfig) returns UpgradeService {
     final ContextInit contextInitFunction = getContextInit(serviceConfig);
     UpgradeService websocketUpgradeService = @websocket:ServiceConfig {
-        subProtocols: [GRAPHQL_TRANSPORT_WS]
+        subProtocols: [GRAPHQL_TRANSPORT_WS],
+        dispatcherKey: "type"
     } isolated service object {
         isolated resource function get .(http:Request request)
         returns websocket:Service|websocket:UpgradeError|http:HeaderNotFoundError {
