@@ -14,70 +14,101 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/log;
-import ballerina/websocket;
-import ballerina/lang.value;
 import graphql.parser;
 
-isolated function executeOperation(Engine engine, Context context, readonly & __Schema schema, websocket:Caller caller,
-                                   parser:OperationNode node, SubscriptionHandler subscriptionHandler) {
-    stream<any, error?>|json sourceStream;
-    do {
-        SubscriptionHandler handler = subscriptionHandler;
-        RootFieldVisitor rootFieldVisitor = new (node);
-        parser:FieldNode fieldNode = <parser:FieldNode>rootFieldVisitor.getRootFieldNode();
-        Field 'field = getFieldObject(fieldNode, parser:OPERATION_SUBSCRIPTION, schema, engine);
-        sourceStream = getSubscriptionResponse(engine, schema, context, 'field, node);
-        if sourceStream is stream<any, error?> {
-            record {|any value;|}|error? next = sourceStream.next();
-            while next !is () {
-                if handler.getUnsubscribed() {
-                    closeStream(sourceStream);
-                    return;
-                }
-                any|error resultValue = next is error ? next : next.value;
-                OutputObject outputObject = engine.getResult(node, context, resultValue);
-                context.clearDataLoadersCachesAndPlaceholders();
-                if outputObject.hasKey(DATA_FIELD) || outputObject.hasKey(ERRORS_FIELD) {
-                    NextMessage response = {'type: 'WS_NEXT, id: handler.getId(), payload: outputObject.toJson()};
-                    check writeMessage(caller, response);
-                }
-                context.resetErrors(); //Remove previous event's errors before the next one
-                next = sourceStream.next();
+import ballerina/jballerina.java;
+import ballerina/log;
+import ballerina/websocket;
+
+isolated class ResultGenerator {
+    private final Engine engine;
+    private final SubscriptionHandler handler;
+    private final parser:OperationNode node;
+    private final Context context;
+    private boolean isCompleted = false;
+
+    isolated function init(Engine engine, SubscriptionHandler handler, parser:OperationNode node, Context context) {
+        self.engine = engine;
+        self.handler = handler;
+        self.node = node;
+        self.context = context;
+    }
+
+    public isolated function next() returns record {|Next|Complete|ErrorMessage value;|}|error? {
+        lock {
+            if self.isCompleted {
+                return;
             }
-            check handleStreamCompletion(caller, handler, sourceStream);
-        } else {
-            check handleStreamCreationError(caller, handler, sourceStream);
         }
-    } on fail error err {
-        log:printError(err.message(), stackTrace = err.stackTrace());
-        if sourceStream is stream<any, error?> {
+        stream<any, error?> sourceStream = check self.getSourceStream();
+        if self.handler.getUnsubscribed() {
             closeStream(sourceStream);
+            return;
         }
+        record {|any value;|}|error? nextValue = sourceStream.next();
+        if self.handler.getUnsubscribed() {
+            closeStream(sourceStream);
+            return;
+        }
+        if nextValue !is () {
+            any|error resultValue = nextValue is error ? nextValue : nextValue.value;
+            OutputObject outputObject = self.engine.getResult(self.node, self.context, resultValue);
+            self.context.clearDataLoadersCachesAndPlaceholders();
+            self.context.resetErrors(); //Remove previous event's errors before the next one
+            if outputObject.hasKey(DATA_FIELD) || outputObject.hasKey(ERRORS_FIELD) {
+                Next response = {'type: 'WS_NEXT, id: self.handler.getId(), payload: outputObject.toJson()};
+                return {value: response};
+            }
+        }
+        lock {
+            self.isCompleted = true;
+        }
+        Complete response = {'type: WS_COMPLETE, id: self.handler.getId()};
+        return {value: response};
     }
+
+    isolated function setSourceStream(stream<any, error?> sourceStream) = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.utils.Utils"
+    } external;
+
+    isolated function getSourceStream() returns stream<any, error?>|error = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.utils.Utils"
+    } external;
 }
 
-isolated function handleStreamCompletion(websocket:Caller caller, SubscriptionHandler handler,
-                                         stream<any, error?> sourceStream) returns websocket:Error? {
-    if handler.getUnsubscribed() {
-        closeStream(sourceStream);
-        return;
+isolated function getResultStream(Engine engine, Context context, readonly & __Schema schema,
+        parser:OperationNode|json node, SubscriptionHandler handler)
+returns stream<Next|Complete|ErrorMessage, error?> {
+    stream<any, error?>|json sourceStream;
+    if node is json {
+        return getErrorMessageStream(handler, node);
     }
-    CompleteMessage response = {'type: WS_COMPLETE, id: handler.getId()};
-    check writeMessage(caller, response);
-    closeStream(sourceStream);
+    sourceStream = getSourceStream(engine, context, schema, node);
+    if sourceStream is json {
+        return getErrorMessageStream(handler, sourceStream);
+    }
+    ResultGenerator resultGenerator = new (engine, handler, node, context);
+    resultGenerator.setSourceStream(sourceStream);
+    stream<Next|Complete|ErrorMessage, error?> result = new (resultGenerator);
+    return result;
 }
 
-isolated function handleStreamCreationError(websocket:Caller caller, SubscriptionHandler handler, json errors)
-returns websocket:Error? {
-    if handler.getUnsubscribed() {
-        return;
-    }
-    ErrorMessage response = {'type: WS_ERROR, id: handler.getId(), payload: errors};
-    check writeMessage(caller, response);
+isolated function getSourceStream(Engine engine, Context context, readonly & __Schema schema, parser:OperationNode node) returns stream<any, error?>|json {
+    RootFieldVisitor rootFieldVisitor = new (node);
+    parser:FieldNode fieldNode = <parser:FieldNode>rootFieldVisitor.getRootFieldNode();
+    Field 'field = getFieldObject(fieldNode, parser:OPERATION_SUBSCRIPTION, schema, engine);
+    return getSubscriptionResponse(engine, schema, context, 'field, node);
 }
 
-isolated function validateSubscriptionPayload(SubscribeMessage data, Engine engine) returns parser:OperationNode|json {
+isolated function getErrorMessageStream(SubscriptionHandler handler, json errors) returns stream<ErrorMessage, error?> {
+    if !handler.getUnsubscribed() {
+        ErrorMessage errorMessage = {'type: WS_ERROR, id: handler.getId(), payload: errors};
+        return [errorMessage].toStream();
+    }
+    return [].toStream();
+}
+
+isolated function validateSubscriptionPayload(Subscribe data, Engine engine) returns parser:OperationNode|json {
     string document = data.payload.query.trim();
     if document == "" {
         return {errors: [{message: "An empty query is found"}]};
@@ -92,7 +123,7 @@ isolated function validateSubscriptionPayload(SubscribeMessage data, Engine engi
 }
 
 isolated function getSubscriptionResponse(Engine engine, __Schema schema, Context context,
-                                          Field 'field, parser:OperationNode operationNode)
+        Field 'field, parser:OperationNode operationNode)
 returns stream<any, error?>|json {
     ResponseGenerator responseGenerator = new (engine, context, 'field.getFieldType(), 'field.getPath().clone());
     any|error result = engine.executeSubscriptionResource(context, engine.getService(), 'field, responseGenerator, engine.getValidation());
@@ -122,18 +153,6 @@ isolated function closeStream(stream<any, error?> sourceStream) {
     error? result = sourceStream.close();
     if result is error {
         logError("Failed to close stream", result);
-    }
-}
-
-isolated function castToMessage(string text) returns InboundMessage|SubscriptionError {
-    do {
-        json jsonValue = check value:fromJsonString(text);
-        InboundMessage message = check jsonValue.cloneWithType();
-        return message;
-    } on fail {
-        string detail = "payload does not conform to the format required by the '" +
-            GRAPHQL_TRANSPORT_WS + "' subprotocol";
-        return error(string `Invalid format: ${detail}`, code = 1003);
     }
 }
 
