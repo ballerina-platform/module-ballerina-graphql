@@ -50,7 +50,7 @@ isolated class ResultGenerator {
             closeStream(sourceStream);
             return;
         }
-        if nextValue !is () {
+        if nextValue != () {
             any|error resultValue = nextValue is error ? nextValue : nextValue.value;
             OutputObject outputObject = self.engine.getResult(self.node, self.context, resultValue);
             self.context.clearDataLoadersCachesAndPlaceholders();
