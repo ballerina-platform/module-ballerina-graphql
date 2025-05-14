@@ -50,8 +50,8 @@ public class Lexer {
     }
 
     isolated function readNextToken() returns Token|SyntaxError {
-        string:Char? char = self.charReader.peek();
-        if char is () {
+        string? char = self.charReader.peek();
+        if char == () {
             return {
                 kind: T_EOF,
                 value: "",
@@ -72,14 +72,14 @@ public class Lexer {
         }
     }
 
-    isolated function readSeparatorToken(string:Char char) returns Token? {
+    isolated function readSeparatorToken(string char) returns Token? {
         Location location = self.currentLocation.clone();
         _ = self.readNextChar();
         TokenType kind = getTokenType(char);
         return getToken(char, kind, location);
     }
 
-    isolated function readSpecialCharacterToken(string:Char char) returns Token {
+    isolated function readSpecialCharacterToken(string char) returns Token {
         Location location = self.currentLocation.clone();
         _ = self.readNextChar();
         TokenType kind = getTokenType(char);
@@ -99,9 +99,9 @@ public class Lexer {
         Location location = self.currentLocation.clone();
         _ = self.readNextChar(); // Consume first double quote character
 
-        string:Char? char = self.charReader.peek();
+        string? char = self.charReader.peek();
         boolean isEscaped = false;
-        while char is string:Char {
+        while char is string {
             if char is LineTerminator {
                 break;
             } else if char == DOUBLE_QUOTE && !isEscaped {
@@ -127,13 +127,13 @@ public class Lexer {
         string line = "";
         self.consumeIgnoreChars(3); // Consume first three double quote characters
 
-        string:Char? currentChar = self.charReader.peek();
+        string? currentChar = self.charReader.peek();
         boolean isEscaped = false;
 
-        while currentChar !is () {
+        while currentChar != () {
             if currentChar == DOUBLE_QUOTE && !isEscaped {
                 if self.isTripleQuotedString() {
-                    self.consumeIgnoreChars(3); // Cosume last three double quote characters
+                    self.consumeIgnoreChars(3); // Consume last three double quote characters
                     lines.push(line);
                     break;
                 }
@@ -152,7 +152,7 @@ public class Lexer {
             currentChar = self.charReader.peek();
         }
 
-        if currentChar is () {
+        if currentChar == () {
             string message = "Syntax Error: Unterminated string.";
             return error UnterminatedStringError(message, line = self.currentLocation.line,
                                                  column = self.currentLocation.column);
@@ -175,7 +175,7 @@ public class Lexer {
         string formatted = "";
         foreach string line in lines {
             int indent = self.getLeadingWhiteSpaceCount(line);
-            if indent < line.length() && (commonIndent is () || indent < commonIndent) {
+            if indent < line.length() && (commonIndent == () || indent < commonIndent) {
                 commonIndent = indent;
             }
         }
@@ -209,12 +209,12 @@ public class Lexer {
         return i;
     }
 
-    isolated function readNumericLiteral(string:Char firstChar) returns Token|SyntaxError {
+    isolated function readNumericLiteral(string firstChar) returns Token|SyntaxError {
         Location location = self.currentLocation.clone();
         string numeral = firstChar; // Passing first char to handle negative numbers.
         _ = self.readNextChar(); // Consume first char
-        string:Char? character = self.charReader.peek();
-        while character !is () {
+        string? character = self.charReader.peek();
+        while character != () {
             if character is Digit {
                 numeral += character;
             } else if character == DOT || character is Exp {
@@ -233,7 +233,7 @@ public class Lexer {
         return getToken(number, T_INT, location);
     }
 
-    isolated function readFloatLiteral(string initialNumber, string:Char separator, Location location)
+    isolated function readFloatLiteral(string initialNumber, string separator, Location location)
     returns Token|SyntaxError {
         _ = self.readNextChar(); // Consume the separator character
         boolean isExpExpected = separator == DOT;
@@ -241,8 +241,8 @@ public class Lexer {
         boolean isDigitExpected = true;
 
         string numeral = initialNumber + separator;
-        string:Char? value = self.charReader.peek();
-        while value !is () {
+        string? value = self.charReader.peek();
+        while value != () {
             if value is Digit {
                 numeral += value;
                 isDashExpected = false;
@@ -272,9 +272,9 @@ public class Lexer {
     isolated function readCommentToken() returns Token|SyntaxError {
         Location location = self.currentLocation.clone();
         _ = self.readNextChar(); // Ignore first hash character
-        string:Char? character = self.charReader.peek();
+        string? character = self.charReader.peek();
         string word = "#";
-        while character !is () {
+        while character != () {
             if character is LineTerminator {
                 break;
             } else {
@@ -292,11 +292,11 @@ public class Lexer {
         int i = 0;
         while i < 3 {
             i += 1;
-            string:Char? c = self.readNextChar();
-            if c is DOT {
+            string? c = self.readNextChar();
+            if c == DOT {
                 ellipsis += c;
                 continue;
-            } else if c is () {
+            } else if c == () {
                 string message = string `Syntax Error: Cannot parse the unexpected character "${EOF}".`;
                 return error InvalidTokenError(message, line = self.currentLocation.line,
                                                column = self.currentLocation.column);
@@ -309,13 +309,13 @@ public class Lexer {
         return getToken(ELLIPSIS, T_ELLIPSIS, location);
     }
 
-    isolated function readIdentifierToken(string:Char firstChar) returns Token|SyntaxError {
+    isolated function readIdentifierToken(string firstChar) returns Token|SyntaxError {
         Location location = self.currentLocation.clone();
         _ = self.readNextChar();
         check validateFirstChar(firstChar, self.currentLocation);
         string word = firstChar;
-        string:Char? char = self.charReader.peek();
-        while char !is () {
+        string? char = self.charReader.peek();
+        while char != () {
             if char is SpecialCharacter {
                 break;
             } else if char is Separator {
@@ -345,7 +345,7 @@ public class Lexer {
         };
     }
 
-    isolated function updateLocation(string:Char? char) {
+    isolated function updateLocation(string? char) {
         if char is LineTerminator {
             self.currentLocation.line += 1;
             self.currentLocation.column = 1;
@@ -354,59 +354,80 @@ public class Lexer {
         }
     }
 
-    isolated function readNextChar() returns string:Char? {
-        string:Char? char = self.charReader.read();
+    isolated function readNextChar() returns string? {
+        string? char = self.charReader.read();
         self.updateLocation(char);
         return char;
     }
 }
 
-isolated function getTokenType(string:Char? value) returns TokenType {
-    if value is () {
-        return T_EOF;
-    } else if value == OPEN_BRACE {
-        return T_OPEN_BRACE;
-    } else if value == CLOSE_BRACE {
-        return T_CLOSE_BRACE;
-    } else if value == OPEN_PARENTHESES {
-        return T_OPEN_PARENTHESES;
-    } else if value == CLOSE_PARENTHESES {
-        return T_CLOSE_PARENTHESES;
-    } else if value == DOLLAR {
-        return T_DOLLAR;
-    } else if value == EQUAL {
-        return T_EQUAL;
-    } else if value == COLON {
-        return T_COLON;
-    } else if value == COMMA {
-        return T_COMMA;
-    } else if value is WhiteSpace {
-        return T_WHITE_SPACE;
-    } else if value is LineTerminator {
-        return T_NEW_LINE;
-    } else if value == DOUBLE_QUOTE {
-        return T_STRING;
-    } else if value is Digit {
-        return T_INT;
-    } else if value == HASH {
-        return T_COMMENT;
-    } else if value == EXCLAMATION {
-        return T_EXCLAMATION;
-    } else if value == OPEN_BRACKET {
-        return T_OPEN_BRACKET;
-    } else if value == CLOSE_BRACKET {
-        return T_CLOSE_BRACKET;
-    } else if value == AT {
-        return T_AT;
+isolated function getTokenType(string? value) returns TokenType {
+    match value {
+        () => {
+            return T_EOF;
+        }
+        OPEN_BRACE => {
+            return T_OPEN_BRACE;
+        }
+        CLOSE_BRACE => {
+            return T_CLOSE_BRACE;
+        }
+        OPEN_PARENTHESES => {
+            return T_OPEN_PARENTHESES;
+        }
+        CLOSE_PARENTHESES => {
+            return T_CLOSE_PARENTHESES;
+        }
+        DOLLAR => {
+            return T_DOLLAR;
+        }
+        EQUAL => {
+            return T_EQUAL;
+        }
+        COLON => {
+            return T_COLON;
+        }
+        COMMA => {
+            return T_COMMA;
+        }
+        SPACE|TAB => {
+            return T_WHITE_SPACE;
+        }
+        NEW_LINE|LINE_RETURN => {
+            return T_NEW_LINE;
+        }
+        DOUBLE_QUOTE => {
+            return T_STRING;
+        }
+        ZERO|ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE => {
+            return T_INT;
+        }
+        HASH => {
+            return T_COMMENT;
+        }
+        EXCLAMATION => {
+            return T_EXCLAMATION;
+        }
+        OPEN_BRACKET => {
+            return T_OPEN_BRACKET;
+        }
+        CLOSE_BRACKET => {
+            return T_CLOSE_BRACKET;
+        }
+        AT => {
+            return T_AT;
+        }
+        _ => {
+            return T_IDENTIFIER;
+        }
     }
-    return T_IDENTIFIER;
 }
 
 isolated function getToken(Scalar value, TokenType kind, Location location) returns Token {
     return {
-        kind: kind,
-        value: value,
-        location: location
+        kind,
+        value,
+        location
     };
 }
 
