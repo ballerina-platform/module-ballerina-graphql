@@ -39,7 +39,7 @@ class PongMessageHandlerJob {
     }
 
     public isolated function schedule() {
-        time:Civil startTime = time:utcToCivil(time:utcAddSeconds(time:utcNow(), PONG_MESSAGE_HANDLER_SCHEDULE_INTERVAL));
+        time:Civil startTime = time:utcToCivil(time:utcAddSeconds(time:utcNow(), MESSAGE_SCHEDULE_INITIAL_DELAY + PONG_MESSAGE_HANDLER_SCHEDULE_INTERVAL));
         task:JobId|error id = task:scheduleJobRecurByFrequency(self, PONG_MESSAGE_HANDLER_SCHEDULE_INTERVAL, startTime = startTime);
         if id is error {
             return logError("Failed to schedule PongMessageHandlerJob", id);

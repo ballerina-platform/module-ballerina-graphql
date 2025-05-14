@@ -25,6 +25,7 @@ import io.ballerina.runtime.api.types.TypeTags;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BObject;
+import io.ballerina.runtime.api.values.BStream;
 import io.ballerina.runtime.api.values.BString;
 
 import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
@@ -33,13 +34,6 @@ import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
  * This class contains utility methods for the Ballerina GraphQL module.
  */
 public class Utils {
-    private Utils() {
-    }
-
-    // Inter-op function names
-    private static final String EXECUTE_RESOURCE_FUNCTION = "executeQueryResource";
-    private static final String EXECUTE_INTERCEPTOR_FUNCTION = "executeInterceptor";
-
     // Internal type names
     public static final String ERROR_TYPE = "Error";
     public static final String CONTEXT_OBJECT = "Context";
@@ -47,9 +41,15 @@ public class Utils {
     public static final String DATA_LOADER_OBJECT = "DataLoader";
     public static final String UPLOAD = "Upload";
     public static final BString INTERNAL_NODE = StringUtils.fromString("internalNode");
-
     public static final String SUBGRAPH_SUB_MODULE_NAME = "graphql.subgraph";
     public static final String PACKAGE_ORG = "ballerina";
+    public static final String SOURCE_STREAM = "sourceStream";
+    // Inter-op function names
+    private static final String EXECUTE_RESOURCE_FUNCTION = "executeQueryResource";
+    private static final String EXECUTE_INTERCEPTOR_FUNCTION = "executeInterceptor";
+
+    private Utils() {
+    }
 
     public static BError createError(String message, String errorTypeName) {
         return ErrorCreator.createError(getModule(), errorTypeName, StringUtils.fromString(message), null, null);
@@ -95,6 +95,18 @@ public class Utils {
 
     public static BString getHashCode(BObject object) {
         return StringUtils.fromString(Integer.toString(object.hashCode()));
+    }
+
+    public static void setSourceStream(BObject bObject, BStream sourceStream) {
+        bObject.addNativeData(SOURCE_STREAM, sourceStream);
+    }
+
+    public static Object getSourceStream(BObject bObject) {
+        Object streamObj = bObject.getNativeData(SOURCE_STREAM);
+        if (streamObj instanceof BStream bStream) {
+            return bStream;
+        }
+        return ErrorCreator.createError(StringUtils.fromString(SOURCE_STREAM + " not found"));
     }
 
     public static void handleFailureAndExit(BError bError) {

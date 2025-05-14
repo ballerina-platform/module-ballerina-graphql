@@ -14,27 +14,29 @@
 // specific language governing permissions and limitations
 // under the License.
 
-type ConnectionInitMessage record {|
+import ballerina/websocket;
+
+type ConnectionInit record {|
     WS_INIT 'type;
     map<json> payload?;
 |};
 
-type ConnectionAckMessage record {|
+type ConnectionAck record {|
     WS_ACK 'type;
     map<json> payload?;
 |};
 
-type PingMessage record {|
+type Ping record {|
     WS_PING 'type;
     map<json> payload?;
 |};
 
-type PongMessage record {|
+type Pong record {|
     WS_PONG 'type;
     map<json> payload?;
 |};
 
-type SubscribeMessage record {|
+type Subscribe record {|
     WS_SUBSCRIBE 'type;
     string id;
     record {|
@@ -45,7 +47,7 @@ type SubscribeMessage record {|
     |} payload;
 |};
 
-type NextMessage record {|
+type Next record {|
     WS_NEXT 'type;
     string id;
     json payload;
@@ -57,10 +59,38 @@ type ErrorMessage record {|
     json payload;
 |};
 
-type CompleteMessage record {|
+type Complete record {|
     WS_COMPLETE 'type;
     string id;
 |};
 
-type InboundMessage ConnectionInitMessage|PingMessage|PongMessage|SubscribeMessage|CompleteMessage;
-type OutboundMessage ConnectionAckMessage|PingMessage|PongMessage|NextMessage|ErrorMessage|CompleteMessage;
+type ConnectionInitialisationTimeout record {|
+    *websocket:CustomCloseFrame;
+    4408 status = 4408;
+    string reason = "Connection initialisation timeout";
+|};
+
+type TooManyInitializationRequests record {|
+    *websocket:CustomCloseFrame;
+    4429 status = 4429;
+    string reason = "Too many initialisation requests";
+|};
+
+type Unauthorized record {|
+    *websocket:CustomCloseFrame;
+    4401 status = 4401;
+    string reason = "Unauthorized";
+|};
+
+type SubscriberAlreadyExists record {|
+    *websocket:CustomCloseFrame;
+    4409 status = 4409;
+|};
+
+public final readonly & ConnectionInitialisationTimeout CONNECTION_INITIALISATION_TIMEOUT = {};
+public final readonly & TooManyInitializationRequests TOO_MANY_INITIALIZATION_REQUESTS = {};
+public final readonly & Unauthorized UNAUTHORIZED = {};
+
+type InboundMessage ConnectionInit|Ping|Pong|Subscribe|Complete;
+
+type OutboundMessage ConnectionAck|Ping|Pong|Next|ErrorMessage|Complete;
