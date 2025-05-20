@@ -62,7 +62,7 @@ isolated function getResponseFromJsonPayload(Engine engine, Context context, htt
     }
     json|error variables = payload.variables;
     variables = variables is error ? () : variables;
-    if variables is map<json> || variables is () {
+    if variables is map<json> || variables == () {
         return getResponseFromQuery(engine, document, getOperationName(payload), variables, context, fileInfo);
     }
     return createResponse("Invalid format in request parameter: variables", http:STATUS_BAD_REQUEST);
@@ -74,7 +74,7 @@ isolated function getResponseFromQuery(Engine engine, string document, string? o
         context,
         operationName: OPERATION_VALIDATION
     };
-    addTracingInfomation(traceObserverContext);
+    addTracingInformation(traceObserverContext);
     parser:OperationNode|OutputObject validationResult = engine.validate(document, operationName, variables);
     http:Response response;
     if validationResult is parser:OperationNode {
@@ -85,7 +85,7 @@ isolated function getResponseFromQuery(Engine engine, string document, string? o
             operationType: validationResult.getKind(),
             operationName: OPERATION_EXECUTION
         };
-        addTracingInfomation(traceObserverContext);
+        addTracingInformation(traceObserverContext);
         response = getResponseFromExecution(engine, validationResult, context);
         stopTracing(context);
     } else {
@@ -445,7 +445,7 @@ returns [string, string] {
         secureSocket = listenTo.getConfig().secureSocket;
     }
 
-    if secureSocket is () {
+    if secureSocket == () {
         return [string `http://${LOCALHOST}:${port}`, string `ws://${LOCALHOST}:${port}`];
     }
     return [string `https://${LOCALHOST}:${port}`, string `wss://${LOCALHOST}:${port}`];

@@ -42,7 +42,7 @@ class PingMessageJob {
 
     public isolated function unschedule() returns error? {
         task:JobId? id = self.id;
-        if id is () {
+        if id == () {
             return;
         }
         check task:unscheduleJob(id);
@@ -53,7 +53,7 @@ class PingMessageJob {
         do {
             lock {
                 task:JobId? id = self.id;
-                if id is () {
+                if id == () {
                     return;
                 }
                 if !self.caller.isOpen() {

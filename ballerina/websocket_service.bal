@@ -35,7 +35,7 @@ isolated service class WsService {
         self.context = context;
     }
 
-    isolated remote function onIdleTimeout() returns ConnectionInitialisationTimeout? {
+    isolated remote function onIdleTimeout() returns ConnectionInitializationTimeout? {
         lock {
             if !self.initiatedConnection {
                 return CONNECTION_INITIALISATION_TIMEOUT;
@@ -57,7 +57,7 @@ isolated service class WsService {
     isolated remote function onPongMessage(Pong pong) {
         lock {
             PongMessageHandlerJob? handler = self.pongMessageHandler;
-            if handler !is () {
+            if handler != () {
                 handler.setPongMessageReceived();
             }
         }
@@ -116,7 +116,7 @@ isolated service class WsService {
 
     private isolated function startSendingPingMessages(websocket:Caller caller) {
         lock {
-            if self.pingMessageHandler !is () || !self.initiatedConnection {
+            if self.pingMessageHandler != () || !self.initiatedConnection {
                 return;
             }
             PingMessageJob job = new PingMessageJob(caller);
