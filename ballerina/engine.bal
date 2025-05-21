@@ -359,7 +359,7 @@ isolated class Engine {
         }
 
         (readonly & Interceptor)? interceptor = 'field.getNextInterceptor(self);
-        readonly & __Type fieldType = 'field.getFieldType();
+        __Type fieldType = 'field.getFieldType();
         ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone(),
             'field.getCacheConfig(), 'field.getParentArgHashes()
         );
@@ -476,8 +476,8 @@ isolated class Engine {
             map<anydata> result) {
         string[] resourcePath = 'field.getResourcePath();
         readonly & (string|int)[] path = [...'field.getPath(), fieldNode.getName()];
-        readonly & __Type parentType = 'field.getFieldType();
-        readonly & __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
+        __Type parentType = 'field.getFieldType();
+        __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
         Field selectionField = new (fieldNode, fieldType, parentType, 'field.getServiceObject(), path = path,
             resourcePath = resourcePath
         );

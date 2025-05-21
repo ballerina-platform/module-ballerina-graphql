@@ -21,7 +21,7 @@ import graphql.parser;
     groups: ["field", "getSubfields"],
     dataProvider: fieldObjectProvider1
 }
-function testGetSubfields1(string fileName, readonly & __Type fieldType, string[] path) returns error? {
+function testGetSubfields1(string fileName, __Type fieldType, string[] path) returns error? {
     parser:FieldNode[] fields = check getFieldNodesFromDocumentFile(fileName);
     test:assertTrue(fields.length() == 1);
     Field 'field = getField(fields[0], fieldType, AstronautQuery, [path[0]]);
@@ -51,7 +51,7 @@ function fieldObjectProvider1() returns [string, __Type, string[]][] {
     groups: ["field", "getSubfields"],
     dataProvider: fieldObjectProvider2
 }
-function testGetSubfields2(string fileName, readonly & __Type fieldType, string[] path) returns error? {
+function testGetSubfields2(string fileName, __Type fieldType, string[] path) returns error? {
     parser:FieldNode[] fields = check getFieldNodesFromDocumentFile(fileName);
     test:assertTrue(fields.length() == 1);
     Field 'field = getField(fields[0], fieldType, AstronautQuery, [path[0]]);
@@ -85,7 +85,7 @@ function fieldObjectProvider2() returns [string, __Type, string[]][] {
     groups: ["field", "qualifiedName"],
     dataProvider: fieldObjectProvider3
 }
-function testQualifiedName(string fileName, readonly & __Type fieldType) returns error? {
+function testQualifiedName(string fileName, __Type fieldType) returns error? {
     parser:FieldNode[] fields = check getFieldNodesFromDocumentFile(fileName);
     test:assertTrue(fields.length() == 1);
     Field 'field = getField(fields[0], fieldType, AstronautQuery, []);

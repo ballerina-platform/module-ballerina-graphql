@@ -28,13 +28,12 @@ isolated class ResponseGenerator {
 
     private final string functionNameGetFragmentFromService = "";
 
-    isolated function init(Engine engine, Context context, readonly & __Type fieldType,
-            readonly & (string|int)[] path = [], ServerCacheConfig? cacheConfig = (),
-            readonly & string[] parentArgHashes = []) {
+    isolated function init(Engine engine, Context context, __Type fieldType, readonly & (string|int)[] path = [],
+            ServerCacheConfig? cacheConfig = (), readonly & string[] parentArgHashes = []) {
         self.engine = engine;
         self.context = context;
         self.path = path;
-        self.fieldType = fieldType;
+        self.fieldType = fieldType.cloneReadOnly();
         self.cacheConfig = cacheConfig;
         self.parentArgHashes = parentArgHashes;
     }
@@ -82,8 +81,8 @@ isolated class ResponseGenerator {
             }
         } else if parentValue is service object {} {
             readonly & (string|int)[] clonedPath = [...self.path, ...path, fieldNode.getAlias()];
-            readonly & __Type parentType = self.fieldType;
-            readonly & __Type fieldType = getFieldTypeFromParentType(parentType, self.engine.getSchema().types, fieldNode);
+            __Type parentType = self.fieldType;
+            __Type fieldType = getFieldTypeFromParentType(parentType, self.engine.getSchema().types, fieldNode);
             Field 'field = new (fieldNode, fieldType, parentType, parentValue, clonedPath,
                 cacheConfig = self.cacheConfig, parentArgHashes = self.parentArgHashes
             );
@@ -147,13 +146,13 @@ isolated class ResponseGenerator {
     }
 
     isolated function getRecordResult(map<any> parentValue, parser:FieldNode fieldNode, (string|int)[] path = [])
-        returns anydata {
+returns anydata {
         if fieldNode.getName() == TYPE_NAME_FIELD {
             return getTypeNameFromValue(parentValue);
         }
         any fieldValue = parentValue.hasKey(fieldNode.getName()) ? parentValue.get(fieldNode.getName()) : ();
-        readonly & __Type parentType = self.fieldType;
-        readonly & __Type fieldType = getFieldTypeFromParentType(parentType, self.engine.getSchema().types, fieldNode);
+        __Type parentType = self.fieldType;
+        __Type fieldType = getFieldTypeFromParentType(parentType, self.engine.getSchema().types, fieldNode);
         boolean isAlreadyCached = isRecordWithNoOptionalFields(parentValue);
         readonly & (string|int)[] clonedPath = [...self.path, ...path, fieldNode.getAlias()];
         Field 'field = new (fieldNode, fieldType, parentType, path = clonedPath, fieldValue = fieldValue,
@@ -308,11 +307,11 @@ isolated class ResponseGenerator {
 
     private isolated function isPossibleTypeOfInterface(string interfaceName,
             string implementedTypeName) returns boolean {
-        readonly & __Type? interfaceType = getTypeFromTypeArray(self.engine.getSchema().types, interfaceName);
+        __Type? interfaceType = getTypeFromTypeArray(self.engine.getSchema().types, interfaceName);
         if interfaceType == () || interfaceType.kind != INTERFACE {
             return false;
         }
-        readonly & __Type[]? possibleTypes = interfaceType.possibleTypes;
+        __Type[]? possibleTypes = interfaceType.possibleTypes;
         if possibleTypes == () {
             return false;
         }
