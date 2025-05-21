@@ -42,10 +42,13 @@ isolated class ExecutorVisitor {
         if operationNode.getName() != parser:ANONYMOUS_OPERATION {
             path.push(operationNode.getName());
         }
-        service object {} serviceObject = self.engine.getService();
+        service object {} serviceObject;
+        lock {
+            serviceObject = self.engine.getService();
+        }
         if operationNode.getKind() != parser:OPERATION_MUTATION && serviceObject is isolated service object {} {
-            readonly & map<anydata> dataMap = {[OPERATION_TYPE] : operationNode.getKind(), [PATH] : path.cloneReadOnly()};
-            return self.visitSelectionsParallelly(operationNode, dataMap);
+            map<anydata> dataMap = {[OPERATION_TYPE] : operationNode.getKind(), [PATH] : path};
+            return self.visitSelectionsParallelly(operationNode, dataMap.cloneReadOnly());
         }
         foreach parser:SelectionNode selection in operationNode.getSelections() {
             if selection is parser:FieldNode {
@@ -88,8 +91,8 @@ isolated class ExecutorVisitor {
         parser:RootOperationType operationType = self.getOperationTypeFromData(data);
         string[] path = self.getSelectionPathFromData(data);
         if operationType != parser:OPERATION_MUTATION {
-            readonly & map<anydata> dataMap = {[OPERATION_TYPE] : operationType, [PATH] : path.cloneReadOnly()};
-            return self.visitSelectionsParallelly(fragmentNode, dataMap);
+            map<anydata> dataMap = {[OPERATION_TYPE] : operationType, [PATH] : path};
+            return self.visitSelectionsParallelly(fragmentNode, dataMap.cloneReadOnly());
         }
         foreach parser:SelectionNode selection in fragmentNode.getSelections() {
             if selection is parser:FieldNode {
@@ -106,16 +109,25 @@ isolated class ExecutorVisitor {
     }
 
     isolated function execute(parser:FieldNode fieldNode, parser:RootOperationType operationType) {
-        any|error result = self.getResult();
-        Engine engine = self.engine;
-        Context context = self.context;
-        Field 'field = getFieldObject(fieldNode, operationType, self.schema, engine, result);
+        any|error result;
+        __Schema schema = self.schema;
+        Engine engine;
+        Context context;
+        lock {
+            result = self.getResult();
+            engine = self.engine;
+            context = self.context;
+        }
+        Field 'field = getFieldObject(fieldNode, operationType, schema, engine, result);
         anydata resolvedResult = engine.resolve(context, 'field);
         self.addData(fieldNode.getAlias(), resolvedResult is ErrorDetail ? () : resolvedResult);
     }
 
     isolated function getOutput() returns OutputObject {
-        Context context = self.context;
+        Context context;
+        lock {
+            context = self.context;
+        }
         Data data = self.getDataMap();
         ErrorDetail[] errors = context.getErrors();
         if !self.context.hasPlaceholders() {
@@ -137,13 +149,13 @@ isolated class ExecutorVisitor {
             if selection is parser:FieldNode {
                 path.push(selection.getName());
             }
-            readonly & map<anydata> dataMap = {[OPERATION_TYPE] : operationType, [PATH] : path.cloneReadOnly()};
-            future<()> 'future = start selection.accept(self, dataMap);
+            map<anydata> dataMap = {[OPERATION_TYPE] : operationType, [PATH] : path};
+            future<()> 'future = start selection.accept(self, dataMap.cloneReadOnly());
             selectionFutures.push([selection, 'future]);
         }
         foreach [parser:SelectionNode, future<()>] [selection, 'future] in selectionFutures {
             error? err = wait 'future;
-            if err == () {
+            if err is () {
                 continue;
             }
             if selection is parser:FieldNode {
@@ -152,9 +164,11 @@ isolated class ExecutorVisitor {
                 ErrorDetail errorDetail = {
                     message: err.message(),
                     locations: [selection.getLocation()],
-                    path
+                    path: path
                 };
-                self.context.addError(errorDetail);
+                lock {
+                    self.context.addError(errorDetail);
+                }
             }
         }
     }

@@ -61,7 +61,7 @@ public class Parser {
 
     isolated function parseOperationWithType(RootOperationType operationType) returns Error? {
         Token token = check self.readNextNonSeparatorToken();
-        Location location = token.location;
+        Location location = token.location.clone();
         token = check self.peekNextNonSeparatorToken();
         string operationName = check getOperationNameFromToken(self);
         token = check self.peekNextNonSeparatorToken();
@@ -76,22 +76,22 @@ public class Parser {
 
     isolated function parseFragment() returns Error? {
         Token token = check self.readNextNonSeparatorToken(); // fragment keyword already validated
-        Location location = token.location;
+        Location location = token.location.clone();
 
         token = check self.readNextNonSeparatorToken();
-        string name = check getIdentifierTokenValue(token);
+        string name = check getIdentifierTokenvalue(token);
         if name == ON {
             return getUnexpectedTokenError(token);
         }
 
         token = check self.readNextNonSeparatorToken();
-        string keyword = check getIdentifierTokenValue(token);
+        string keyword = check getIdentifierTokenvalue(token);
         if keyword != ON {
             return getExpectedCharError(token, ON);
         }
 
         token = check self.readNextNonSeparatorToken();
-        string onType = check getIdentifierTokenValue(token);
+        string onType = check getIdentifierTokenvalue(token);
 
         DirectiveNode[] directiveNodes = check self.parseDirectives(FRAGMENT_DEFINITION);
         token = check self.peekNextNonSeparatorToken();
@@ -124,10 +124,10 @@ public class Parser {
             if token.kind != T_DOLLAR {
                 return getExpectedCharError(token, DOLLAR);
             }
-            Location varDefinitionLocation = token.location;
+            Location varDefinitionLocation = token.location.clone();
             token = check self.readNextNonSeparatorToken();
-            string name = check getIdentifierTokenValue(token);
-            Location varLocation = token.location;
+            string name = check getIdentifierTokenvalue(token);
+            Location varLocation = token.location.clone();
             token = check self.readNextNonSeparatorToken();
             if token.kind != T_COLON {
                 return getExpectedCharError(token, COLON);
@@ -187,7 +187,7 @@ public class Parser {
         Token token = check self.readNextNonSeparatorToken(); // Consume Ellipsis token
         Location spreadLocation = token.location;
         token = check self.peekNextNonSeparatorToken();
-        string keyword = check getIdentifierTokenValue(token);
+        string keyword = check getIdentifierTokenvalue(token);
         if keyword == ON {
             check self.addInlineFragmentToNode(parentNodeName, spreadLocation, selectionNodes);
         } else {
@@ -197,7 +197,7 @@ public class Parser {
 
     isolated function parseField() returns FieldNode|Error {
         Token token = check self.readNextNonSeparatorToken();
-        string alias = check getIdentifierTokenValue(token);
+        string alias = check getIdentifierTokenvalue(token);
         string name = check self.getNameWhenAliasPresent(alias);
         Location fieldNodeLocation = token.location;
         ArgumentNode[] argumentNodes = check self.parseFieldArguments();
@@ -212,7 +212,7 @@ public class Parser {
 
     isolated function addNamedFragmentToNode(Location spreadLocation, SelectionNode[] selectionNodes) returns Error? {
         Token token = check self.readNextNonSeparatorToken();
-        string fragmentName = check getIdentifierTokenValue(token);
+        string fragmentName = check getIdentifierTokenvalue(token);
         DirectiveNode[] directiveNodes = check self.parseDirectives(FRAGMENT_SPREAD);
         FragmentNode fragmentNode = new (fragmentName, token.location, false, spreadLocation,
                                          directives = directiveNodes);
@@ -224,7 +224,7 @@ public class Parser {
         Token token = check self.readNextNonSeparatorToken(); //Consume on keyword
         token = check self.readNextNonSeparatorToken();
         Location location = token.location;
-        string onType = check getIdentifierTokenValue(token);
+        string onType = check getIdentifierTokenvalue(token);
         string fragmentName = string `${parentNodeName}_${onType}`;
         DirectiveNode[] directiveNodes = check self.parseDirectives(INLINE_FRAGMENT);
         token = check self.peekNextNonSeparatorToken();
@@ -247,8 +247,8 @@ public class Parser {
         token = check self.readNextNonSeparatorToken();
         while token.kind != T_CLOSE_PARENTHESES {
             token = check self.readNextNonSeparatorToken();
-            string name = check getIdentifierTokenValue(token);
-            Location location = token.location;
+            string name = check getIdentifierTokenvalue(token);
+            Location location = token.location.clone();
             token = check self.readNextNonSeparatorToken();
             if token.kind != T_COLON {
                 return getExpectedCharError(token, COLON);
@@ -280,9 +280,9 @@ public class Parser {
         }
         while token.kind == T_AT {
             token = check self.readNextNonSeparatorToken(); //consume @
-            Location location = token.location;
+            Location location = token.location.clone();
             token = check self.readNextNonSeparatorToken();
-            string name = check getIdentifierTokenValue(token);
+            string name = check getIdentifierTokenvalue(token);
             token = check self.peekNextNonSeparatorToken();
             ArgumentNode[] argumentNodes = [];
             if token.kind == T_OPEN_PARENTHESES {
@@ -300,8 +300,8 @@ public class Parser {
         ArgumentNode[] argumentNodes = [];
         while token.kind != T_CLOSE_PARENTHESES {
             token = check self.readNextNonSeparatorToken();
-            string varName = check getIdentifierTokenValue(token);
-            Location location = token.location;
+            string varName = check getIdentifierTokenvalue(token);
+            Location location = token.location.clone();
             token = check self.readNextNonSeparatorToken();
             if token.kind != T_COLON {
                 return getExpectedCharError(token, COLON);
@@ -348,8 +348,8 @@ public class Parser {
         if token.kind != T_CLOSE_BRACE {
             while token.kind != T_CLOSE_BRACE {
                 token = check self.readNextNonSeparatorToken();
-                string fieldName = check getIdentifierTokenValue(token);
-                Location fieldLocation = token.location;
+                string fieldName = check getIdentifierTokenvalue(token);
+                Location fieldLocation = token.location.clone();
                 if visitedFields.indexOf(fieldName) != () {
                     return getDuplicateFieldError(token);
                 }
@@ -374,7 +374,7 @@ public class Parser {
                         //input object fields with variable definitions
                         token = check self.readNextNonSeparatorToken();
                         token = check self.readNextNonSeparatorToken();
-                        string varName = check getIdentifierTokenValue(token);
+                        string varName = check getIdentifierTokenvalue(token);
                         ArgumentNode nestedVariableFields = new (fieldName, token.location, T_IDENTIFIER,
                                                                 isVarDef = true, variableName = varName);
                         fields.push(nestedVariableFields);
@@ -422,7 +422,7 @@ public class Parser {
                         //list with variables
                         token = check self.readNextNonSeparatorToken(); // consume dollar here
                         token = check self.readNextNonSeparatorToken();
-                        string varName = check getIdentifierTokenValue(token);
+                        string varName = check getIdentifierTokenvalue(token);
                         ArgumentNode variableValue = new (name, token.location, T_IDENTIFIER, isVarDef = true,
                                                           variableName = varName);
                         listMembers.push(variableValue);
@@ -453,7 +453,7 @@ public class Parser {
             if isAllowVariableValue {
                 //scalar type argument with variable definition
                 token = check self.readNextNonSeparatorToken();
-                string varName = check getIdentifierTokenValue(token);
+                string varName = check getIdentifierTokenvalue(token);
                 ArgumentType argType = <ArgumentType>token.kind;
                 return new (name, token.location, argType, true, token.location, variableName = varName);
             }
@@ -470,7 +470,7 @@ public class Parser {
         if token.kind == T_COLON {
             token = check self.readNextNonSeparatorToken(); // Read colon
             token = check self.readNextNonSeparatorToken();
-            return getIdentifierTokenValue(token);
+            return getIdentifierTokenvalue(token);
         }
         return alias;
     }
@@ -494,7 +494,7 @@ public class Parser {
                 return varType;
             }
         } else {
-            varType = check getIdentifierTokenValue(previousToken);
+            varType = check getIdentifierTokenvalue(previousToken);
             token = check self.peekNextNonSeparatorToken();
             if token.kind == T_EXCLAMATION {
                 token = check self.readNextNonSeparatorToken(); // Read exlamation
@@ -605,7 +605,7 @@ isolated function getOperationNameFromToken(Parser parser) returns string|Error 
     return getUnexpectedTokenError(token);
 }
 
-isolated function getIdentifierTokenValue(Token token) returns string|Error {
+isolated function getIdentifierTokenvalue(Token token) returns string|Error {
     if token.kind == T_IDENTIFIER {
         return <string>token.value;
     }

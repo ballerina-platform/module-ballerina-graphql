@@ -346,7 +346,7 @@ isolated class Engine {
                 string prefetchMethodName = getPrefetchMethodName(serviceObject, 'field)
                     ?: getDefaultPrefetchMethodName(fieldNode.getName());
                 if self.hasPrefetchMethod(serviceObject, prefetchMethodName) {
-                    addTracingInformation({
+                    addTracingInfomation({
                         context,
                         serviceName: prefetchMethodName,
                         operationType: 'field.getOperationType()
@@ -359,14 +359,14 @@ isolated class Engine {
         }
 
         (readonly & Interceptor)? interceptor = 'field.getNextInterceptor(self);
-        readonly & __Type fieldType = 'field.getFieldType();
+        __Type fieldType = 'field.getFieldType();
         ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone(),
             'field.getCacheConfig(), 'field.getParentArgHashes()
         );
         do {
             if interceptor is readonly & Interceptor {
                 string interceptorName = self.getInterceptorName(interceptor);
-                addTracingInformation({
+                addTracingInfomation({
                     context,
                     serviceName: interceptorName,
                     operationType: 'field.getOperationType()
@@ -380,7 +380,7 @@ isolated class Engine {
             parser:RootOperationType operationType = 'field.getOperationType();
             if 'field.isCacheEnabled() && 'field.getOperationType() == parser:OPERATION_QUERY {
                 string cacheName = string `${'field.getName()}.cache`;
-                addTracingInformation({context, serviceName: cacheName, operationType});
+                addTracingInfomation({context, serviceName: cacheName, operationType});
                 addFieldMetric('field);
                 string cacheKey = 'field.getCacheKey();
                 any|error cachedValue = self.getFromCache(cacheKey);
@@ -390,12 +390,12 @@ isolated class Engine {
                     fieldValue = check self.getFieldValue(context, 'field, responseGenerator);
                     decimal maxAge = 'field.getCacheMaxAge();
                     boolean alreadyCached = 'field.isAlreadyCached();
-                    if !alreadyCached && maxAge > 0d && fieldValue != () {
+                    if !alreadyCached && maxAge > 0d && fieldValue !is () {
                         _ = check self.addToCache(cacheKey, fieldValue, maxAge, alreadyCached);
                     }
                 }
             } else {
-                addTracingInformation({
+                addTracingInfomation({
                     context,
                     serviceName: 'field.getName(),
                     operationType
@@ -416,7 +416,7 @@ isolated class Engine {
     private isolated function getResultFromPrefetchMethodExecution(Context context, Field 'field,
             service object {} serviceObject, string prefetchMethodName) returns PlaceholderNode? {
         handle? prefetchMethodHandle = self.getMethod(serviceObject, prefetchMethodName);
-        if prefetchMethodHandle == () {
+        if prefetchMethodHandle is () {
             return ();
         }
         self.executePrefetchMethod(context, serviceObject, prefetchMethodHandle, 'field);
@@ -476,8 +476,8 @@ isolated class Engine {
             map<anydata> result) {
         string[] resourcePath = 'field.getResourcePath();
         readonly & (string|int)[] path = [...'field.getPath(), fieldNode.getName()];
-        readonly & __Type parentType = 'field.getFieldType();
-        readonly & __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
+        __Type parentType = 'field.getFieldType();
+        __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
         Field selectionField = new (fieldNode, fieldType, parentType, 'field.getServiceObject(), path = path,
             resourcePath = resourcePath
         );

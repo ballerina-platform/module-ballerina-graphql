@@ -16,35 +16,35 @@
 
 public class CharReader {
     private CharIterator iterator;
-    private string?[] buffer;
+    private string:Char?[] buffer;
 
     public isolated function init(string document) {
         self.iterator = document.iterator();
         self.buffer = [];
     }
 
-    public isolated function peek(int into = 0) returns string? {
+    public isolated function peek(int into = 0) returns string:Char? {
         if self.buffer.length() > into {
             return self.buffer[into];
         }
         int startIndex = self.buffer.length();
         foreach int i in startIndex ... into {
-            string? char = self.next();
+            string:Char? char = self.next();
             self.buffer.push(char);
         }
         return self.buffer[into];
     }
 
-    public isolated function read() returns string? {
+    public isolated function read() returns string:Char? {
         if self.buffer.length() > 0 {
             return self.buffer.shift();
         }
         return self.next();
     }
 
-    isolated function next() returns string? {
+    isolated function next() returns string:Char? {
         CharIteratorNode? next = self.iterator.next();
-        if next == () {
+        if next is () {
             return;
         }
         return next.value;

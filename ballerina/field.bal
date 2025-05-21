@@ -22,8 +22,8 @@ public class Field {
     private final parser:FieldNode internalNode;
     private final service object {}? serviceObject;
     private final any|error fieldValue;
-    private final readonly & __Type fieldType;
-    private final readonly & __Type parentType;
+    private final __Type fieldType;
+    private final __Type parentType;
     private final readonly & (string|int)[] path;
     private string[] resourcePath;
     private readonly & Interceptor[] fieldInterceptors;
@@ -35,7 +35,7 @@ public class Field {
     private final boolean alreadyCached;
     private int nextInterceptor = 0;
 
-    isolated function init(parser:FieldNode internalNode, readonly & __Type fieldType, readonly & __Type parentType,
+    isolated function init(parser:FieldNode internalNode, __Type fieldType, __Type parentType,
             service object {}? serviceObject = (), readonly & (string|int)[] path = [],
             parser:RootOperationType operationType = parser:OPERATION_QUERY, string[] resourcePath = [],
             any|error fieldValue = (), ServerCacheConfig? cacheConfig = (), readonly & string[] parentArgHashes = [],
@@ -136,7 +136,7 @@ public class Field {
         return self.resourcePath;
     }
 
-    isolated function getFieldType() returns readonly & __Type {
+    isolated function getFieldType() returns __Type {
         return self.fieldType;
     }
 
@@ -148,20 +148,20 @@ public class Field {
         return self.fieldValue;
     }
 
-    isolated function getFieldObjects(parser:SelectionNode selectionNode, readonly & __Type 'type) returns Field[] {
+    isolated function getFieldObjects(parser:SelectionNode selectionNode, __Type 'type) returns Field[] {
         string[] currentPath = self.path.'map((item) => item is int ? "@" : item);
         string[] unwrappedPath = getUnwrappedPath('type);
-        readonly & __Type parentType = getOfType('type);
+        __Type parentType = getOfType('type);
 
-        readonly & __Field[]? typeFields = parentType.fields;
-        if typeFields == () {
+        __Field[]? typeFields = parentType.fields;
+        if typeFields is () {
             return [];
         }
 
         Field[] result = [];
         foreach parser:SelectionNode selection in selectionNode.getSelections() {
             if selection is parser:FieldNode {
-                foreach readonly & __Field 'field in typeFields {
+                foreach __Field 'field in typeFields {
                     if 'field.name == selection.getName() {
                         result.push(new Field(selection, 'field.'type, parentType, (), [
                                 ...currentPath,

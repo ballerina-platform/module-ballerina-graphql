@@ -46,7 +46,7 @@ isolated function addObservabilityMetricsTags(string key, string value) {
     }
 }
 
-isolated function addTracingInformation(TraceObserverContext|TraceInformation traceInformation) {
+isolated function addTracingInfomation(TraceObserverContext|TraceInformation traceInformation) {
     if !tracingEnabled {
         return;
     }
@@ -61,7 +61,7 @@ isolated function addTracingInformation(TraceObserverContext|TraceInformation tr
 
 isolated function stopTracing(Context context, error? err = ()) {
     if tracingEnabled {
-        if err == () {
+        if err is () {
             stopObserverContext(context);
         } else {
             stopObserverContextWithError(context, err);

@@ -22,7 +22,7 @@ import ballerina/http;
 // Error messages
 const UNABLE_TO_PERFORM_DATA_BINDING = "Unable to perform data binding";
 
-isolated function getFieldNotFoundErrorMessageFromType(string fieldName, readonly & __Type rootType) returns string {
+isolated function getFieldNotFoundErrorMessageFromType(string fieldName, __Type rootType) returns string {
     string typeName = getTypeNameFromType(rootType);
     if rootType.kind == UNION {
         return getInvalidFieldOnUnionTypeError(fieldName, rootType);
@@ -47,7 +47,7 @@ returns string {
     return string`Unknown argument "${argName}" on field "${parentName}.${fieldName}".`;
 }
 
-isolated function getMissingSubfieldsErrorFromType(readonly & __Field 'field) returns string {
+isolated function getMissingSubfieldsErrorFromType(__Field 'field) returns string {
     string typeName = getTypeNameFromType('field.'type);
     return getMissingSubfieldsError('field.name, typeName);
 }
@@ -56,8 +56,8 @@ isolated function getMissingSubfieldsError(string fieldName, string typeName) re
     return string`Field "${fieldName}" of type "${typeName}" must have a selection of subfields. Did you mean "${fieldName} { ... }"?`;
 }
 
-isolated function getInvalidFieldOnUnionTypeError(string fieldName, readonly & __Type unionType) returns string {
-    readonly & __Type[] possibleTypes = <readonly & __Type[]>unionType?.possibleTypes;
+isolated function getInvalidFieldOnUnionTypeError(string fieldName, __Type unionType) returns string {
+    __Type[] possibleTypes = <__Type[]>unionType?.possibleTypes;
     string onTypes = string`"${getOfType(possibleTypes[0]).name.toString()}"`;
     foreach int i in 1...possibleTypes.length() - 1 {
         onTypes += string` or "${getOfType(possibleTypes[i]).name.toString()}"`;
@@ -93,7 +93,7 @@ isolated function getInvalidArgumentValueError(string listIndexOfError, string e
     if value is parser:ArgumentNode {
         string errorValue = getErrorValueInString(value);
         return string`${listIndexOfError}${expectedTypeName} cannot represent non ${expectedTypeName} value: ${errorValue}`;
-    } else if value == () {
+    } else if value is () {
         return string`${listIndexOfError}${expectedTypeName} cannot represent non ${expectedTypeName} value: null`;
     } else {
         return string`${listIndexOfError}${expectedTypeName} cannot represent non ${expectedTypeName} value: ${value}`;
@@ -174,9 +174,9 @@ isolated function getArgumentTypeKind(string argType) returns parser:ArgumentTyp
     }
 }
 
-isolated function getOfType(readonly & __Type schemaType) returns readonly & __Type {
-    readonly & __Type? ofType = schemaType?.ofType;
-    if ofType == () {
+isolated function getOfType(__Type schemaType) returns __Type {
+    __Type? ofType = schemaType?.ofType;
+    if ofType is () {
         return schemaType;
     } else {
         return getOfType(ofType);
@@ -192,7 +192,7 @@ isolated function getUnwrappedPath(__Type schemaType) returns string[] {
     return [];
 }
 
-isolated function getOfTypeName(readonly & __Type schemaType) returns string {
+isolated function getOfTypeName(__Type schemaType) returns string {
     return <string>getOfType(schemaType).name;
 }
 
@@ -278,11 +278,11 @@ isolated function getListElementError((string|int)[] path) returns string {
     return errorMsg;
 }
 
-isolated function getListMemberTypeFromType(__Type argType) returns readonly & __Type {
+isolated function getListMemberTypeFromType(__Type argType) returns __Type {
     if argType.kind == NON_NULL {
         return getListMemberTypeFromType((<__Type>argType?.ofType));
     }
-    return <readonly & __Type>argType?.ofType;
+    return <__Type>argType?.ofType;
 }
 
 isolated function getErrorValueInString(parser:ArgumentNode argNode, string errorValue = "") returns string {
@@ -313,7 +313,7 @@ isolated function getInputObjectErrorValueInString(parser:ArgumentValue[] argVal
                 inputFields = getErrorValueInString(value, inputFields);
             } else if fieldValue is string {
                 inputFields += string`${value.getName()}: "${fieldValue}"`;
-            } else if fieldValue == () {
+            } else if fieldValue is () {
                 inputFields += string`${value.getName()}: null`;
             } else if fieldValue is Scalar {
                 inputFields += string`${value.getName()}: ${fieldValue}`;
@@ -340,7 +340,7 @@ isolated function getListErrorValueInString(parser:ArgumentValue[] argValue, str
                 listItems = getErrorValueInString(value, listItems);
             } else if listItemValue is string {
                 listItems += string`"${listItemValue}"`;
-            } else if listItemValue == () {
+            } else if listItemValue is () {
                 listItems += "null";
             } else if listItemValue is Scalar {
                 listItems += string`${listItemValue}`;
@@ -359,7 +359,7 @@ isolated function getListErrorValueInString(parser:ArgumentValue[] argValue, str
 isolated function appendScalarValues(parser:ArgumentValue argValue, string errorValue = "") returns string {
     if argValue is Scalar {
         return string`${errorValue}${argValue}`;
-    } else if argValue == () {
+    } else if argValue is () {
         return string`${errorValue}null`;
     }
     return errorValue;
@@ -411,7 +411,7 @@ isolated function handleGraphqlErrorResponse(map<json> responseMap) returns Requ
         return error RequestError("GraphQL Client Error", errors);
     }
     json? data = (responseMap.hasKey("data")) ? responseMap.get("data") : ();
-    map<json>? extensions = (responseMap.hasKey("extensions")) ? (responseMap.get("extensions") == () ? () :
+    map<json>? extensions = (responseMap.hasKey("extensions")) ? (responseMap.get("extensions") is () ? () :
         <map<json>> responseMap.get("extensions")) : ();
     return error ServerError("GraphQL Server Error", errors = errors, data = data, extensions = extensions);
 }
@@ -460,28 +460,27 @@ isolated function performDataBindingWithErrors(typedesc<GenericResponseWithError
     return error PayloadBindingError(string `${UNABLE_TO_PERFORM_DATA_BINDING}, Invalid binding type.`, errors = ());
 }
 
-isolated function getFieldTypeFromParentType(readonly & __Type parentType, readonly & __Type[] typeArray,
-        parser:FieldNode fieldNode) returns readonly & __Type {
+isolated function getFieldTypeFromParentType(__Type parentType, __Type[] typeArray, parser:FieldNode fieldNode) returns __Type {
     __TypeKind typeKind = parentType.kind;
     if typeKind == NON_NULL {
-        return getFieldTypeFromParentType(unwrapNonNullType(parentType), typeArray, fieldNode);
+        return getFieldTypeFromParentType(unwrapNonNullype(parentType), typeArray, fieldNode);
     } else if typeKind == OBJECT {
-        readonly & __Field requiredFieldValue = <readonly & __Field>getRequiredFieldFromType(parentType, typeArray, fieldNode);
+        __Field requiredFieldValue = <__Field>getRequiredFieldFromType(parentType, typeArray, fieldNode);
         return requiredFieldValue.'type;
     } else if typeKind == LIST {
-        return getFieldTypeFromParentType(<readonly & __Type>parentType.ofType, typeArray, fieldNode);
+        return getFieldTypeFromParentType(<__Type>parentType.ofType, typeArray, fieldNode);
     } else if typeKind == UNION {
-        foreach readonly & __Type possibleType in <readonly & __Type[]>parentType.possibleTypes {
-            readonly & __Field? fieldValue = getRequiredFieldFromType(possibleType, typeArray, fieldNode);
+        foreach __Type possibleType in <__Type[]>parentType.possibleTypes {
+            __Field? fieldValue = getRequiredFieldFromType(possibleType, typeArray, fieldNode);
             if fieldValue is __Field {
                 return fieldValue.'type;
             }
         }
     } else if typeKind == INTERFACE {
-        readonly & __Field? requiredFieldValue = getRequiredFieldFromType(parentType, typeArray, fieldNode);
-        if requiredFieldValue == () {
-            foreach readonly & __Type possibleType in <readonly & __Type[]>parentType.possibleTypes {
-                readonly & __Field? fieldValue = getRequiredFieldFromType(possibleType, typeArray, fieldNode);
+        __Field? requiredFieldValue = getRequiredFieldFromType(parentType, typeArray, fieldNode);
+        if requiredFieldValue is () {
+            foreach __Type possibleType in <__Type[]>parentType.possibleTypes {
+                __Field? fieldValue = getRequiredFieldFromType(possibleType, typeArray, fieldNode);
                 if fieldValue is __Field {
                     return fieldValue.'type;
                 }
@@ -552,9 +551,9 @@ isolated function getValueArrayFromArgumentNode(parser:ArgumentNode argumentNode
     return valueArray;
 }
 
-isolated function getNullableFieldsFromType(readonly & __Type fieldType) returns string[] {
+isolated function getNullableFieldsFromType(__Type fieldType) returns string[] {
     string[] nullableFields = [];
-    __Field[]? fields = unwrapNonNullType(fieldType).fields;
+    __Field[]? fields = unwrapNonNullype(fieldType).fields;
     if fields is __Field[] {
         foreach __Field 'field in fields {
             if isNullableField('field.'type) {
