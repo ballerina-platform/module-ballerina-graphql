@@ -64,16 +64,16 @@ type Complete record {|
     string id;
 |};
 
-type ConnectionInitializationTimeout record {|
+type ConnectionInitialisationTimeout record {|
     *websocket:CustomCloseFrame;
     4408 status = 4408;
-    string reason = "Connection initialization timeout";
+    string reason = "Connection initialisation timeout";
 |};
 
 type TooManyInitializationRequests record {|
     *websocket:CustomCloseFrame;
     4429 status = 4429;
-    string reason = "Too many initialization requests";
+    string reason = "Too many initialisation requests";
 |};
 
 type Unauthorized record {|
@@ -87,7 +87,7 @@ type SubscriberAlreadyExists record {|
     4409 status = 4409;
 |};
 
-public final readonly & ConnectionInitializationTimeout CONNECTION_INITIALISATION_TIMEOUT = {};
+public final readonly & ConnectionInitialisationTimeout CONNECTION_INITIALISATION_TIMEOUT = {};
 public final readonly & TooManyInitializationRequests TOO_MANY_INITIALIZATION_REQUESTS = {};
 public final readonly & Unauthorized UNAUTHORIZED = {};
 

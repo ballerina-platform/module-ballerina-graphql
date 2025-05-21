@@ -23,7 +23,7 @@ import ballerina/oauth2;
 // Uses for declarative auth design, where the authentication decision is taken by reading the auth annotations
 // provided in service and the `Authorization` header of request.
 isolated function authenticateService(ListenerAuthConfig[]? authConfigs, http:Request req) returns http:Response? {
-    if authConfigs == () {
+    if authConfigs is () {
         return;
     }
     string|http:HeaderNotFoundError header = req.getHeader("Authorization");
@@ -62,7 +62,7 @@ isolated function tryAuthenticate(ListenerAuthConfig[] authConfig, string header
                 log:printDebug("Invalid configurations for 'Bearer' scheme.");
             }
         }
-        if authResult == () || authResult is http:Forbidden {
+        if authResult is () || authResult is http:Forbidden {
             return authResult;
         }
     }

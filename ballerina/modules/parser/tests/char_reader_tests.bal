@@ -22,7 +22,7 @@ import ballerina/test;
 isolated function testCharReaderForSimpleString() {
     string s = "Hello";
     CharReader reader = new (s);
-    string? c = reader.read();
+    string:Char? c = reader.read();
     string expectedChar = "H";
     test:assertEquals(c, expectedChar);
 
@@ -52,7 +52,7 @@ isolated function testCharReaderForSimpleString() {
 isolated function testCharReaderForEof() {
     string s = "";
     CharReader reader = new (s);
-    string? c = reader.read();
+    string:Char? c = reader.read();
     test:assertEquals(c, ());
 }
 
@@ -62,7 +62,7 @@ isolated function testCharReaderForEof() {
 isolated function testCharReaderForNewLine() {
     string s = "\n\n\n";
     CharReader reader = new (s);
-    string? c = reader.read();
+    string:Char? c = reader.read();
     c = reader.read();
     string expectedChar = "\n";
     test:assertEquals(c, expectedChar);

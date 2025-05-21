@@ -20,34 +20,21 @@ package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
-import io.ballerina.runtime.api.flags.TypeFlags;
 import io.ballerina.runtime.api.types.ArrayType;
 import io.ballerina.runtime.api.types.PredefinedTypes;
-import io.ballerina.runtime.api.types.Type;
-import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BArray;
-import io.ballerina.runtime.api.values.BIterator;
-import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BValue;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static io.ballerina.stdlib.graphql.runtime.utils.ModuleUtils.getModule;
 
 /**
  * This class provides native implementations of the Ballerina Context class.
  */
 public class Context {
-    private static final String ERRORS = "errors";
-    private static final BString ENGINE_FIELD = StringUtils.fromString("engine");
-    private static final String ERROR_DETAIL_TYPE = "ErrorDetail";
     private final ConcurrentHashMap<BString, Object> attributes = new ConcurrentHashMap<>();
     // Provides mapping between user defined id and DataLoader
     private final ConcurrentHashMap<BString, BObject> idDataLoaderMap = new ConcurrentHashMap<>();
@@ -63,9 +50,7 @@ public class Context {
     }
 
     public static void initializeContext(BObject context) {
-        List<BMap<BString, Object>> errors = Collections.synchronizedList(new ArrayList<>());
         context.addNativeData(CONTEXT, new Context());
-        context.addNativeData(ERRORS, errors);
     }
 
     public static void registerDataLoader(BObject object, BString key, BObject dataLoader) {
@@ -146,42 +131,6 @@ public class Context {
     public static void clearPlaceholders(BObject object) {
         Context context = (Context) object.getNativeData(CONTEXT);
         context.clearPlaceholders();
-    }
-
-    public static void addErrors(BObject context, BArray errs) {
-        List<BMap<BString, Object>> errors = (List<BMap<BString, Object>>) context.getNativeData(ERRORS);
-        BIterator iterator = errs.getIterator();
-        while (iterator.hasNext()) {
-            errors.add((BMap<BString, Object>) iterator.next());
-        }
-    }
-
-    public static void addError(BObject context, BMap<BString, Object> error) {
-        List<BMap<BString, Object>> errors = (List<BMap<BString, Object>>) context.getNativeData(ERRORS);
-        errors.add(error);
-    }
-
-    public static BArray getErrors(BObject context) {
-        List<BMap<BString, Object>> errors = (List<BMap<BString, Object>>) context.getNativeData(ERRORS);
-        Type errorDetailType = TypeCreator.createRecordType(ERROR_DETAIL_TYPE, getModule(), 1, true, TypeFlags.ANYDATA);
-        ArrayType errorArrayType = TypeCreator.createArrayType(errorDetailType);
-        if (errors.isEmpty()) {
-            return ValueCreator.createArrayValue(errorArrayType);
-        }
-        return ValueCreator.createArrayValue(errors.toArray(), errorArrayType);
-    }
-
-    public static void setEngine(BObject context, BObject engine) {
-        context.set(ENGINE_FIELD, engine);
-    }
-
-    public static BObject getEngine(BObject context) {
-        return (BObject) context.get(ENGINE_FIELD);
-    }
-
-    public static void resetErrors(BObject context) {
-        List<BMap<BString, Object>> errors = (List<BMap<BString, Object>>) context.getNativeData(ERRORS);
-        errors.clear();
     }
 
     private void setAttribute(BString key, Object value) {

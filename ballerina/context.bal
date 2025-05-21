@@ -44,14 +44,14 @@ public isolated class Context {
 
     # Retrieves a value using the given key from the GraphQL context.
     # ```ballerina
-    # string userId = check context.get("userId").ensureType();
+    # string userId = check context.get("userId").ensureType();  
     # ```
     #
     # + key - The key corresponding to the required value
     # + return - The value if the key is present in the context, a `graphql:Error` otherwise
     public isolated function get(string 'key) returns value:Cloneable|isolated object {}|Error {
         value:Cloneable|isolated object {}? value = self.getAttribute('key);
-        if value == () {
+        if value is () {
             return error Error(string `Attribute with the key "${'key}" not found in the context`);
         }
         return value is value:Cloneable ? value.clone() : value;
@@ -59,14 +59,14 @@ public isolated class Context {
 
     # Removes a value using the given key from the GraphQL context.
     # ```ballerina
-    # string userId = check context.remove("userId").ensureType();
+    # string userId = check context.remove("userId").ensureType();  
     # ```
     #
     # + key - The key corresponding to the value to be removed
     # + return - The value if the key is present in the context, a `graphql:Error` otherwise
     public isolated function remove(string 'key) returns value:Cloneable|isolated object {}|Error {
         value:Cloneable|isolated object {}? value = self.removeAttribute('key);
-        if value == () {
+        if value is () {
             return error Error(string `Attribute with the key "${'key}" not found in the context`);
         }
         return value is value:Cloneable ? value.clone() : value;
@@ -97,7 +97,7 @@ public isolated class Context {
     # Remove cache entries related to the given path.
     #
     # + path - The path corresponding to the cache entries to be removed (Ex: "person.address.city")
-    # + return - The error if the cache invalidation fails or nil otherwise
+    # + return - The error if the cache invalidateion fails or nil otherwise
     public isolated function invalidate(string path) returns error? {
         Engine? engine = self.getEngine();
         if engine is Engine {
@@ -108,7 +108,7 @@ public isolated class Context {
 
     # Remove all cache entries.
     #
-    # + return - The error if the cache invalidation fails or nil otherwise
+    # + return - The error if the cache invalidateion fails or nil otherwise
     public isolated function invalidateAll() returns error? {
         Engine? engine = self.getEngine();
         if engine is Engine {
@@ -117,17 +117,24 @@ public isolated class Context {
         return;
     }
 
-    isolated function addError(ErrorDetail err) = @java:Method {
-        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
-    } external;
+    isolated function addError(ErrorDetail err) {
+        lock {
+            self.errors.push(err.clone());
+        }
+    }
 
-    isolated function addErrors(ErrorDetail[] errs) = @java:Method {
-        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
-    } external;
+    isolated function addErrors(ErrorDetail[] errs) {
+        readonly & ErrorDetail[] errors = errs.cloneReadOnly();
+        lock {
+            self.errors.push(...errors);
+        }
+    }
 
-    isolated function getErrors() returns ErrorDetail[] = @java:Method {
-        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
-    } external;
+    isolated function getErrors() returns ErrorDetail[] {
+        lock {
+            return self.errors.clone();
+        }
+    }
 
     isolated function setFileInfo(map<Upload|Upload[]> fileInfo) = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.engine.EngineUtils"
@@ -145,17 +152,23 @@ public isolated class Context {
         return;
     }
 
-    isolated function setEngine(Engine engine) = @java:Method {
-        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
-    } external;
+    isolated function setEngine(Engine engine) {
+        lock {
+            self.engine = engine;
+        }
+    }
 
-    isolated function getEngine() returns Engine? = @java:Method {
-        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
-    } external;
+    isolated function getEngine() returns Engine? {
+        lock {
+            return self.engine;
+        }
+    }
 
-    isolated function resetErrors() = @java:Method {
-        'class: "io.ballerina.stdlib.graphql.runtime.engine.Context"
-    } external;
+    isolated function resetErrors() {
+        lock {
+            self.errors.removeAll();
+        }
+    }
 
     isolated function resolvePlaceholders() {
         self.dispatchDataloaders();
@@ -164,7 +177,7 @@ public isolated class Context {
         [Placeholder, future<anydata>][] placeholderValues = [];
         foreach Placeholder placeholder in unResolvedPlaceholders {
             Engine? engine = self.getEngine();
-            if engine == () {
+            if engine is () {
                 continue;
             }
             future<anydata> resolvedValue = start engine.resolve(self, placeholder.getField(), false);
@@ -208,7 +221,7 @@ public isolated class Context {
     }
 
     isolated function clearDataLoadersCachesAndPlaceholders() {
-        // This function is called at the end of each subscription loop execution to prevent using old values
+        // This function is called at the end of each subscription loop execution to prevent using old values 
         // from DataLoader caches in the next iteration and to avoid filling up the idPlaceholderMap.
         string[] nonDispatchedDataLoaderIds = self.getDataLoaderIds();
         foreach string dataLoaderId in nonDispatchedDataLoaderIds {

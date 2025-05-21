@@ -57,7 +57,7 @@ public readonly class OperationNode {
         return self.selections;
     }
 
-    public isolated function getVariableDefinitions() returns map<VariableNode> {
+    public isolated function getVaribleDefinitions() returns map<VariableNode> {
         return self.variables;
     }
 

@@ -70,7 +70,7 @@ public readonly class FragmentNode {
 
     public isolated function modifyWith(SelectionNode[] selections, DirectiveNode[] directives, string? onType = ())
     returns FragmentNode {
-        string onTypeValue = onType == () ? self.onType : onType;
+        string onTypeValue = onType is () ? self.onType : onType;
         return new (self.name, self.location, self.inlineFragment, self.spreadLocation, onTypeValue, selections,
                     directives);
     }

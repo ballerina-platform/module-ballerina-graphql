@@ -133,7 +133,7 @@ isolated function testInvalidMultipleConnectionInitMessages() returns error? {
     check common:initiateGraphqlWsConnection(wsClient);
     check common:sendConnectionInitMessage(wsClient);
 
-    string expectedErrorMsg = "Too many initialization requests: Status code: 4429";
+    string expectedErrorMsg = "Too many initialisation requests: Status code: 4429";
     common:validateConnectionClosureWithError(wsClient, expectedErrorMsg);
 }
 

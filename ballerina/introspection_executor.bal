@@ -18,9 +18,9 @@ import graphql.parser;
 
 class IntrospectionExecutor {
 
-    private readonly & __Schema schema;
+    private __Schema schema;
 
-    isolated function init(readonly & __Schema schema) {
+    isolated function init(__Schema schema) {
         self.schema = schema;
     }
 
@@ -38,7 +38,7 @@ class IntrospectionExecutor {
         parser:ArgumentValue argValue = <parser:ArgumentValue> argNode.getValue();
         string requiredTypeName = argValue.toString();
         __Type? requiredType = getTypeFromTypeArray(self.schema.types, requiredTypeName);
-        if requiredType == () {
+        if requiredType is () {
             return result;
         }
         foreach parser:SelectionNode selectionNode in fieldNode.getSelections() {
