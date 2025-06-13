@@ -1,0 +1,17 @@
+{
+    "errors": [
+        {
+            "message": "ID cannot represent non ID value: 4.4e",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 5
+                }
+            ],
+            "path": [
+                "decimalArrayReturnRecord"
+            ]
+        }
+    ],
+    "data": null
+}

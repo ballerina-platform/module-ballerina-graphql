@@ -33,6 +33,49 @@ function dataProviderIdAnnotation() returns map<[string, json]> {
     json values = {
         "ids": ["2.9", "3.3", "4.5"]
     };
+    json person = {
+        "input": {
+            "name": 4
+        }
+    };
+    json nestedIdInput1 = {
+        "input": [{
+            "id": "5",
+            "person": {
+                "name": 3
+            }
+        }]
+    };
+    json nestedIdInput2 = {
+        "input": {
+            "id": "55",
+            "person": {
+                "name": 334
+            }
+        }
+    };
+    json idInput = {
+        "input": {
+            "ids": ["5", "6", "7"],
+            "persons": [{
+                    "name": 3
+                },
+                {
+                    "name": 4
+                },
+                {
+                    "name": 5
+                }
+            ]
+        }
+    };
+    json uuidInput = {
+        "input": [
+            "{\"timeLow\":32377426,\"timeMid\":55867,\"timeHiAndVersion\":6608,\"clockSeqHiAndReserved\":131,\"clockSeqLo\":89,\"node\":143363128380312}",
+            "{\"timeLow\":32377426,\"timeMid\":55867,\"timeHiAndVersion\":6608,\"clockSeqHiAndReserved\":131,\"clockSeqLo\":89,\"node\":143363128380312}",
+            "uuid"
+        ]
+    };
     map<[string, json]> dataSet = {
         "1": ["id_input_type_validation_string"],
         "2": ["id_input_type_validation_int"],
@@ -52,7 +95,24 @@ function dataProviderIdAnnotation() returns map<[string, json]> {
         "16": ["id_input_type_validation_uuid_array_or_nil"],
         "17": ["id_input_type_validation_return_record_array"],
         "18": ["id_input_type_validation_return_record"],
-        "19": ["id_input_type_validation_float_array1", values]
+        "19": ["id_input_type_validation_float_array1", values],
+        "20": ["id_input_validation_with_variable_1", person],
+        "21": ["id_input_type_validation_array_1", nestedIdInput1],
+        "22": ["id_input_validation_with_variable_2", nestedIdInput2],
+        "23": ["id_input_type_validation_array_2", idInput],
+        "24": ["id_input_type_validation_array_3"],
+        "25": ["id_input_type_validation_string_2"],
+        "26": ["id_input_type_validation_float_2"],
+        "27": ["id_input_type_validation_decimal_2"],
+        "28": ["id_input_type_validation_int_2"],
+        "29": ["id_input_type_validation_int_3"],
+        "30": ["id_input_type_validation_with_invalid_input_1", {"input": "6.01"}],
+        "31": ["id_input_type_validation_with_invalid_input_2"],
+        "32": ["id_input_type_validation_with_invalid_input_3", {"input": ["6", "5",  "4.1"]}],
+        "33": ["id_input_type_validation_with_invalid_input_4", {"input": ["6.5", "5.523",  "4.4e"]}],
+        "34": ["id_input_type_validation_with_invalid_input_5", {"input": "string"}],
+        "35": ["id_input_type_validation_with_invalid_input_6", uuidInput],
+        "36": ["id_input_type_validation_with_invalid_input_7", {"input": ["5.6", "7.2", "id"]}]
     };
     return dataSet;
 }

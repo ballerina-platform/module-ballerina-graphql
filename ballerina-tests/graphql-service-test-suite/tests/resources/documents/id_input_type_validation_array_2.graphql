@@ -1,0 +1,6 @@
+query($input: PersonArrInput!) {
+  inputObjectWithNestedIdTypeArray(input: $input) {
+    id
+    name
+  }
+}
