@@ -283,8 +283,8 @@ public class Engine {
                 return callResourceMethod(environment.getRuntime(), service, resourceMethod.getName(), arguments);
             } catch (BError bError) {
                 handleFailureAndExit(bError);
-            } catch (IdTypeInputValidationException e) {
-                return null;
+            } catch (IdTypeInputValidationException ignored) {
+                // Ignored as this error is already added to the response
             }
             return null;
         });
