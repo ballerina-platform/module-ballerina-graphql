@@ -1255,6 +1255,9 @@ public distinct service class Student4 {
     }
 }
 
+@graphql:ServiceConfig {
+    validation: false
+}
 service /id_annotation_2 on basicListener {
     resource function get stringId(@graphql:ID string stringId) returns string {
         return "Hello, World";
@@ -1339,13 +1342,51 @@ service /id_annotation_2 on basicListener {
             {id: 543, name: "Amy March", age: 12}
         ];
     }
+
+    resource function get inputObjectWithIdType(PersonInput input) returns string {
+        return input.name.toString();
+    }
+
+    resource function get inputObjectWithNestedIdType(NestedIdInput input) returns PersonDetail {
+        return {name: input.person.name.toString(), id: input.id.toString()};
+    }
+
+    resource function get inputObjectWithNestedIdTypeInArray(NestedIdInput[] input) returns PersonDetail {
+        return {name: input[0].person.name.toString(), id: input[0].id.toString()};
+    }
+
+    resource function get inputObjectWithNestedIdTypeArray(PersonArrInput input) returns PersonDetail {
+        return {name: input.persons[0].name.toString(), id: input.ids[0].toString()};
+    }
 }
+
+public type PersonInput record {|
+    @graphql:ID
+    string name;
+|};
+
+public type NestedIdInput record {|
+    @graphql:ID
+    int id;
+    PersonInput person;
+|};
+
+public type PersonDetail record {|
+    string name;
+    string id;
+|};
 
 public type PersonId record {|
     @graphql:ID
     int id;
     string name;
     int age;
+|};
+
+public type PersonArrInput record {|
+    @graphql:ID
+    int[] ids;
+    PersonInput[] persons;
 |};
 
 public distinct service class Student5 {

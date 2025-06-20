@@ -1,0 +1,17 @@
+{
+    "errors": [
+        {
+            "message": "ID cannot represent non ID value: id",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 5
+                }
+            ],
+            "path": [
+                "floatArrayReturnRecordArray"
+            ]
+        }
+    ],
+    "data": null
+}

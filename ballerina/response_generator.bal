@@ -116,6 +116,21 @@ isolated class ResponseGenerator {
         self.context.addErrors(errorDetails);
     }
 
+    isolated function addIdTypeInputValidationErrors(error[] errors, parser:FieldNode fieldNode) {
+        ErrorDetail[] errorDetails = [];
+        foreach error err in errors {
+            string formattedErrorMsg = string `ID cannot represent non ID value: ${err.message()}`;
+            log:printError(formattedErrorMsg, stackTrace = err.stackTrace());
+            ErrorDetail errorDetail = {
+                message: formattedErrorMsg,
+                locations: [fieldNode.getLocation()],
+                path: self.path.clone()
+            };
+            errorDetails.push(errorDetail);
+        }
+        self.context.addErrors(errorDetails);
+    }
+
     isolated function getResultFromMap(map<any> parentValue, parser:FieldNode parentNode, (string|int)[] path = [])
     returns anydata {
         string? mapKey = getKeyArgument(parentNode);

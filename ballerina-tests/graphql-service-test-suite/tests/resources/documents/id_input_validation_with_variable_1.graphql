@@ -1,0 +1,3 @@
+query($input: PersonInput!) {
+  inputObjectWithIdType(input: $input)
+}

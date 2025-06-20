@@ -1,0 +1,5 @@
+query ($input: [ID!]!){
+    intArrayReturnRecord(intId: $input) {
+        name
+    }
+}

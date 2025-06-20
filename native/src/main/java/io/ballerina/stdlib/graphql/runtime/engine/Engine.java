@@ -39,6 +39,7 @@ import io.ballerina.runtime.observability.ObserveUtils;
 import io.ballerina.runtime.observability.ObserverContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.runtime.exception.ConstraintValidationException;
+import io.ballerina.stdlib.graphql.runtime.exception.IdTypeInputValidationException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -126,13 +127,14 @@ public class Engine {
 
     private static Object getResultObject(Environment environment, BObject service, String methodName,
                                           ArgumentHandler argumentHandler) {
+        Object[] args;
         try {
+            args = argumentHandler.getArguments(environment);
             argumentHandler.validateInputConstraint(environment);
-        } catch (ConstraintValidationException e) {
+        } catch (ConstraintValidationException | IdTypeInputValidationException e) {
             return null;
         }
         return environment.yieldAndRun(() -> {
-            Object[] args = argumentHandler.getArguments();
             try {
                 return callResourceMethod(environment.getRuntime(), service, methodName, args);
             } catch (BError bError) {
@@ -276,11 +278,13 @@ public class Engine {
                                              MethodType resourceMethod, BObject fieldObject) {
         environment.yieldAndRun(() -> {
             ArgumentHandler argumentHandler = new ArgumentHandler(resourceMethod, context, fieldObject, null, false);
-            Object[] arguments = argumentHandler.getArguments();
             try {
+                Object[] arguments = argumentHandler.getArguments(environment);
                 return callResourceMethod(environment.getRuntime(), service, resourceMethod.getName(), arguments);
             } catch (BError bError) {
                 handleFailureAndExit(bError);
+            } catch (IdTypeInputValidationException ignored) {
+                // Ignored as this error is already added to the response
             }
             return null;
         });
