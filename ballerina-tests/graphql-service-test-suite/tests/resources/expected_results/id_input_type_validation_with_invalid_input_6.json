@@ -1,0 +1,17 @@
+{
+    "errors": [
+        {
+            "message": "ID cannot represent non ID value: uuid",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 5
+                }
+            ],
+            "path": [
+                "uuidArrayReturnRecord1"
+            ]
+        }
+    ],
+    "data": null
+}

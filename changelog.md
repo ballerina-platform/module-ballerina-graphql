@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - [[#7711] Introduce GraphQL Document Caching](https://github.com/ballerina-platform/ballerina-library/issues/7711)
 
+### Fixed
+
+- [[#7952] Fix Service Crashing when using Int Value for an ID Type Input Object Field](https://github.com/ballerina-platform/ballerina-library/issues/7952)
+
 ## [1.16.1] - 2025-03-19
 
 ### Fixed

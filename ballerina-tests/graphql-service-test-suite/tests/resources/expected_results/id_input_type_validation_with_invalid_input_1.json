@@ -1,0 +1,17 @@
+{
+    "errors": [
+        {
+            "message": "ID cannot represent non ID value: 6.01",
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 5
+                }
+            ],
+            "path": [
+                "intId"
+            ]
+        }
+    ],
+    "data": null
+}

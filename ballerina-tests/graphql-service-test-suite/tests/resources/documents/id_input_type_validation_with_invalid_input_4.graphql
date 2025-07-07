@@ -1,0 +1,5 @@
+query ($input: [ID!]!) {
+    decimalArrayReturnRecord(decimalId: $input) {
+        name
+    }
+}

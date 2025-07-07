@@ -1,0 +1,21 @@
+query {
+  inputObjectWithNestedIdTypeInArray(
+    input: [
+        { 
+          id: "55",
+          person: {
+              name: 334
+          }
+        },
+        { 
+          id: "545",
+          person: {
+              name: 334
+          }
+        }
+      ]
+  ) {
+    id
+    name
+  }
+}
