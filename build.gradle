@@ -16,7 +16,7 @@
  */
 
 plugins {
-    id 'com.github.spotbugs-base'
+    id 'com.github.spotbugs'
     id 'com.github.johnrengelman.shadow'
     id 'de.undercouch.download'
     id 'net.researchgate.release'
