@@ -19,6 +19,7 @@
 package io.ballerina.stdlib.graphql.runtime.engine;
 
 import io.ballerina.runtime.api.Environment;
+import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
 import io.ballerina.runtime.api.types.ArrayType;
@@ -44,12 +45,11 @@ import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTypedesc;
 import io.ballerina.stdlib.constraint.Constraints;
 import io.ballerina.stdlib.graphql.runtime.exception.ConstraintValidationException;
+import io.ballerina.stdlib.graphql.runtime.exception.IdTypeInputValidationException;
 
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static io.ballerina.runtime.api.types.TypeTags.INTERSECTION_TAG;
@@ -62,6 +62,8 @@ import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_NA
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.VARIABLE_VALUE_FIELD;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isEnum;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.isIgnoreType;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.createError;
+import static io.ballerina.stdlib.graphql.runtime.utils.Utils.ERROR_TYPE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.INTERNAL_NODE;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.handleFailureAndExit;
 import static io.ballerina.stdlib.graphql.runtime.utils.Utils.isContext;
@@ -80,10 +82,13 @@ public final class ArgumentHandler {
     private final BObject field;
     private final BObject responseGenerator;
     private final boolean validation;
+    private final BArray idTypeErrors;
 
     private static final String REPRESENTATION_TYPENAME = "Representation";
     private static final String ADD_CONSTRAINT_ERRORS_METHOD = "addConstraintValidationErrors";
     private static final String CONSTRAINT_ERROR_MESSAGE = "Constraint validation errors found.";
+    private static final String ADD_ID_TYPE_ERRORS_METHOD = "addIdTypeInputValidationErrors";
+    private static final String ID_TYPE_ERROR_MESSAGE = "ID type input validation error found.";
 
     private static final BString KIND_FIELD = StringUtils.fromString("kind");
 
@@ -99,6 +104,7 @@ public final class ArgumentHandler {
     private static final String PACKAGE_NAME = "ballerina/graphql";
     private static final String RETURN_TYPE_PARAM = "$returns$";
     private static final String ARGUMENT_TYPE_PARAM = "$param$";
+    private static final String RECORD_FIELD_TYPE = "$field$";
 
     @SuppressWarnings("unchecked")
     public ArgumentHandler(MethodType method, BObject context, BObject field, BObject responseGenerator,
@@ -111,6 +117,7 @@ public final class ArgumentHandler {
         this.argumentsMap = ValueCreator.createMapValue();
         this.responseGenerator = responseGenerator;
         this.validation = validation;
+        this.idTypeErrors = ValueCreator.createArrayValue(TypeCreator.createArrayType(PredefinedTypes.TYPE_ERROR));
         BObject fieldNode = this.field.getObjectValue(INTERNAL_NODE);
         this.populateArgumentsMap(fieldNode);
     }
@@ -137,7 +144,11 @@ public final class ArgumentHandler {
         return fullTypeName[0].equals(PACKAGE_NAME) && fullTypeName[1].equals(ID_ANNOTATION);
     }
 
-    public Object[] getArguments() {
+    public Object[] getArguments(Environment environment) throws IdTypeInputValidationException {
+        if (!this.idTypeErrors.isEmpty()) {
+            this.addValidationErrors(environment, this.idTypeErrors, ADD_ID_TYPE_ERRORS_METHOD);
+            throw new IdTypeInputValidationException(ID_TYPE_ERROR_MESSAGE);
+        }
         return this.getArgumentsForMethod();
     }
 
@@ -158,7 +169,7 @@ public final class ArgumentHandler {
                 }
             }
             if (!errors.isEmpty()) {
-                this.addConstraintValidationErrors(environment, errors);
+                this.addValidationErrors(environment, errors, ADD_CONSTRAINT_ERRORS_METHOD);
                 throw new ConstraintValidationException(CONSTRAINT_ERROR_MESSAGE);
             }
         }
@@ -169,178 +180,149 @@ public final class ArgumentHandler {
         for (int i = 0; i < argumentArray.size(); i++) {
             BObject argumentNode = (BObject) argumentArray.get(i);
             BString argumentName = argumentNode.getStringValue(NAME_FIELD);
-            Parameter parameter = Objects.requireNonNull(getParameterForArgumentNode(argumentName));
-            Object argumentValue = this.getArgumentValue(argumentNode, parameter.type);
+            Type parameterType = Objects.requireNonNull(getParameterForArgumentNode(argumentName)).type;
+            Object argumentValue;
+            boolean isVariableValue = argumentNode.getBooleanValue(VARIABLE_DEFINITION);
+            if (isFileUpload(parameterType)) {
+                argumentValue = this.getFileUploadParameter(argumentNode, parameterType);
+            } else if (isRepresentationArgument(parameterType)) {
+                argumentValue = getRepresentationArgument(argumentNode, parameterType);
+            } else {
+                if (isVariableValue) {
+                    argumentValue = argumentNode.get(VARIABLE_VALUE_FIELD);
+                } else {
+                    argumentValue = argumentNode.get(VALUE_FIELD);
+                }
+                try {
+                    argumentValue = this.getArgumentValue(argumentName.getValue(), argumentValue, parameterType,
+                            isVariableValue);
+                } catch (IdTypeInputValidationException e) {
+                    argumentValue = null;
+                }
+            }
             this.argumentsMap.put(argumentName, argumentValue);
         }
     }
 
-    private Object getArgumentValue(BObject argumentNode, Type parameterType) {
-        if (idsList.contains(argumentNode.getStringValue(NAME_FIELD).getValue())) {
-            return this.getIdArgumentValue(argumentNode, parameterType);
+    private Object getArgumentValue(String argName, Object argValue, Type parameterType, boolean isVariableValue)
+            throws IdTypeInputValidationException {
+        if (idsList.contains(argName)) {
+            Object value = this.getIdArgumentValue(argName, argValue, parameterType, isVariableValue);
+            idsList.remove(argName);
+            return value;
         }
-        if (isFileUpload(parameterType)) {
-            return this.getFileUploadParameter(argumentNode, parameterType);
-        } else if (isRepresentationArgument(parameterType)) {
-            Object jsonRepresentation = this.getJsonArgument(argumentNode);
-            return getRepresentationArgument(jsonRepresentation, parameterType);
-        } else if (parameterType.getTag() == TypeTags.RECORD_TYPE_TAG) {
-            return this.getInputObjectArgument(argumentNode, (RecordType) parameterType);
-        } else if (parameterType.getTag() == TypeTags.INTERSECTION_TAG) {
-            return this.getIntersectionTypeArgument(argumentNode, (IntersectionType) parameterType);
+        if (parameterType.getTag() == TypeTags.RECORD_TYPE_TAG) {
+            return this.getInputObjectArgument(argValue, (RecordType) parameterType, isVariableValue);
+        } else if (parameterType.getTag() == INTERSECTION_TAG) {
+            return this.getIntersectionTypeArgument(argName, argValue, (IntersectionType) parameterType,
+                    isVariableValue);
         } else if (parameterType.getTag() == TypeTags.ARRAY_TAG) {
-            return this.getArrayTypeArgument(argumentNode, (ArrayType) parameterType);
+            return this.getArrayTypeArgument(argName, argValue, (ArrayType) parameterType, isVariableValue);
         } else if (parameterType.getTag() == TypeTags.UNION_TAG) {
-            return this.getUnionTypeArgument(argumentNode, (UnionType) parameterType);
+            return this.getUnionTypeArgument(argName, argValue, (UnionType) parameterType, isVariableValue);
         } else if (parameterType.getTag() == TypeTags.TYPE_REFERENCED_TYPE_TAG) {
-            return this.getArgumentValue(argumentNode, TypeUtils.getReferredType(parameterType));
+            return this.getArgumentValue(argName, argValue, TypeUtils.getReferredType(parameterType), isVariableValue);
         } else {
-            return this.getScalarArgumentValue(argumentNode);
+            return argValue;
         }
     }
 
-    private Object getIdArgumentValue(BObject argumentNode, Type parameterType) {
-        if (argumentNode.get(VALUE_FIELD) instanceof BString) {
-            String obj = ((BString) argumentNode.get(VALUE_FIELD)).getValue();
-            return getIdValueFromString(obj, parameterType, argumentNode);
-        } else if (argumentNode.get(VALUE_FIELD) instanceof BArray) {
-            return getIdValueFromBArray(argumentNode, parameterType, (BArray) argumentNode.get(VALUE_FIELD));
-        } else if (argumentNode.get(StringUtils.fromString("variableValue")) instanceof BArray) {
-            return getIdValueFromBArray(argumentNode, parameterType,
-                    ((BArray) argumentNode.get(StringUtils.fromString("variableValue"))));
+    private Object getIdArgumentValue(String argName, Object argValue, Type parameterType, boolean isVariableValue)
+            throws IdTypeInputValidationException {
+        Object value = argValue;
+        if (value instanceof BString) {
+            value = getIdValueFromString(argName, value, parameterType, isVariableValue);
+        } else if (value instanceof Long) {
+            value = getIdValueFromInteger(argName, value, parameterType, isVariableValue);
+        } else if (value instanceof BArray bArray) {
+            if (parameterType.getTag() == TypeTags.ARRAY_TAG) {
+                ArrayType arrayType = (ArrayType) parameterType;
+                BArray valueArray = ValueCreator.createArrayValue(arrayType);
+                for (Object obj : bArray.getValues()) {
+                    Object elementValue = getIdArgumentValue(argName, obj, arrayType.getElementType(),
+                            isVariableValue);
+                    valueArray.append(elementValue);
+                }
+                value = valueArray;
+            } else if (parameterType.getTag() == TypeTags.UNION_TAG) {
+                value = getIdValueFromUnionType(argName, argValue, (UnionType) parameterType, isVariableValue);
+            }
+        } else if (argValue instanceof BObject bObject) {
+            Object objectValue;
+            if (isVariableValue) {
+                objectValue = bObject.get(VARIABLE_VALUE_FIELD);
+                value = getIdArgumentValue(argName, objectValue, parameterType, true);
+            } else {
+                objectValue = bObject.get(VALUE_FIELD);
+                value = getIdArgumentValue(argName, objectValue, parameterType, false);
+            }
         }
-        return argumentNode.get(VALUE_FIELD);
+        return value;
     }
 
-    private Object getIdValueFromBArray(BObject argumentNode, Type parameterType, BArray bArray) {
-        if (parameterType.getTag() == TypeTags.UNION_TAG) {
-            for (Type memberType: ((UnionType) parameterType).getMemberTypes()) {
-                if (memberType.getTag() == TypeTags.ARRAY_TAG) {
-                    return getIdValueFromBArray(argumentNode, memberType, bArray);
-                }
+    private Object getIdValueFromString(String argName, Object argValue, Type parameterType, boolean isVariableValue)
+            throws IdTypeInputValidationException {
+        String stringValue = ((BString) argValue).getValue();
+        try {
+            if (parameterType.getTag() == TypeTags.STRING_TAG) {
+                return StringUtils.fromString(stringValue);
+            } else if (parameterType.getTag() == TypeTags.INT_TAG) {
+                return Long.parseLong(stringValue);
+            } else if (parameterType.getTag() == TypeTags.FLOAT_TAG) {
+                return ValueUtils.convert(JsonUtils.parse(stringValue), parameterType);
+            } else if (parameterType.getTag() == TypeTags.DECIMAL_TAG) {
+                return ValueUtils.convert(JsonUtils.parse(stringValue), parameterType);
+            } else if (parameterType.getTag() == TypeTags.TYPE_REFERENCED_TYPE_TAG) {
+                // not validating if this is uuid:Uuid since compiler plugin does that
+                return ValueCreator.createRecordValue(parameterType.getPackage(), parameterType.getName(),
+                        (BMap<BString, Object>) JsonUtils.parse(stringValue.replaceAll("\\\\", "")));
+            } else if (parameterType.getTag() == TypeTags.UNION_TAG) {
+                return getIdValueFromUnionType(argName, argValue, (UnionType) parameterType, isVariableValue);
             }
+        } catch (NumberFormatException | BError e) {
+            BError cause = ErrorCreator.createError(StringUtils.fromString(e.getMessage()));
+            BError error = createError(stringValue, ERROR_TYPE, cause);
+            this.idTypeErrors.append(error);
+            throw new IdTypeInputValidationException(ID_TYPE_ERROR_MESSAGE);
         }
-        if (((ArrayType) parameterType).getElementType().getTag() == TypeTags.INT_TAG) {
-            int i = 0;
-            long[] longArray = new long[bArray.size()];
-            for (Object obj: bArray.getValues()) {
-                BObject bObject = (BObject) obj;
-                longArray[i] = bObject.getIntValue(VALUE_FIELD);
-                i++;
+        return argValue;
+    }
+
+    private Object getIdValueFromInteger(String argName, Object argValue, Type parameterType,
+                                         boolean isVariableValue) throws IdTypeInputValidationException {
+        Long longValue = (Long) argValue;
+        try {
+            if (parameterType.getTag() == TypeTags.STRING_TAG) {
+                return StringUtils.fromString(longValue.toString());
+            } else if (parameterType.getTag() == TypeTags.FLOAT_TAG || parameterType.getTag() == TypeTags.DECIMAL_TAG) {
+                return ValueUtils.convert(longValue, parameterType);
+            } else if (parameterType.getTag() == TypeTags.INT_TAG) {
+                return longValue;
+            } else if (parameterType.getTag() == TypeTags.UNION_TAG) {
+                return getIdValueFromUnionType(argName, argValue, (UnionType) parameterType, isVariableValue);
             }
-            return ValueCreator.createArrayValue(longArray);
-        } else {
-            String[] stringArray = new String[bArray.size()];
-            int i = 0;
-            for (Object obj: bArray.getValues()) {
-                if (obj instanceof BString) {
-                    stringArray[i] = ((BString) obj).getValue();
-                } else {
-                    BObject bObject = (BObject) obj;
-                    stringArray[i] = bObject.getStringValue(VALUE_FIELD).getValue();
-                }
-                i++;
-            }
-            return getArrayTypeIdValue(parameterType, stringArray);
+        } catch (NumberFormatException | BError e) {
+            BError cause = ErrorCreator.createError(StringUtils.fromString(e.getMessage()));
+            BError error = createError(longValue.toString(), ERROR_TYPE, cause);
+            this.idTypeErrors.append(error);
+            throw new IdTypeInputValidationException(ID_TYPE_ERROR_MESSAGE);
         }
+        return argValue;
+    }
+
+    private Object getIdValueFromUnionType(String argName, Object argValue, UnionType unionType,
+                                           boolean isVariableValue) throws IdTypeInputValidationException {
+        if (isEnum(unionType)) {
+            return getEnumTypeArgument(argValue, unionType);
+        } else if (unionType.isNilable() && argValue == null) {
+            return null;
+        }
+        Type effectiveType = getEffectiveType(unionType);
+        return getIdArgumentValue(argName, argValue, effectiveType, isVariableValue);
     }
 
     @SuppressWarnings("unchecked")
-    private Object getIdValueFromString(String obj, Type parameterType, BObject argumentNode) {
-        if (parameterType.getTag() == TypeTags.STRING_TAG) {
-            return StringUtils.fromString(obj);
-        } else if (parameterType.getTag() == TypeTags.INT_TAG) {
-            return Integer.parseInt(obj);
-        } else if (parameterType.getTag() == TypeTags.FLOAT_TAG) {
-            return ValueUtils.convert(JsonUtils.parse(obj), parameterType);
-        } else if (parameterType.getTag() == TypeTags.DECIMAL_TAG) {
-            return ValueUtils.convert(JsonUtils.parse(obj), parameterType);
-        } else if (parameterType.getTag() == TypeTags.TYPE_REFERENCED_TYPE_TAG) {
-            // not validating if this is uuid:Uuid since compiler plugin does that
-            return ValueCreator.createRecordValue(parameterType.getPackage(), parameterType.getName(),
-                    (BMap<BString, Object>) JsonUtils.parse(obj.replaceAll("\\\\", "")));
-        } else if (parameterType.getTag() == TypeTags.UNION_TAG) {
-            return getUnionTypeIdValue(parameterType, argumentNode);
-        }
-        return argumentNode.get(VALUE_FIELD);
-    }
-
-    private Object getUnionTypeIdValue(Type parameterType, BObject argumentNode) {
-        List<Type> members = ((UnionType) parameterType).getMemberTypes();
-        for (Type member : members) {
-            if (member.getTag() != TypeTags.NULL_TAG && member.getTag() != TypeTags.ERROR_TAG) {
-                return getIdArgumentValue(argumentNode, member);
-            }
-        }
-        return null;
-    }
-
-    private Object getArrayTypeIdValue(Type parameterType, String[] stringArray) {
-        Type memberType = ((ArrayType) parameterType).getElementType();
-        if (memberType.getTag() == TypeTags.INT_TAG) {
-            return ValueCreator.createArrayValue(getIntArrayTypeIdValue(stringArray));
-        } else if (memberType.getTag() == TypeTags.FLOAT_TAG) {
-            return ValueCreator.createArrayValue(Arrays.toString(getFloatArrayTypeIdValue(stringArray))
-                    .getBytes(StandardCharsets.UTF_8));
-        } else if (memberType.getTag() == TypeTags.DECIMAL_TAG) {
-            return ValueCreator.createArrayValue(Arrays.toString(getDecimalArrayTypeIdValue(stringArray))
-                    .getBytes(StandardCharsets.UTF_8));
-        } else if (memberType.getTag() == TypeTags.STRING_TAG) {
-            return ValueCreator.createArrayValue(getStringArrayTypeIdValue(stringArray));
-        } else if (memberType.getTag() == TypeTags.TYPE_REFERENCED_TYPE_TAG) {
-            return ValueCreator.createArrayValue(getTypeRefArrayTypeIdValue(stringArray, parameterType),
-                    (ArrayType) parameterType);
-        }
-        return null;
-    }
-
-    private BMap<BString, Object>[] getTypeRefArrayTypeIdValue(String[] stringValues, Type parameterType) {
-        BMap<BString, Object>[] uuidArray = new BMap[stringValues.length];
-        for (int i = 0; i < stringValues.length; i++) {
-            uuidArray[i] = ValueCreator.createRecordValue(
-                    ((ArrayType) parameterType).getElementType().getPackage(),
-                    ((ArrayType) parameterType).getElementType().getName(),
-                    (BMap<BString, Object>) JsonUtils.parse(stringValues[i].replaceAll("\\\\", "")));
-        }
-        return uuidArray;
-    }
-
-    private BString[] getStringArrayTypeIdValue(String[] stringValues) {
-        BString[] bStringArray = new BString[stringValues.length];
-        for (int i = 0; i < stringValues.length; i++) {
-            bStringArray[i] = StringUtils.fromString(stringValues[i]);
-        }
-        return bStringArray;
-    }
-
-    private BigDecimal[] getDecimalArrayTypeIdValue(String[] stringArray) {
-        BigDecimal[] values = new BigDecimal[stringArray.length];
-        for (int i = 0; i < stringArray.length; i++) {
-            values[i] = new BigDecimal(stringArray[i]);
-        }
-        return values;
-    }
-
-    private float[] getFloatArrayTypeIdValue(String[] stringArray) {
-        float[] values = new float[stringArray.length];
-        for (int i = 0; i < stringArray.length; i++) {
-            values[i] = Float.parseFloat(stringArray[i]);
-        }
-        return values;
-    }
-
-    private long[] getIntArrayTypeIdValue(String[] stringArray) {
-        long[] values = new long[stringArray.length];
-        for (int i = 0; i < stringArray.length; i++) {
-            if (!stringArray[i].equals("")) {
-                values[i] = Integer.parseInt(stringArray[i]);
-            }
-        }
-        return values;
-    }
-
-    @SuppressWarnings("unchecked")
-    private BMap<BString, Object> getRepresentationArgument(Object jsonRepresentation, Type parameterType) {
+    private BMap<BString, Object> getRepresentationValue(Object jsonRepresentation, Type parameterType) {
         BMap<BString, ?> map = JsonUtils.convertJSONToMap(jsonRepresentation, PredefinedTypes.TYPE_MAP);
         return ValueCreator.createRecordValue(parameterType.getPackage(), parameterType.getName(),
                                               (BMap<BString, Object>) map);
@@ -354,39 +336,54 @@ public final class ArgumentHandler {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private BMap<BString, Object> getInputObjectArgument(BObject argumentNode, RecordType recordType) {
+    private BMap<BString, Object> getInputObjectArgument(Object argValue, RecordType recordType,
+                                                        boolean isVariableValue) throws IdTypeInputValidationException {
+        populateInputObjectFieldIdTypeArguments(recordType.getAnnotations());
         BMap<BString, Object> recordValue = recordType.getZeroValue();
-        if (argumentNode.getBooleanValue(VARIABLE_DEFINITION)) {
-            BMap<BString, Object> variablesMap = argumentNode.getMapValue(VARIABLE_VALUE_FIELD);
-            return ValueCreator.createRecordValue(recordType.getPackage(), recordType.getName(), variablesMap);
+        if (argValue == null) {
+            return null;
         }
-        BArray inputObjectFields = argumentNode.getArrayValue(VALUE_FIELD);
-        for (int i = 0; i < inputObjectFields.size(); i++) {
-            BObject inputObjectField = (BObject) inputObjectFields.get(i);
-            BString inputObjectFieldName = inputObjectField.getStringValue(NAME_FIELD);
-            Field field = recordType.getFields().get(inputObjectFieldName.getValue());
-            Object fieldValue = getArgumentValue(inputObjectField, field.getFieldType());
-            recordValue.put(inputObjectFieldName, fieldValue);
+        if (isVariableValue) {
+            BMap<BString, Object> variablesMap = (BMap<BString, Object>) argValue;
+            Map<String, Field> fields = recordType.getFields();
+            BMap<BString, Object> variables = ValueCreator.createMapValue();
+            for (Field field : fields.values()) {
+                BString fieldName = StringUtils.fromString(field.getFieldName());
+                Object value = getArgumentValue(fieldName.getValue(), variablesMap.get(fieldName),
+                        field.getFieldType(), true);
+                variables.put(fieldName, value);
+            }
+            return ValueCreator.createRecordValue(recordType.getPackage(), recordType.getName(), variables);
+        } else {
+            BArray inputObjectFields = (BArray) argValue;
+            for (int i = 0; i < inputObjectFields.size(); i++) {
+                BObject inputObjectField = (BObject) inputObjectFields.get(i);
+                BString inputObjectFieldName = inputObjectField.getStringValue(NAME_FIELD);
+                Object inputObjectFieldValue;
+                boolean isVariable = inputObjectField.getBooleanValue(VARIABLE_DEFINITION);
+                if (isVariable) {
+                    inputObjectFieldValue = inputObjectField.get(VARIABLE_VALUE_FIELD);
+                } else {
+                    inputObjectFieldValue = inputObjectField.get(VALUE_FIELD);
+                }
+                Field field = recordType.getFields().get(inputObjectFieldName.getValue());
+                Object fieldValue = getArgumentValue(inputObjectFieldName.getValue(), inputObjectFieldValue,
+                        field.getFieldType(), isVariable);
+                recordValue.put(inputObjectFieldName, fieldValue);
+            }
+            return recordValue;
         }
-        return recordValue;
     }
 
     private Object getJsonArgument(BObject argumentNode) {
         int kind = (int) argumentNode.getIntValue(KIND_FIELD);
         Object valueField = argumentNode.get(VALUE_FIELD);
-        switch (kind) {
-            case T_STRING:
-            case T_INT:
-            case T_FLOAT:
-            case T_BOOLEAN:
-                return JsonUtils.convertToJson(valueField);
-            case T_INPUT_OBJECT:
-                return getJsonObject(argumentNode);
-            case T_LIST:
-                return getJsonList(argumentNode);
-        }
-        return null;
+        return switch (kind) {
+            case T_STRING, T_INT, T_FLOAT, T_BOOLEAN -> JsonUtils.convertToJson(valueField);
+            case T_INPUT_OBJECT -> getJsonObject(argumentNode);
+            case T_LIST -> getJsonList(argumentNode);
+            default -> null;
+        };
     }
 
     private Object getJsonList(BObject argumentNode) {
@@ -412,60 +409,65 @@ public final class ArgumentHandler {
         return JsonUtils.convertToJson(mapValue);
     }
 
-    private Object getIntersectionTypeArgument(BObject argumentNode, IntersectionType intersectionType) {
+    private Object getIntersectionTypeArgument(String argName, Object argValue, IntersectionType intersectionType,
+                                               boolean isVariableValue) throws IdTypeInputValidationException {
         Type effectiveType = TypeUtils.getReferredType(getEffectiveType(intersectionType));
         if (effectiveType.getTag() == TypeTags.ARRAY_TAG) {
-            BArray valueArray = getArrayTypeArgument(argumentNode, (ArrayType) effectiveType);
+            BArray valueArray = getArrayTypeArgument(argName, argValue, (ArrayType) effectiveType, isVariableValue);
             valueArray.freezeDirect();
             return valueArray;
         }
-        BMap<BString, Object> argumentValue = getInputObjectArgument(argumentNode, (RecordType) effectiveType);
+        BMap<BString, Object> argumentValue = getInputObjectArgument(argValue, (RecordType) effectiveType,
+                isVariableValue);
         argumentValue.freezeDirect();
         return argumentValue;
     }
 
-    private BArray getArrayTypeArgument(BObject argumentNode, ArrayType arrayType) {
-        BArray valueArray = ValueCreator.createArrayValue(arrayType);
-        if (argumentNode.getBooleanValue(VARIABLE_DEFINITION)) {
-            BArray argumentsArray = argumentNode.getArrayValue(VARIABLE_VALUE_FIELD);
-            if (isRepresentationArgument(arrayType.getElementType())) {
-                Object[] representations = argumentsArray.getValues();
-                Object[] representationRecords = Arrays.stream(representations)
-                        .map(entity -> this.getRepresentationArgument(entity, arrayType.getElementType())).toArray();
-                return ValueCreator.createArrayValue(representationRecords, arrayType);
-            }
-            return (BArray) JsonUtils.convertJSON(argumentsArray, arrayType);
+    private BArray getArrayTypeArgument(String argName, Object argValue, ArrayType arrayType, boolean isVariableValue)
+            throws IdTypeInputValidationException {
+        BArray argumentArray = (BArray) argValue;
+        if (argumentArray == null) {
+            return null;
         }
-        BArray argumentArray = argumentNode.getArrayValue(VALUE_FIELD);
+        if (isVariableValue) {
+            BArray argumentArrValue = ValueCreator.createArrayValue(arrayType);
+            for (int i = 0; i < argumentArray.size(); i++) {
+                Object elementValue = argumentArray.get(i);
+                Object elementArgValue = getArgumentValue(argName, elementValue, arrayType.getElementType(), true);
+                argumentArrValue.append(elementArgValue);
+            }
+            return argumentArrValue;
+        }
+        BArray valueArray = ValueCreator.createArrayValue(arrayType);
         for (int i = 0; i < argumentArray.size(); i++) {
             BObject argumentElementNode = (BObject) argumentArray.get(i);
-            Object elementValue = getArgumentValue(argumentElementNode, arrayType.getElementType());
+            Object argElementValue;
+            boolean isVariable = argumentElementNode.getBooleanValue(VARIABLE_DEFINITION);
+            if (isVariable) {
+                argElementValue = argumentElementNode.get(VARIABLE_VALUE_FIELD);
+            } else {
+                argElementValue = argumentElementNode.get(VALUE_FIELD);
+            }
+            Object elementValue = getArgumentValue(argName, argElementValue, arrayType.getElementType(),
+                    isVariable);
             valueArray.append(elementValue);
         }
         return valueArray;
     }
 
-    private Object getUnionTypeArgument(BObject argumentNode, UnionType unionType) {
+    private Object getUnionTypeArgument(String argName, Object argValue, UnionType unionType,
+                                        boolean isVariableValue) throws IdTypeInputValidationException {
         if (isEnum(unionType)) {
-            return getEnumTypeArgument(argumentNode, unionType);
-        } else if (unionType.isNilable()) {
-            if (argumentNode.getBooleanValue(VARIABLE_DEFINITION) && argumentNode.get(VARIABLE_VALUE_FIELD) == null) {
-                return null;
-            } else if (!argumentNode.getBooleanValue(VARIABLE_DEFINITION) && argumentNode.get(VALUE_FIELD) == null) {
-                return null;
-            }
+            return getEnumTypeArgument(argValue, unionType);
+        } else if (unionType.isNilable() && argValue == null) {
+            return null;
         }
         Type effectiveType = getEffectiveType(unionType);
-        return getArgumentValue(argumentNode, effectiveType);
+        return getArgumentValue(argName, argValue, effectiveType, isVariableValue);
     }
 
-    private Object getEnumTypeArgument(BObject argumentNode, UnionType enumType) {
-        BString enumName;
-        if (argumentNode.getBooleanValue(VARIABLE_DEFINITION)) {
-            enumName = argumentNode.getStringValue(VARIABLE_VALUE_FIELD);
-        } else {
-            enumName = argumentNode.getStringValue(VALUE_FIELD);
-        }
+    private Object getEnumTypeArgument(Object argValue, UnionType enumType) {
+        BString enumName = (BString) argValue;
         Object result = enumName;
         for (Type memberType : enumType.getMemberTypes()) {
             if (memberType.getTag() == TypeTags.FINITE_TYPE_TAG) {
@@ -476,13 +478,6 @@ public final class ArgumentHandler {
             }
         }
         return result;
-    }
-
-    private Object getScalarArgumentValue(BObject argumentNode) {
-        if (argumentNode.getBooleanValue(VARIABLE_DEFINITION)) {
-            return argumentNode.get(VARIABLE_VALUE_FIELD);
-        }
-        return argumentNode.get(VALUE_FIELD);
     }
 
     private Parameter getParameterForArgumentNode(BString paramName) {
@@ -534,16 +529,46 @@ public final class ArgumentHandler {
     }
 
     private boolean isRepresentationArgument(Type type) {
+        Type refferedType = TypeUtils.getReferredType(type);
+        if (refferedType.getTag() == TypeTags.ARRAY_TAG) {
+            return isRepresentationArgument(((ArrayType) refferedType).getElementType());
+        }
         return TypeUtils.getReferredType(type).getTag() == TypeTags.RECORD_TYPE_TAG && isSubgraphModule(type)
                 && type.getName().equals(REPRESENTATION_TYPENAME);
     }
 
-    private void addConstraintValidationErrors(Environment environment, BArray errors) {
+    private Object getRepresentationArgument(BObject argumentNode, Type parameterType) {
+        if (parameterType.getTag() == TypeTags.ARRAY_TAG) {
+            ArrayType arrayType = (ArrayType) parameterType;
+            if (argumentNode.getBooleanValue(VARIABLE_DEFINITION)) {
+                BArray nestedArgArray = argumentNode.getArrayValue(VARIABLE_VALUE_FIELD);
+                Object[] representations = nestedArgArray.getValues();
+                Object[] representationRecords = Arrays.stream(representations).map
+                        (entity -> this.getRepresentationValue(entity, arrayType.getElementType())).toArray();
+                return ValueCreator.createArrayValue(representationRecords, arrayType);
+            } else {
+                BArray valueArray = ValueCreator.createArrayValue(arrayType);
+                BArray nestedArgArray = argumentNode.getArrayValue(VALUE_FIELD);
+                for (int j = 0; j < nestedArgArray.size(); j++) {
+                    BObject argumentElementNode = (BObject) nestedArgArray.get(j);
+                    Object jsonRepresentation = this.getJsonArgument(argumentElementNode);
+                    Object elementValue = getRepresentationValue(jsonRepresentation, arrayType.getElementType());
+                    valueArray.append(elementValue);
+                }
+                return valueArray;
+            }
+        } else {
+            Object jsonRepresentation = this.getJsonArgument(argumentNode);
+            return getRepresentationValue(jsonRepresentation, parameterType);
+        }
+    }
+
+    private void addValidationErrors(Environment environment, BArray errors, String methodName) {
         environment.yieldAndRun(() -> {
             BObject fieldNode = this.field.getObjectValue(INTERNAL_NODE);
             Object[] arguments = {errors, fieldNode};
             try {
-                return environment.getRuntime().callMethod(this.responseGenerator, ADD_CONSTRAINT_ERRORS_METHOD,
+                return environment.getRuntime().callMethod(this.responseGenerator, methodName,
                         null, arguments);
             } catch (BError bError) {
                 handleFailureAndExit(bError);
@@ -552,6 +577,7 @@ public final class ArgumentHandler {
         });
     }
 
+
     private static BTypedesc getTypeDescFromParameter(Parameter parameter) {
         BTypedesc bTypedesc = ValueCreator.createTypedescValue(parameter.type);
         if (bTypedesc.getDescribingType().getTag() == INTERSECTION_TAG) {
@@ -559,5 +585,22 @@ public final class ArgumentHandler {
             return ValueCreator.createTypedescValue(type);
         }
         return bTypedesc;
+    }
+
+    private void populateInputObjectFieldIdTypeArguments(BMap<BString, Object> annotations) {
+        int i = 0;
+        for (Object annotation : annotations.values().toArray()) {
+            BMap annotationMap = (BMap) annotation;
+            for (Object annotationKey : annotationMap.getKeys()) {
+                if (isIdAnnotation(annotationKey)) {
+                    String[] annotationValue = annotations.getKeys()[i].getValue().split("\\.");
+                    if (annotationValue.length == 2 && (annotationValue[0].equals(ARGUMENT_TYPE_PARAM) ||
+                            (annotationValue[0].equals(RECORD_FIELD_TYPE)))) {
+                        idsList.add(annotationValue[1]);
+                    }
+                    i++;
+                }
+            }
+        }
     }
 }

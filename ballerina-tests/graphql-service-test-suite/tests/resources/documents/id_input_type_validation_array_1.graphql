@@ -1,0 +1,6 @@
+query($input: [NestedIdInput!]!) {
+  inputObjectWithNestedIdTypeInArray(input: $input) {
+    id
+    name
+  }
+}
