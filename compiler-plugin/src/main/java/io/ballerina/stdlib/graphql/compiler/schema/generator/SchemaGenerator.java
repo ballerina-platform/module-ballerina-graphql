@@ -169,7 +169,7 @@ public class SchemaGenerator {
                 continue;
             }
             AnnotationNode entityAnnotation = getEntityAnnotationNode(entityAnnotationSymbol, entry.getKey(),
-                                                                      this.context);
+                    this.context);
             if (entityAnnotation == null) {
                 continue;
             }
@@ -313,7 +313,7 @@ public class SchemaGenerator {
             Type fieldType = getType(methodSymbol);
             Position position = getTypePosition(methodSymbol.getLocation(), methodSymbol, this.project);
             Field field = new Field(list.get(0).signature(), getDescription(methodSymbol), fieldType, isDeprecated,
-                                    deprecationReason, position);
+                    deprecationReason, position);
             addArgs(field, methodSymbol);
             return field;
         } else {
@@ -339,7 +339,7 @@ public class SchemaGenerator {
         Type fieldType = getType(methodSymbol);
         Position position = getTypePosition(methodSymbol.getLocation(), methodSymbol, this.project);
         Field field = new Field(methodSymbol.getName().get(), getDescription(methodSymbol), fieldType, isDeprecated,
-                                deprecationReason, position);
+                deprecationReason, position);
         addArgs(field, methodSymbol);
         return field;
     }
@@ -397,8 +397,8 @@ public class SchemaGenerator {
         List<AnnotationSymbol> annotationSymbols = annotatable.annotations();
         for (AnnotationSymbol annotationSymbol : annotationSymbols) {
             if (annotationSymbol.getName().isPresent() && annotationSymbol.getName().get().equals(ID_ANNOT_NAME)
-            && annotationSymbol.getModule().isPresent()
-            && Utils.isGraphqlModuleSymbol(annotationSymbol.getModule().get())) {
+                    && annotationSymbol.getModule().isPresent()
+                    && Utils.isGraphqlModuleSymbol(annotationSymbol.getModule().get())) {
                 return true;
             }
         }
@@ -468,11 +468,8 @@ public class SchemaGenerator {
 
     private static boolean isNilable(TypeSymbol typeSymbol) {
         if (typeSymbol instanceof UnionTypeSymbol unionTypeSymbol) {
-            for (TypeSymbol memberType : unionTypeSymbol.memberTypeDescriptors()) {
-                if (memberType.typeKind() == TypeDescKind.NIL) {
-                    return true;
-                }
-            }
+            return unionTypeSymbol.memberTypeDescriptors().stream().anyMatch(
+                    memberType -> memberType.typeKind() == TypeDescKind.NIL);
         } else if (typeSymbol instanceof TypeReferenceTypeSymbol typeReferenceTypeSymbol) {
             return isNilable(typeReferenceTypeSymbol.typeDescriptor());
         }
@@ -882,7 +879,7 @@ public class SchemaGenerator {
 
         Directive deprecated = new Directive(DefaultDirective.DEPRECATED);
         InputValue reason = new InputValue(REASON_ARG_NAME, addType(ScalarType.STRING),
-                                           Description.DEPRECATED_REASON.getDescription(), null);
+                Description.DEPRECATED_REASON.getDescription(), null);
         deprecated.addArg(reason);
         this.schema.addDirective(deprecated);
     }
@@ -896,7 +893,7 @@ public class SchemaGenerator {
                                    String typeName) {
         if (recordFieldSymbol.hasDefaultValue()) {
             TypeDefinitionNode recordTypeDefNode = getRecordTypeDefinitionNode(recordTypeSymbol, typeName,
-                                                                               this.context);
+                    this.context);
             if (recordTypeDefNode == null) {
                 return DEFAULT_VALUE;
             }
@@ -920,7 +917,7 @@ public class SchemaGenerator {
                 continue;
             }
             RecordFieldWithDefaultValueNode defaultField = getRecordFieldFromIncludedType(recordFieldSymbol,
-                                                                                          includedTypeSymbol);
+                    includedTypeSymbol);
             if (defaultField != null) {
                 return getDefaultValue(defaultField.expression());
             }
@@ -939,11 +936,11 @@ public class SchemaGenerator {
             if (descriptor.typeKind() == TypeDescKind.RECORD) {
                 // noinspection OptionalGetWithoutIsPresent
                 TypeDefinitionNode recordTypeDefNode = getRecordTypeDefinitionNode((RecordTypeSymbol) descriptor,
-                                                                                   includedTypeSymbol.getName().get(),
-                                                                                   this.context);
+                        includedTypeSymbol.getName().get(),
+                        this.context);
                 if (recordTypeDefNode != null) {
                     return getRecordFieldWithDefaultValueNode(recordFieldSymbol.getName().get(), recordTypeDefNode,
-                                                              this.semanticModel);
+                            this.semanticModel);
                 }
             }
         }
@@ -953,7 +950,7 @@ public class SchemaGenerator {
     private String getDefaultValue(MethodSymbol methodSymbol, ParameterSymbol parameterSymbol) {
         if (parameterSymbol.paramKind() == ParameterKind.DEFAULTABLE) {
             DefaultableParameterNode parameterNode = getDefaultableParameterNode(methodSymbol, parameterSymbol,
-                                                                                 this.context);
+                    this.context);
             return parameterNode == null ? DEFAULT_VALUE : getDefaultValue(parameterNode.expression());
         }
         return null;
