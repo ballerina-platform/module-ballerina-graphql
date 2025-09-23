@@ -1488,3 +1488,26 @@ service /evict_server_cache on basicListener {
         return self.name;
     }
 }
+
+service /nullable_types on basicListener {
+
+    resource function get nullableString() returns NullableString {
+        return ();
+    }
+
+    resource function get nullablePerson() returns NullablePerson {
+        return ();
+    }
+
+    resource function get nullableUnion() returns NullableUnion {
+        return ();
+    }
+
+    resource function get regularNullableString() returns string? {
+        return ();
+    }
+
+    resource function get regularNullablePerson() returns Person? {
+        return ();
+    }
+}

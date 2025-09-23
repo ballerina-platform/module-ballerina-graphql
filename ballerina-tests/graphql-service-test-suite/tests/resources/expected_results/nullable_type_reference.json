@@ -1,0 +1,50 @@
+{
+  "data": {
+    "__schema": {
+      "queryType": {
+        "fields": [
+          {
+            "name": "nullableString",
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            }
+          },
+          {
+            "name": "nullablePerson",
+            "type": {
+              "kind": "OBJECT",
+              "name": "Person",
+              "ofType": null
+            }
+          },
+          {
+            "name": "nullableUnion",
+            "type": {
+              "kind": "UNION",
+              "name": "NullableUnion",
+              "ofType": null
+            }
+          },
+          {
+            "name": "regularNullableString",
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            }
+          },
+          {
+            "name": "regularNullablePerson",
+            "type": {
+              "kind": "OBJECT",
+              "name": "Person",
+              "ofType": null
+            }
+          }
+        ]
+      }
+    }
+  }
+}

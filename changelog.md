@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 
 - [[#7952] Fix Service Crashing when using Int Value for an ID Type Input Object Field](https://github.com/ballerina-platform/ballerina-library/issues/7952)
+- [[#8231] Fix Nilable Union Type Reference Types Generating Invalid Schema Type](https://github.com/ballerina-platform/ballerina-library/issues/8231)
 
 ## [1.16.1] - 2025-03-19
 

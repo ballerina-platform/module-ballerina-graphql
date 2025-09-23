@@ -467,14 +467,14 @@ public class SchemaGenerator {
     }
 
     private static boolean isNilable(TypeSymbol typeSymbol) {
-        if (typeSymbol.typeKind() != TypeDescKind.UNION) {
-            return false;
-        }
-        UnionTypeSymbol unionTypeSymbol = (UnionTypeSymbol) typeSymbol;
-        for (TypeSymbol memberType : unionTypeSymbol.memberTypeDescriptors()) {
-            if (memberType.typeKind() == TypeDescKind.NIL) {
-                return true;
+        if (typeSymbol instanceof UnionTypeSymbol unionTypeSymbol) {
+            for (TypeSymbol memberType : unionTypeSymbol.memberTypeDescriptors()) {
+                if (memberType.typeKind() == TypeDescKind.NIL) {
+                    return true;
+                }
             }
+        } else if (typeSymbol instanceof TypeReferenceTypeSymbol typeReferenceTypeSymbol) {
+            return isNilable(typeReferenceTypeSymbol.typeDescriptor());
         }
         return false;
     }
