@@ -38,6 +38,7 @@ function dataProviderIntrospection() returns map<[string, string, json]> {
     string url8 = "http://localhost:9090/deprecation";
     string url9 = "http://localhost:9091/id_annotation_1";
     string url10 = "http://localhost:9090/defaultParam";
+    string url11 = "http://localhost:9091/nullable_types";
 
     map<[string, string, json]> dataSet = {
         "1": [url1, "complex_introspection_query"],
@@ -74,7 +75,8 @@ function dataProviderIntrospection() returns map<[string, string, json]> {
         "32": [url2, "typename_introspection_on_schema_introspection"],
         "33": [url2, "typename_introspection_on_field"],
         "34": [url9, "id_introspection_query"],
-        "35": [url10, "introspection_on_input_object_having_defaultable_fields"]
+        "35": [url10, "introspection_on_input_object_having_defaultable_fields"],
+        "36": [url11, "nullable_type_reference"]
     };
     return dataSet;
 }

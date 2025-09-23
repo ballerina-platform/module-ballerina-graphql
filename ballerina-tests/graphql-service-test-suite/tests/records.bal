@@ -16,6 +16,11 @@
 
 type Information Address|Person;
 
+// Nullable union types for testing schema generation bug
+type NullableString string|();
+type NullablePerson Person|();
+type NullableUnion StudentService|TeacherService|();
+
 public type Account record {
     int number;
     Contact? contact;
