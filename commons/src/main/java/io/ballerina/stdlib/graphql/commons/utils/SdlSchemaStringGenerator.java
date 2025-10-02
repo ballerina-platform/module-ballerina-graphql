@@ -184,15 +184,12 @@ public class SdlSchemaStringGenerator {
             }
         }
         
-        // Sort types according to GraphQL best practices:
-        // Query -> Mutation -> Subscription -> Interface -> Object -> Input -> Enum -> Union -> Scalar
         typeList.sort((t1, t2) -> {
             int priority1 = getTypeSortPriority(t1);
             int priority2 = getTypeSortPriority(t2);
             if (priority1 != priority2) {
                 return Integer.compare(priority1, priority2);
             }
-            // Within the same priority, sort alphabetically by name
             return t1.getName().compareTo(t2.getName());
         });
         
@@ -204,7 +201,6 @@ public class SdlSchemaStringGenerator {
     }
     
     private int getTypeSortPriority(Type type) {
-        // Query, Mutation, and Subscription should come first (in that order)
         if (this.schema.getQueryType() != null && type.getName().equals(this.schema.getQueryType().getName())) {
             return 0;
         }
@@ -216,7 +212,6 @@ public class SdlSchemaStringGenerator {
             return 2;
         }
         
-        // Then order by TypeKind
         switch (type.getKind()) {
             case INTERFACE:
                 return 3;
