@@ -189,6 +189,7 @@ public class ServiceValidator {
         if (entityAnnotation.annotValue().isEmpty()) {
             return;
         }
+        List<String> keyFields = new ArrayList<>();
         for (MappingFieldNode fieldNode : entityAnnotation.annotValue().get().fields()) {
             if (fieldNode.kind() != SPECIFIC_FIELD) {
                 addDiagnostic(CompilationDiagnostic.PROVIDE_KEY_VALUE_PAIR_FOR_ENTITY_ANNOTATION, fieldNode.location());
@@ -203,8 +204,98 @@ public class ServiceValidator {
             String fieldName = fieldNameToken.text().trim();
             if (KEY.equals(fieldName)) {
                 validateKeyField(specificFieldNode);
+                keyFields = extractKeyFields(specificFieldNode);
+
+            }
+
+            validateFieldsAgainstKeys(keyFields, entityAnnotation.location());
+
+        }
+    }
+
+    private void validateFieldsAgainstKeys(List<String> keyFields, Location location) {
+
+        if (keyFields == null || keyFields.isEmpty()) {
+            return;
+
+        }
+
+        Set<String> keyFieldSet = new HashSet<>(keyFields);
+
+        List<RecordFieldSymbol> recordFields = getRecordFields(getCurrentEntitySymbol());
+
+        for (RecordFieldSymbol recordField : recordFields) {
+            String fieldName = recordField.getName().orElse(null);
+
+            if (fieldName == null) {
+                continue;
+            }
+
+            if (!keyFieldSet.contains(fieldName)) {
+                addDiagnostic(CompilationDiagnostic.INVALID_ENTITY_FIELD,
+                        recordField.location(), fieldName);
             }
         }
+    }
+
+    private Symbol getCurrentEntitySymbol() {
+
+        for (Map.Entry<String, Symbol> entry : this.interfaceEntityFinder.getEntities().entrySet()) {
+            AnnotationSymbol entityAnnotation = getEntityAnnotationSymbol(entry.getValue());
+            if (entityAnnotation != null) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    private List<String> extractKeyFields(SpecificFieldNode specificFieldNode) {
+
+        List<String> keyFields = new ArrayList<>();
+        if (specificFieldNode.valueExpr().isEmpty()) {
+            return keyFields;
+
+        }
+
+        ExpressionNode valueNode = specificFieldNode.valueExpr().get();
+
+        if (valueNode.kind() == SyntaxKind.STRING_LITERAL) {
+            keyFields.add(valueNode.toString().replace("\"", "").trim());
+        } else if (valueNode.kind() == SyntaxKind.LIST_CONSTRUCTOR) {
+            for (Node keyNode : ((ListConstructorExpressionNode) valueNode).expressions()) {
+                if (keyNode.kind() == SyntaxKind.STRING_LITERAL) {
+                    keyFields.add(keyNode.toString().replace("\"", "").trim());
+                }
+            }
+        } else {
+            addDiagnostic(CompilationDiagnostic.PROVIDE_A_STRING_LITERAL_OR_AN_ARRAY_OF_STRING_LITERALS_FOR_KEY_FIELD,
+                    valueNode.location());
+
+        }
+
+        return keyFields;
+
+    }
+
+    private List<RecordFieldSymbol> getRecordFields() {
+
+        for (Map.Entry<String, Symbol> entry : this.interfaceEntityFinder.getEntities().entrySet()) {
+            AnnotationSymbol entityAnnotation = getEntityAnnotationSymbol(entry.getValue());
+            if (entityAnnotation != null) {
+                Symbol entitySymbol = entry.getValue();
+
+                if (entitySymbol instanceof TypeDefinitionSymbol) {
+                    TypeDefinitionSymbol typeDefSymbol = (TypeDefinitionSymbol) entitySymbol;
+                    TypeSymbol typeDescriptor = typeDefSymbol.typeDescriptor();
+
+                    if (typeDescriptor instanceof RecordTypeSymbol) {
+                        RecordTypeSymbol recordType = (RecordTypeSymbol) typeDescriptor;
+                        return new ArrayList<>(recordType.fieldDescriptors().values());
+                    }
+                }
+            }
+        }
+        return Collections.emptyList();
     }
 
     private void validateKeyField(SpecificFieldNode specificFieldNode) {
