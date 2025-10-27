@@ -206,6 +206,21 @@ public class ServiceValidationTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
+    @Test(groups = "valid")
+    public void testValidEntityWithKeyOnly() {
+        String packagePath = "88_valid_entity_with_key_only";
+        DiagnosticResult result = getDiagnosticResult(packagePath);
+        Assert.assertEquals(result.errorCount(), 0, "Expected no errors for key-only entity definition.");
+
+    }
+
+    @Test(groups = "valid")
+    public void testValidEntityWithKeyAndResolveReference() {
+        String packagePath = "89_valid_entity_with_key_and_resolve_reference";
+        DiagnosticResult result = getDiagnosticResult(packagePath);
+        Assert.assertEquals(result.errorCount(), 0, "Expected no errors for entity with resolveReference.");
+    }
+
     @Test(groups = "invalid")
     public void testMultipleListenersOnSameService() {
         String packagePath = "24_multiple_listeners_on_same_service";
@@ -1051,6 +1066,16 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 34, 21);
     }
 
+    @Test(groups = "invalid")
+    public void testInvalidEntityMissingResolveReference() {
+        String packagePath = "90_invalid_entity_missing_resolve_reference";
+        DiagnosticResult result = getDiagnosticResult(packagePath);
+        Assert.assertEquals(result.errorCount(), 1, "Expected one validation error when resolveReference is missing.");
+
+        Diagnostic diagnostic = result.errors().iterator().next();
+        String expectedMessage = getErrorMessage(CompilationDiagnostic.INVALID_ENTITY_FIELD, "User");
+        assertErrorMessage(diagnostic, expectedMessage, 8, 5);
+    }
     @Test(groups = "invalid")
     public void testInvalidUseOfReservedFederatedTypeNames() {
         String packagePath = "60_invalid_use_of_reserved_federation_type_names";

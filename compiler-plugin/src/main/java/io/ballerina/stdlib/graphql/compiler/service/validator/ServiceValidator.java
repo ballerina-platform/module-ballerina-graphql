@@ -18,10 +18,12 @@
 
 package io.ballerina.stdlib.graphql.compiler.service.validator;
 
+import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.api.symbols.AnnotationSymbol;
 import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.EnumSymbol;
+import io.ballerina.compiler.api.symbols.FunctionSymbol;
 import io.ballerina.compiler.api.symbols.FunctionTypeSymbol;
 import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
 import io.ballerina.compiler.api.symbols.MapTypeSymbol;
@@ -76,6 +78,7 @@ import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 import io.ballerina.tools.diagnostics.Location;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -221,8 +224,9 @@ public class ServiceValidator {
         }
 
         Set<String> keyFieldSet = new HashSet<>(keyFields);
+        List<RecordFieldSymbol> recordFields = getRecordFields();
 
-        List<RecordFieldSymbol> recordFields = getRecordFields(getCurrentEntitySymbol());
+        boolean hasExtraFields = false;
 
         for (RecordFieldSymbol recordField : recordFields) {
             String fieldName = recordField.getName().orElse(null);
@@ -232,9 +236,14 @@ public class ServiceValidator {
             }
 
             if (!keyFieldSet.contains(fieldName)) {
+                hasExtraFields = true;
                 addDiagnostic(CompilationDiagnostic.INVALID_ENTITY_FIELD,
                         recordField.location(), fieldName);
             }
+        }
+        Symbol currentEntity = getCurrentEntitySymbol();
+        if (hasExtraFields && !hasResolveReferenceFunctionForEntity(currentEntity)) {
+            addDiagnostic(CompilationDiagnostic.INVALID_ENTITY_FIELD, location);
         }
     }
 
@@ -249,6 +258,61 @@ public class ServiceValidator {
         return null;
     }
 
+    private boolean hasResolveReferenceFunctionForEntity(Symbol entitySymbol) {
+        if (entitySymbol == null || context == null) {
+            return false;
+        }
+
+        String entityName = entitySymbol.getName().orElse(null);
+        if (entityName == null) {
+            return false;
+        }
+
+        // Get semantic model from context
+        SemanticModel semanticModel = context.semanticModel();
+
+        // Get module symbols and search for resolveReference function
+        List<Symbol> moduleSymbols = new ArrayList<>();
+        semanticModel.moduleSymbols().forEach(moduleSymbols::add);
+
+        for (Symbol symbol : moduleSymbols) {
+            if (symbol.kind() != SymbolKind.FUNCTION) {
+                continue;
+            }
+
+            FunctionSymbol functionSymbol = (FunctionSymbol) symbol;
+            if (!"resolveReference".equals(functionSymbol.getName().orElse(""))) {
+                continue;
+            }
+
+            Optional<List<ParameterSymbol>> paramsOpt = functionSymbol.typeDescriptor().params();
+            if (paramsOpt.isEmpty() || paramsOpt.get().isEmpty()) {
+                continue;
+            }
+
+            ParameterSymbol firstParam = paramsOpt.get().get(0);
+            TypeSymbol paramType = firstParam.typeDescriptor();
+
+
+            // Check if the parameter type matches the entity
+            if (paramType != null) {
+                // Try matching by name
+                if (entityName.equals(paramType.getName().orElse(null))) {
+                    return true;
+                }
+
+                // For type reference types, also check the original type
+                if (paramType.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+                    TypeReferenceTypeSymbol typeRef = (TypeReferenceTypeSymbol) paramType;
+                    if (entityName.equals(typeRef.getName().orElse(null))) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
     private List<String> extractKeyFields(SpecificFieldNode specificFieldNode) {
 
         List<String> keyFields = new ArrayList<>();
