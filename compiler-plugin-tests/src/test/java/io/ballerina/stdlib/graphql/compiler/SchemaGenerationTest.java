@@ -19,15 +19,14 @@
 package io.ballerina.stdlib.graphql.compiler;
 
 import io.ballerina.projects.DiagnosticResult;
-import io.ballerina.projects.ProjectEnvironmentBuilder;
-import io.ballerina.projects.directory.BuildProject;
-import io.ballerina.projects.environment.Environment;
-import io.ballerina.projects.environment.EnvironmentBuilder;
+import io.ballerina.projects.Project;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import static io.ballerina.stdlib.graphql.compiler.TestUtils.getProject;
 
 /**
  * This class includes tests for Ballerina Graphql compiler plugin schema generation.
@@ -35,9 +34,7 @@ import java.nio.file.Paths;
 public class SchemaGenerationTest {
 
     private static final Path RESOURCE_DIRECTORY = Paths.get("src", "test", "resources", "ballerina_sources",
-                                                             "generator_tests").toAbsolutePath();
-    private static final Path DISTRIBUTION_PATH = Paths.get("../", "target", "ballerina-runtime")
-            .toAbsolutePath();
+            "generator_tests").toAbsolutePath();
 
     @Test
     public void testResolversReturningScalarTypes() {
@@ -230,12 +227,7 @@ public class SchemaGenerationTest {
 
     private DiagnosticResult getDiagnosticResult(String path) {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(path);
-        BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath);
+        Project project = getProject(projectDirPath);
         return project.currentPackage().runCodeGenAndModifyPlugins();
-    }
-
-    private static ProjectEnvironmentBuilder getEnvironmentBuilder() {
-        Environment environment = EnvironmentBuilder.getBuilder().setBallerinaHome(DISTRIBUTION_PATH).build();
-        return ProjectEnvironmentBuilder.getBuilder(environment);
     }
 }

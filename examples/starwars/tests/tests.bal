@@ -264,9 +264,7 @@ function testFriends() returns error? {
     test:assertEquals(actualPayload, expectedPayload);
 }
 
-@test:Config {
-    enable: false // Disabled the test because the service is not closing when this test is done.
-}
+@test:Config {}
 function testReviewAdded() returns error? {
     string document = check getGraphqlDocumentFromFile("reviewAdded");
     future<error?> subscribeResult = start subscribeReviewAdded(document);

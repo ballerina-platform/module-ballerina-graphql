@@ -28,10 +28,6 @@ import io.ballerina.projects.Module;
 import io.ballerina.projects.ModuleId;
 import io.ballerina.projects.Package;
 import io.ballerina.projects.Project;
-import io.ballerina.projects.ProjectEnvironmentBuilder;
-import io.ballerina.projects.directory.BuildProject;
-import io.ballerina.projects.environment.Environment;
-import io.ballerina.projects.environment.EnvironmentBuilder;
 import io.ballerina.stdlib.graphql.commons.types.ObjectKind;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
 import io.ballerina.stdlib.graphql.commons.types.TypeKind;
@@ -47,6 +43,7 @@ import org.testng.annotations.Test;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static io.ballerina.stdlib.graphql.compiler.TestUtils.getProject;
 import static io.ballerina.stdlib.graphql.compiler.Utils.getSchemaObject;
 
 /**
@@ -55,23 +52,16 @@ import static io.ballerina.stdlib.graphql.compiler.Utils.getSchemaObject;
 public class SchemaValidatorTest {
     private static final Path RESOURCE_DIRECTORY = Paths.get("src", "test", "resources",
             "ballerina_sources", "schema_validator_tests").toAbsolutePath();
-    private static final Path DISTRIBUTION_PATH = Paths.get("../", "target", "ballerina-runtime")
-            .toAbsolutePath();
 
     private Schema getSchema(String packagePath, LineRange position) {
         Path projectPath = RESOURCE_DIRECTORY.resolve(packagePath);
-        BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectPath);
+        Project project = getProject(projectPath);
         Package currentPackage = project.currentPackage();
         SemanticModel semanticModel = getDefaultModulesSemanticModel(currentPackage);
         SyntaxTree syntaxTree = getSyntaxTree(project);
         Range range = toRange(position);
         NonTerminalNode node = findSTNode(range, syntaxTree);
         return getSchemaObject(node, semanticModel, project);
-    }
-
-    private static ProjectEnvironmentBuilder getEnvironmentBuilder() {
-        Environment environment = EnvironmentBuilder.getBuilder().setBallerinaHome(DISTRIBUTION_PATH).build();
-        return ProjectEnvironmentBuilder.getBuilder(environment);
     }
 
     public static SemanticModel getDefaultModulesSemanticModel(Package currentPackage) {

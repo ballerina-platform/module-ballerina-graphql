@@ -53,3 +53,5 @@ load-tests/**/Dependencies.toml
 
 # Java Logs
 java_pid*.hprof
+
+*-audit-report*
