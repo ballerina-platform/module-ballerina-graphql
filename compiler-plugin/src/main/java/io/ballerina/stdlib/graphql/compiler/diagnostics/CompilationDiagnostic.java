@@ -89,6 +89,7 @@ public enum CompilationDiagnostic {
     INVALID_EMPTY_RECORD_INPUT_TYPE(DiagnosticMessage.ERROR_147, DiagnosticCode.GRAPHQL_147, DiagnosticSeverity.ERROR),
     INVALID_MODIFICATION_OF_SERVICE_CONFIG_FIELD(DiagnosticMessage.ERROR_148, DiagnosticCode.GRAPHQL_148,
                                                  DiagnosticSeverity.ERROR),
+    INVALID_ENTITY_FIELD(DiagnosticMessage.ERROR_149, DiagnosticCode.GRAPHQL_149, DiagnosticSeverity.ERROR),
 
     // Warnings
     UNSUPPORTED_INPUT_FIELD_DEPRECATION(DiagnosticMessage.WARNING_201, DiagnosticCode.GRAPHQL_201,
