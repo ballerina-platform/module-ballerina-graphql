@@ -31,10 +31,10 @@ graalvmCompatible = true
 groupId = "io.ballerina.stdlib"
 artifactId = "graphql-native"
 version = "1.17.0"
-path = "../native/build/libs/graphql-native-1.17.0-SNAPSHOT.jar"
+path = "../native/build/libs/graphql-native-1.17.0.jar"
 
 [[platform.java21.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "graphql-commons"
 version = "1.17.0"
-path = "../commons/build/libs/graphql-commons-1.17.0-SNAPSHOT.jar"
+path = "../commons/build/libs/graphql-commons-1.17.0.jar"
