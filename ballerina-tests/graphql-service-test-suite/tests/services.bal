@@ -92,6 +92,14 @@ service /graphiqlClient on basicListener {
 const float CONVERSION_KG_TO_LBS = 2.205;
 
 service /inputs on basicListener {
+    isolated resource function get asset(string value) returns Asset {
+        Asset asset = {
+            value: value,
+            subClass: []
+        };
+        return asset;
+    }
+
     isolated resource function get greet(string name) returns string {
         return "Hello, " + name;
     }

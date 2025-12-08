@@ -38,7 +38,9 @@ import io.ballerina.runtime.api.values.BString;
 import io.ballerina.stdlib.graphql.runtime.utils.Utils;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.MUTATION;
 import static io.ballerina.stdlib.graphql.runtime.engine.EngineUtils.QUERY;
@@ -61,6 +63,7 @@ public class ServiceAnalyzer {
     private final Map<String, Resource> resourceMap;
     private final ServiceType serviceType;
     private final Long defaultQueryComplexity;
+    private final Set<Type> visitedTypes = new HashSet<>();
 
     public ServiceAnalyzer(ServiceType serviceType) {
         this.resourceMap = new HashMap<>();
@@ -103,38 +106,38 @@ public class ServiceAnalyzer {
 
     private void analyzeType(Type type) {
         Type impliedType = TypeUtils.getImpliedType(type);
-        int tag = impliedType.getTag();
-        switch (tag) {
-            case TypeTags.SERVICE_TAG: {
-                analyzeServiceType((ServiceType) impliedType);
-                break;
+        if (!visitedTypes.add(impliedType)) {
+            return;
+        }
+
+        try {
+            switch (impliedType.getTag()) {
+                case TypeTags.SERVICE_TAG:
+                    analyzeServiceType((ServiceType) impliedType);
+                    break;
+                case TypeTags.UNION_TAG:
+                    analyzeUnionType((UnionType) impliedType);
+                    break;
+                case TypeTags.ARRAY_TAG:
+                    analyzeType(((ArrayType) impliedType).getElementType());
+                    break;
+                case TypeTags.TABLE_TAG:
+                    analyzeType(((TableType) impliedType).getConstrainedType());
+                    break;
+                case TypeTags.RECORD_TYPE_TAG:
+                    analyzeRecordType((RecordType) impliedType);
+                    break;
+                case TypeTags.MAP_TAG:
+                    analyzeType(((MapType) impliedType).getConstrainedType());
+                    break;
+                case TypeTags.STREAM_TAG:
+                    analyzeType(((StreamType) impliedType).getConstrainedType());
+                    break;
+                default:
+                    break;
             }
-            case TypeTags.UNION_TAG: {
-                analyzeUnionType((UnionType) impliedType);
-                break;
-            }
-            case TypeTags.ARRAY_TAG: {
-                analyzeType(((ArrayType) impliedType).getElementType());
-                break;
-            }
-            case TypeTags.TABLE_TAG: {
-                analyzeType(((TableType) impliedType).getConstrainedType());
-                break;
-            }
-            case TypeTags.RECORD_TYPE_TAG: {
-                analyzeRecordType((RecordType) impliedType);
-                break;
-            }
-            case TypeTags.MAP_TAG: {
-                analyzeType(((MapType) impliedType).getConstrainedType());
-                break;
-            }
-            case TypeTags.STREAM_TAG: {
-                analyzeType(((StreamType) impliedType).getConstrainedType());
-                break;
-            }
-            default:
-                break;
+        } finally {
+            visitedTypes.remove(impliedType);
         }
     }
 

@@ -33,6 +33,7 @@ isolated function testInputParameters(string resourceFileName) returns error? {
 function dataProviderInputParameters() returns string[][] {
     return [
         ["functions_with_input_parameter"],
+        ["function_with_recursive_types"],
         ["input_parameter_type_not_present_in_return_types"],
         ["query_without_default_parameter"],
         ["query_with_default_parameter"],
