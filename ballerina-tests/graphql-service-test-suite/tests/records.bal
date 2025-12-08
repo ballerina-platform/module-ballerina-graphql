@@ -252,6 +252,11 @@ public type Review record {|
     string description;
 |};
 
+public type Asset record {
+    string value;
+    Asset[] subClass;
+};
+
 public type AccountRecords record {|
     map<AccountDetails> details;
 |};
