@@ -1,0 +1,11 @@
+{
+  asset(value: "Test Message") {
+    value
+    subClass {
+      value
+      subClass {
+        value
+      }
+    }
+  }
+}
