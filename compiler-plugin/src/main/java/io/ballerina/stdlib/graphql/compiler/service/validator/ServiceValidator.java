@@ -18,10 +18,12 @@
 
 package io.ballerina.stdlib.graphql.compiler.service.validator;
 
+import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.api.symbols.AnnotationSymbol;
 import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.EnumSymbol;
+import io.ballerina.compiler.api.symbols.FunctionSymbol;
 import io.ballerina.compiler.api.symbols.FunctionTypeSymbol;
 import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
 import io.ballerina.compiler.api.symbols.MapTypeSymbol;
@@ -76,6 +78,7 @@ import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 import io.ballerina.tools.diagnostics.Location;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -189,6 +192,7 @@ public class ServiceValidator {
         if (entityAnnotation.annotValue().isEmpty()) {
             return;
         }
+        List<String> keyFields = new ArrayList<>();
         for (MappingFieldNode fieldNode : entityAnnotation.annotValue().get().fields()) {
             if (fieldNode.kind() != SPECIFIC_FIELD) {
                 addDiagnostic(CompilationDiagnostic.PROVIDE_KEY_VALUE_PAIR_FOR_ENTITY_ANNOTATION, fieldNode.location());
@@ -203,8 +207,159 @@ public class ServiceValidator {
             String fieldName = fieldNameToken.text().trim();
             if (KEY.equals(fieldName)) {
                 validateKeyField(specificFieldNode);
+                keyFields = extractKeyFields(specificFieldNode);
+
+            }
+
+            validateFieldsAgainstKeys(keyFields, entityAnnotation.location());
+
+        }
+    }
+
+    private void validateFieldsAgainstKeys(List<String> keyFields, Location location) {
+
+        if (keyFields == null || keyFields.isEmpty()) {
+            return;
+
+        }
+
+        Set<String> keyFieldSet = new HashSet<>(keyFields);
+        List<RecordFieldSymbol> recordFields = getRecordFields();
+
+        boolean hasExtraFields = false;
+
+        for (RecordFieldSymbol recordField : recordFields) {
+            String fieldName = recordField.getName().orElse(null);
+
+            if (fieldName == null) {
+                continue;
+            }
+
+            if (!keyFieldSet.contains(fieldName)) {
+                hasExtraFields = true;
+                addDiagnostic(CompilationDiagnostic.INVALID_ENTITY_FIELD,
+                        recordField.location(), fieldName);
             }
         }
+        Symbol currentEntity = getCurrentEntitySymbol();
+        if (hasExtraFields && !hasResolveReferenceFunctionForEntity(currentEntity)) {
+            addDiagnostic(CompilationDiagnostic.INVALID_ENTITY_FIELD, location);
+        }
+    }
+
+    private Symbol getCurrentEntitySymbol() {
+
+        for (Map.Entry<String, Symbol> entry : this.interfaceEntityFinder.getEntities().entrySet()) {
+            AnnotationSymbol entityAnnotation = getEntityAnnotationSymbol(entry.getValue());
+            if (entityAnnotation != null) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    private boolean hasResolveReferenceFunctionForEntity(Symbol entitySymbol) {
+        if (entitySymbol == null || context == null) {
+            return false;
+        }
+
+        String entityName = entitySymbol.getName().orElse(null);
+        if (entityName == null) {
+            return false;
+        }
+
+        // Get semantic model from context
+        SemanticModel semanticModel = context.semanticModel();
+
+        // Get module symbols and search for resolveReference function
+        List<Symbol> moduleSymbols = new ArrayList<>();
+        semanticModel.moduleSymbols().forEach(moduleSymbols::add);
+
+        for (Symbol symbol : moduleSymbols) {
+            if (symbol.kind() != SymbolKind.FUNCTION) {
+                continue;
+            }
+
+            FunctionSymbol functionSymbol = (FunctionSymbol) symbol;
+            if (!"resolveReference".equals(functionSymbol.getName().orElse(""))) {
+                continue;
+            }
+
+            Optional<List<ParameterSymbol>> paramsOpt = functionSymbol.typeDescriptor().params();
+            if (paramsOpt.isEmpty() || paramsOpt.get().isEmpty()) {
+                continue;
+            }
+
+            ParameterSymbol firstParam = paramsOpt.get().get(0);
+            TypeSymbol paramType = firstParam.typeDescriptor();
+
+
+            // Check if the parameter type matches the entity
+            if (paramType != null) {
+                // Try matching by name
+                if (entityName.equals(paramType.getName().orElse(null))) {
+                    return true;
+                }
+
+                // For type reference types, also check the original type
+                if (paramType.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+                    TypeReferenceTypeSymbol typeRef = (TypeReferenceTypeSymbol) paramType;
+                    if (entityName.equals(typeRef.getName().orElse(null))) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+    private List<String> extractKeyFields(SpecificFieldNode specificFieldNode) {
+
+        List<String> keyFields = new ArrayList<>();
+        if (specificFieldNode.valueExpr().isEmpty()) {
+            return keyFields;
+
+        }
+
+        ExpressionNode valueNode = specificFieldNode.valueExpr().get();
+
+        if (valueNode.kind() == SyntaxKind.STRING_LITERAL) {
+            keyFields.add(valueNode.toString().replace("\"", "").trim());
+        } else if (valueNode.kind() == SyntaxKind.LIST_CONSTRUCTOR) {
+            for (Node keyNode : ((ListConstructorExpressionNode) valueNode).expressions()) {
+                if (keyNode.kind() == SyntaxKind.STRING_LITERAL) {
+                    keyFields.add(keyNode.toString().replace("\"", "").trim());
+                }
+            }
+        } else {
+            addDiagnostic(CompilationDiagnostic.PROVIDE_A_STRING_LITERAL_OR_AN_ARRAY_OF_STRING_LITERALS_FOR_KEY_FIELD,
+                    valueNode.location());
+
+        }
+
+        return keyFields;
+
+    }
+
+    private List<RecordFieldSymbol> getRecordFields() {
+
+        for (Map.Entry<String, Symbol> entry : this.interfaceEntityFinder.getEntities().entrySet()) {
+            AnnotationSymbol entityAnnotation = getEntityAnnotationSymbol(entry.getValue());
+            if (entityAnnotation != null) {
+                Symbol entitySymbol = entry.getValue();
+
+                if (entitySymbol instanceof TypeDefinitionSymbol) {
+                    TypeDefinitionSymbol typeDefSymbol = (TypeDefinitionSymbol) entitySymbol;
+                    TypeSymbol typeDescriptor = typeDefSymbol.typeDescriptor();
+
+                    if (typeDescriptor instanceof RecordTypeSymbol) {
+                        RecordTypeSymbol recordType = (RecordTypeSymbol) typeDescriptor;
+                        return new ArrayList<>(recordType.fieldDescriptors().values());
+                    }
+                }
+            }
+        }
+        return Collections.emptyList();
     }
 
     private void validateKeyField(SpecificFieldNode specificFieldNode) {
