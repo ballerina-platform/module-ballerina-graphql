@@ -174,16 +174,60 @@ public class SdlSchemaStringGenerator {
     }
 
     private String getTypes() {
-        List<String> types = new ArrayList<>();
+        List<Type> typeList = new ArrayList<>();
         for (Map.Entry<String, Type> entry : this.schema.getTypes().entrySet()) {
             if (!isIntrospectionType(entry.getValue()) && !isBuiltInScalarType(entry.getValue())) {
                 if (!isSubgraphSdlIntrospection && isDefaultFederatedType(entry.getValue())) {
                     continue;
                 }
-                types.add(createType(entry.getValue()));
+                typeList.add(entry.getValue());
             }
         }
+        
+        typeList.sort((t1, t2) -> {
+            int priority1 = getTypeSortPriority(t1);
+            int priority2 = getTypeSortPriority(t2);
+            if (priority1 != priority2) {
+                return Integer.compare(priority1, priority2);
+            }
+            return t1.getName().compareTo(t2.getName());
+        });
+        
+        List<String> types = new ArrayList<>();
+        for (Type type : typeList) {
+            types.add(createType(type));
+        }
         return String.join(LINE_SEPARATOR + LINE_SEPARATOR, types);
+    }
+    
+    private int getTypeSortPriority(Type type) {
+        if (this.schema.getQueryType() != null && type.getName().equals(this.schema.getQueryType().getName())) {
+            return 0;
+        }
+        if (this.schema.getMutationType() != null && type.getName().equals(this.schema.getMutationType().getName())) {
+            return 1;
+        }
+        if (this.schema.getSubscriptionType() != null && 
+                type.getName().equals(this.schema.getSubscriptionType().getName())) {
+            return 2;
+        }
+        
+        switch (type.getKind()) {
+            case INTERFACE:
+                return 3;
+            case OBJECT:
+                return 4;
+            case INPUT_OBJECT:
+                return 5;
+            case ENUM:
+                return 6;
+            case UNION:
+                return 7;
+            case SCALAR:
+                return 8;
+            default:
+                return 9;
+        }
     }
 
     private boolean isDefaultFederatedType(Type type) {
