@@ -27,12 +27,11 @@ Git Tracker is a GraphQL service written in Ballerina that connects with the Git
 1. Clone the Git Tracker repository:
 
    ```bash
-   git clone https://github.com/ballerina-platform/module-ballerina-graphql/examples/simple-github-issue-tracker.git
+   git clone https://github.com/ballerina-platform/module-ballerina-graphql.git
 
 2. Navigate to the cloned repository:
     ```bash
-    cd simple-github-issue-tracker
-
+    cd module-ballerina-graphql/examples/simple_github_issue_tracker/
 3. Configure the application by updating the config.toml file with your GitHub API credentials:
     ```bash
     authToken = "<YOUR_GITHUB_AUTH_TOKEN>"
