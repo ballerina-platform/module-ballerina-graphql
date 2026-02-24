@@ -52,7 +52,7 @@ public class ServiceValidationTest {
         Assert.assertEquals(diagnosticResult.errorCount(), 0);
     }
 
-    @Test
+    @Test(groups = "valid")
     public void testValidRecursiveReturnTypes() {
         String packagePath = "88_valid_recursive_return_types";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
