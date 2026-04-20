@@ -75,6 +75,7 @@ public class EndpointYamlGenerator {
     private static final String YAML_EXTENSION = ".yaml";
     private static final String ENDPOINT_SUFFIX = "_endpoint";
     private static final String PORT = "port";
+    private static final String EMPTY_STR = "";
     private static final int PORT_PARAMETER_INDEX = 0;
 
     private record ListenerInfo(ParenthesizedArgList argList) {
@@ -251,7 +252,11 @@ public class EndpointYamlGenerator {
         for (Node identifierNode : this.node.absoluteResourcePath()) {
             basePath.append(identifierNode.toString().replace("\"", "").trim());
         }
-        return basePath.toString();
+        String serviceBasePath = basePath.toString();
+        if (EMPTY_STR.contentEquals(basePath)) {
+            serviceBasePath = "/";
+        }
+        return serviceBasePath;
     }
 
     public void writeEndpointYaml() throws IOException {
