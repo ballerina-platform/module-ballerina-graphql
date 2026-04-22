@@ -1,0 +1,5 @@
+endpoint:
+  port: 4001
+  basePath: "/graphql2"
+  type: "GraphQL"
+  schemaPath: "service_graphql2.graphql"

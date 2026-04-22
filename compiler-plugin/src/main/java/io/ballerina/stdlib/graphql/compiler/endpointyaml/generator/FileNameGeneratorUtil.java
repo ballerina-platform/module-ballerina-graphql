@@ -53,7 +53,7 @@ public class FileNameGeneratorUtil {
     private final Map<Integer, String> services = new HashMap<>();
 
     private SyntaxNodeAnalysisContext context = null;
-    private static final String schemaExtension = ".graphql";
+    private static final String SCHEMA_EXTENSION = ".graphql";
 
     public FileNameGeneratorUtil(SyntaxNodeAnalysisContext context) {
         this.context = context;
@@ -66,16 +66,16 @@ public class FileNameGeneratorUtil {
 
         String balFileName = syntaxTree.filePath().replaceAll(SLASH, UNDERSCORE).split("\\.")[0];
         if (!(context.node() instanceof ServiceDeclarationNode node)) {
-            return balFileName + schemaExtension;
+            return balFileName + SCHEMA_EXTENSION;
         }
 
         Optional<Symbol> serviceSymbol = semanticModel.symbol(node);
         if (serviceSymbol.isEmpty()) {
             String basePathName = getServiceBasePath(node);
             if (!basePathName.isBlank()) {
-                return balFileName + UNDERSCORE + getNormalizedFileName(basePathName) + schemaExtension;
+                return balFileName + UNDERSCORE + getNormalizedFileName(basePathName) + SCHEMA_EXTENSION;
             }
-            return balFileName + schemaExtension;
+            return balFileName + SCHEMA_EXTENSION;
         }
 
         return constructFileName(syntaxTree, services, serviceSymbol.get());
@@ -122,12 +122,12 @@ public class FileNameGeneratorUtil {
         }
         String balFileName = fileNames[0];
         if (fileName.equals(SLASH)) {
-            return balFileName + schemaExtension;
+            return balFileName + SCHEMA_EXTENSION;
         }
         if (fileName.contains(HYPHEN) && fileName.split(HYPHEN)[0].equals(SLASH) || fileName.isBlank()) {
-            return balFileName + UNDERSCORE + serviceSymbol.hashCode() + schemaExtension;
+            return balFileName + UNDERSCORE + serviceSymbol.hashCode() + SCHEMA_EXTENSION;
         }
-        return balFileName + UNDERSCORE + fileName + schemaExtension;
+        return balFileName + UNDERSCORE + fileName + SCHEMA_EXTENSION;
     }
 
     private String getServiceBasePath(ServiceDeclarationNode serviceNode) {

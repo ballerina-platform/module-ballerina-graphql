@@ -21,9 +21,9 @@ module io.ballerina.stdlib.graphql.compiler {
     requires io.ballerina.tools.api;
     requires io.ballerina.parser;
     requires io.ballerina.stdlib.graphql.commons;
-    requires io.ballerina.runtime;
     requires com.fasterxml.jackson.dataformat.yaml;
     requires com.fasterxml.jackson.databind;
+    requires org.apache.commons.text;
 
     exports io.ballerina.stdlib.graphql.compiler;
     exports io.ballerina.stdlib.graphql.compiler.endpointyaml.generator;

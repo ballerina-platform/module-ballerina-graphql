@@ -33,9 +33,8 @@ import static io.ballerina.stdlib.graphql.compiler.endpointyaml.generator.FileNa
 
 public class SchemaExporter {
     private final Schema schema;
-    private static final String ARTIFACT = "artifact";
+    private static final String ARTIFACT_DIR = "artifact";
     private static final String SDL_EXTENSION = ".graphql";
-    private static final String TARGET = "target";
 
     private final SyntaxNodeAnalysisContext context;
     private final FileNameGeneratorUtil fileNameGeneratorUtil;
@@ -69,9 +68,9 @@ public class SchemaExporter {
                     this.schemaFileName.length() - SDL_EXTENSION.length());
         }
 
-        Path artifactDir = outPath.resolve(ARTIFACT);
+        Path artifactDir = outPath.resolve(ARTIFACT_DIR);
         Files.createDirectories(artifactDir);
-        String fileName = resolveContractFileName(outPath.resolve(ARTIFACT),
+        String fileName = resolveContractFileName(outPath.resolve(ARTIFACT_DIR),
                 this.schemaFileName, context);
         Path path = artifactDir.resolve(fileName + SDL_EXTENSION);
         Files.writeString(path, sdlString);

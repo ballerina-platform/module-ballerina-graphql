@@ -45,7 +45,6 @@ import io.ballerina.compiler.syntax.tree.SyntaxTree;
 import io.ballerina.projects.Package;
 import io.ballerina.projects.Project;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
-import io.ballerina.runtime.api.utils.IdentifierUtils;
 import io.ballerina.tools.diagnostics.DiagnosticFactory;
 import io.ballerina.tools.diagnostics.DiagnosticInfo;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
@@ -67,14 +66,13 @@ public class EndpointYamlGenerator {
     private final String schemaFileName;
 
     private int port;
-    final PackageMemberVisitor packageMemberVisitor = new PackageMemberVisitor();
+    final PackageMemberVisitor packageMemberVisitor;
 
-    private static final String ARTIFACT = "artifact";
+    private static final String ARTIFACT_DIR = "artifact";
     private static final String GRAPHQL = "GraphQL";
-    private static final String TARGET = "target";
     private static final String YAML_EXTENSION = ".yaml";
     private static final String ENDPOINT_SUFFIX = "_endpoint";
-    private static final String PORT = "port";
+    private static final String PORT_FIELD = "port";
     private static final String EMPTY_STR = "";
     private static final int PORT_PARAMETER_INDEX = 0;
 
@@ -85,26 +83,31 @@ public class EndpointYamlGenerator {
     }
 
     public EndpointYamlGenerator(ServiceDeclarationNode node, SyntaxNodeAnalysisContext context) {
-        this.node = node;
-        this.context = context;
-
-        FileNameGeneratorUtil fileNameGeneratorUtil = new FileNameGeneratorUtil(context);
-        this.schemaFileName = fileNameGeneratorUtil.getFileName();
+        this(node, context, new FileNameGeneratorUtil(context).getFileName(), new PackageMemberVisitor());
     }
 
-    public Endpoint getEndpoint() {
+    private EndpointYamlGenerator(ServiceDeclarationNode node, SyntaxNodeAnalysisContext context,
+                                  String schemaFileName, PackageMemberVisitor packageMemberVisitor) {
+        this.node = node;
+        this.context = context;
+        this.schemaFileName = schemaFileName;
+        this.packageMemberVisitor = packageMemberVisitor;
+    }
+
+    public Optional<Endpoint> getEndpoint() {
         String moduleName = context.moduleId().moduleName();
         ensureModuleVisited(moduleName);
 
         Optional<ListenerInfo> listenerInfoOpt = resolveListenerInfo(moduleName);
         if (listenerInfoOpt.isEmpty()) {
-            throw new IllegalStateException("No listener information found for module: " + moduleName);
+            reportListenerNotResolvedDiagnostic(context);
+            return Optional.empty();
         }
         ListenerInfo listenerInfo = listenerInfoOpt.get();
         port = resolvePort(listenerInfo.argList());
         String basePath = buildBasePath();
 
-        return new Endpoint(port, basePath, GRAPHQL, this.schemaFileName);
+        return Optional.of(new Endpoint(port, basePath, GRAPHQL, this.schemaFileName));
     }
 
     private void ensureModuleVisited(String moduleName) {
@@ -212,8 +215,7 @@ public class EndpointYamlGenerator {
     }
 
     private void resolvePortFromArgs(SeparatedNodeList<FunctionArgumentNode> arguments) {
-        int index = 0;
-        for (; index < arguments.size(); index++) {
+        for (int index = 0; index < arguments.size(); index++) {
             FunctionArgumentNode arg = arguments.get(index);
             if (arg instanceof NamedArgumentNode) {
                 resolvePortFromNamedArgs(arguments, index);
@@ -237,7 +239,7 @@ public class EndpointYamlGenerator {
         for (int i = startIndex; i < arguments.size(); i++) {
             FunctionArgumentNode arg = arguments.get(i);
             if (arg instanceof NamedArgumentNode namedArg &&
-                    namedArg.argumentName().toString().trim().equals(PORT)) {
+                    namedArg.argumentName().toString().trim().equals(PORT_FIELD)) {
                 String portValue = getPortValue(namedArg.expression(), context.semanticModel(), context)
                         .orElse(null);
                 if (portValue != null) {
@@ -260,24 +262,27 @@ public class EndpointYamlGenerator {
     }
 
     public void writeEndpointYaml() throws IOException {
-        Endpoint ep = getEndpoint();
+        Optional<Endpoint> ep = getEndpoint();
+        if (ep.isEmpty()) {
+            return;
+        }
         Path outPath = resolveOutputPath();
         String fileName = buildEndpointFileName(outPath);
-        Path path = outPath.resolve(ARTIFACT).resolve(fileName + YAML_EXTENSION);
-        writeYaml(path, new EndpointWrapper(ep));
+        Path path = outPath.resolve(ARTIFACT_DIR).resolve(fileName + YAML_EXTENSION);
+        writeYaml(path, new EndpointWrapper(ep.get()));
     }
 
     private Path resolveOutputPath() throws IOException {
         Package currentPackage = this.context.currentPackage();
         Project project = currentPackage.project();
         Path outPath = project.targetDir();
-        Files.createDirectories(Paths.get(String.valueOf(outPath), ARTIFACT));
+        Files.createDirectories(Paths.get(String.valueOf(outPath), ARTIFACT_DIR));
         return outPath;
     }
 
     private String buildEndpointFileName(Path outPath) {
         String base = this.schemaFileName.split("\\.")[0] + ENDPOINT_SUFFIX;
-        return resolveContractFileName(outPath.resolve(ARTIFACT), base, context);
+        return resolveContractFileName(outPath.resolve(ARTIFACT_DIR), base, context);
     }
 
     private void writeYaml(Path path, EndpointWrapper wrapper) throws IOException {
@@ -301,6 +306,7 @@ public class EndpointYamlGenerator {
 
     private Optional<String> getPortValue(ExpressionNode expression, boolean isConfigurablePort,
                                           SemanticModel semanticModel, SyntaxNodeAnalysisContext context) {
+
         if (expression.kind().equals(SyntaxKind.NUMERIC_LITERAL)) {
             return resolveNumericLiteral(expression);
         }
@@ -354,9 +360,12 @@ public class EndpointYamlGenerator {
             reportMissingPortConfigDiagnostic(context);
             return Optional.empty();
         }
-        if (isConfigurable || isConfigurablePort) {
+        if ((isConfigurable || isConfigurablePort) && portExpr.kind().equals(SyntaxKind.CONDITIONAL_EXPRESSION)) {
+            reportMissingPortConfigDiagnostic(context);
+        } else if (isConfigurable || isConfigurablePort) {
             reportDefaultPortConfigDiagnostic(context);
         }
+
         if (portExpr.kind().equals(SyntaxKind.NUMERIC_LITERAL)) {
             return resolveNumericLiteral(portExpr);
         }
@@ -377,7 +386,7 @@ public class EndpointYamlGenerator {
     private void reportDefaultPortConfigDiagnostic(SyntaxNodeAnalysisContext context) {
         DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
                 "PORT_USING_CONFIGURABLE_DEFAULT",
-                "The server port is defined as a configurable. Hence," +
+                "The server port is defined as a configurable. Hence, " +
                         "using the default value to generate the server information " +
                 "when --export-endpoints flag is present",
                 DiagnosticSeverity.WARNING
@@ -394,8 +403,17 @@ public class EndpointYamlGenerator {
         context.reportDiagnostic(DiagnosticFactory.createDiagnostic(diagnosticInfo, context.node().location()));
     }
 
+    public void reportListenerNotResolvedDiagnostic(SyntaxNodeAnalysisContext context) {
+        DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
+                "LISTENER_NOT_RESOLVED",
+                "No listener information found for this module.",
+                DiagnosticSeverity.ERROR
+        );
+        context.reportDiagnostic(DiagnosticFactory.createDiagnostic(diagnosticInfo, context.node().location()));
+    }
+
     public static String unescapeIdentifier(String parameterName) {
-        String unescapedParamName = IdentifierUtils.unescapeBallerina(parameterName);
+        String unescapedParamName = Utils.unescapeBallerina(parameterName);
         return unescapedParamName.replace("\\\\", "").replace("'", "");
     }
 

@@ -1,0 +1,4 @@
+[package]
+org = "graphql_test"
+name = "endpoint_port_configurable_required"
+version = "0.1.0"
