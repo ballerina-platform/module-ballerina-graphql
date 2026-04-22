@@ -187,6 +187,8 @@ public class ServiceArtifactsExtractionTest {
 
             Path artifactDir = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR);
             Assert.assertTrue(Files.exists(artifactDir), ARTIFACT_DIR_EXIST_MSG);
+            Assert.assertTrue(countFilesWithSuffix(artifactDir, ENDPOINT_SUFFIX) >= 2);
+            Assert.assertTrue(countFilesWithSuffix(artifactDir, GQL_SUFFIX) >= 2);
         } finally {
             deleteDirectories(projectDirPath);
         }

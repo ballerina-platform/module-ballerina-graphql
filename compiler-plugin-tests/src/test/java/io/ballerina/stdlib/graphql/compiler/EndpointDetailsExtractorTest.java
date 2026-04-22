@@ -166,9 +166,9 @@ public class EndpointDetailsExtractorTest {
             String portLine = lines.map(String::trim)
                     .filter(line -> line.startsWith("basePath:"))
                     .findFirst()
-                    .orElseThrow(() -> new AssertionError("No port field found in: " + endpointYaml));
+                    .orElseThrow(() -> new AssertionError("No basepath field found in: " + endpointYaml));
             String actualBasePath = portLine.substring("basePath:".length()).trim();
-            Assert.assertEquals(actualBasePath, expectedBasePath, "Unexpected endpoint port in " + endpointYaml);
+            Assert.assertEquals(actualBasePath, expectedBasePath, "Unexpected endpoint basepath in " + endpointYaml);
         }
     }
 
