@@ -14,27 +14,4 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/lang.runtime; import ballerina/graphql; import ballerina/http; 
-
-graphql:Listener gqlListener = check new(9091); 
-http:Listener httpListener = check new(9092);
-
-service / on new http:Listener(9090) { 
-    resource function get greet() returns string { return "Hello from global http service"; } 
-} 
-
-public function main() returns error? { 
-    graphql:Service gqlService = service object { 
-        resource function get greet() returns string { return "Hello from gql service"; } 
-    }; 
-    http:Service httpService = service object { 
-        resource function get greet() returns string { return "Hello from local http service"; } 
-    }; 
-     
-    check gqlListener.attach(gqlService); 
-    check httpListener.attach(httpService); 
-    check gqlListener.'start(); 
-    check httpListener.'start(); 
-    runtime:registerListener(gqlListener); 
-    runtime:registerListener(httpListener); 
-}
+import ballerina/lang.runtime; import ballerina/graphql; import ballerina/http; service / on new http:Listener(9090) { resource function get greet() returns string { return "Hello from global http service"; } } public function main() returns error? { graphql:Service gqlService = service object { resource function get greet() returns string { return "Hello from gql service"; } }; http:Service httpService = service object { resource function get greet() returns string { return "Hello from local http service"; } }; graphql:Listener gqlListener = check new(9091); http:Listener httpListener = check new(9092); check gqlListener.attach(gqlService); check httpListener.attach(httpService); check gqlListener.'start(); check httpListener.'start(); runtime:registerListener(gqlListener); runtime:registerListener(httpListener); }
