@@ -136,11 +136,9 @@ public class EndpointYamlGenerator {
         for (ExpressionNode raw : this.node.expressions()) {
             ExpressionNode expr = unwrapCheckExpression(raw);
 
-            if (expr.kind().equals(SyntaxKind.EXPLICIT_NEW_EXPRESSION)) {
-                ExplicitNewExpressionNode explicit = (ExplicitNewExpressionNode) expr;
+            if (expr instanceof ExplicitNewExpressionNode explicit) {
                 argList = Optional.ofNullable(explicit.parenthesizedArgList());
-            } else if (expr.kind().equals(SyntaxKind.IMPLICIT_NEW_EXPRESSION)) {
-                ImplicitNewExpressionNode implicit = (ImplicitNewExpressionNode) expr;
+            } else if (expr instanceof ImplicitNewExpressionNode implicit) {
                 argList = implicit.parenthesizedArgList();
             } else if (isNameReference(expr)) {
                 Optional<ListenerResolution> resolution = resolveNamedListener(expr, moduleName, semanticModel);
@@ -154,8 +152,8 @@ public class EndpointYamlGenerator {
     }
 
     private ExpressionNode unwrapCheckExpression(ExpressionNode expr) {
-        if (expr.kind().equals(SyntaxKind.CHECK_EXPRESSION)) {
-            return ((CheckExpressionNode) expr).expression();
+        if (expr instanceof CheckExpressionNode checkedExpr) {
+            return checkedExpr.expression();
         }
         return expr;
     }
