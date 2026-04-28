@@ -18,21 +18,40 @@
 
 package io.ballerina.stdlib.graphql.compiler;
 
+import io.ballerina.compiler.api.SemanticModel;
+import io.ballerina.compiler.syntax.tree.ModulePartNode;
+import io.ballerina.compiler.syntax.tree.Node;
+import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
+import io.ballerina.compiler.syntax.tree.SyntaxKind;
+import io.ballerina.compiler.syntax.tree.SyntaxTree;
 import io.ballerina.projects.BuildOptions;
 import io.ballerina.projects.DiagnosticResult;
+import io.ballerina.projects.Document;
+import io.ballerina.projects.DocumentId;
+import io.ballerina.projects.Package;
+import io.ballerina.projects.PackageCompilation;
 import io.ballerina.projects.ProjectEnvironmentBuilder;
 import io.ballerina.projects.directory.BuildProject;
 import io.ballerina.projects.environment.Environment;
 import io.ballerina.projects.environment.EnvironmentBuilder;
+import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
+import io.ballerina.stdlib.graphql.compiler.endpointyaml.generator.FileNameGeneratorUtil;
+import io.ballerina.tools.diagnostics.Diagnostic;
+import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
+import java.lang.reflect.Proxy;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Stream;
+
+import static io.ballerina.projects.directory.BuildProject.load;
 
 public class ServiceArtifactsExtractionTest {
 
@@ -53,14 +72,6 @@ public class ServiceArtifactsExtractionTest {
     private static final String ENDPOINT_SUFFIX = "_endpoint.yaml";
     private static final String GQL_SUFFIX = ".graphql";
 
-    private static final String ENDPOINT_YAML_GEN_ERROR_MSG = "Endpoint YAML file should be generated";
-    private static final String ARTIFACT_DIR_EXIST_MSG = "Artifact directory should exist";
-    private static final String NO_ERRORS_EXPECTED_MSG = "Expected no compilation/plugin errors";
-    private static final String SCHEMA_ARTIFACTS_FOR_MULTIPLE_SERVICES_MSG = "Expected schema artifacts for " +
-            "multiple services";
-    private static final String SCHEMA_GEN_ERROR_FOR_INVALID_SCHEMA = "Artifacts should not be generated " +
-            "for invalid schema";
-
     @Test
     public void testServiceArtifactsGenerationForSingleService() throws Exception {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(SCHEMA_VALIDATOR_DIR)
@@ -68,14 +79,14 @@ public class ServiceArtifactsExtractionTest {
         try {
             DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath, true);
             Assert.assertEquals(diagnosticResult.errorCount(), 0,
-                    NO_ERRORS_EXPECTED_MSG);
+                    "Expected no compilation/plugin errors");
 
             Path artifactDir = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR);
             Path endpointYaml = artifactDir.resolve("service_graphql2_endpoint.yaml");
             Path expectedEndpointYaml = YAML_FILES_DIRECTORY.resolve("service_graphql2_endpoint.yaml");
 
-            Assert.assertTrue(Files.exists(artifactDir), ARTIFACT_DIR_EXIST_MSG);
-            Assert.assertTrue(Files.exists(endpointYaml), ENDPOINT_YAML_GEN_ERROR_MSG);
+            Assert.assertTrue(Files.exists(artifactDir), "Artifact directory should exist");
+            Assert.assertTrue(Files.exists(endpointYaml), "Endpoint YAML file should be generated");
             verifyYamlContent(endpointYaml, expectedEndpointYaml);
 
         } finally {
@@ -91,23 +102,24 @@ public class ServiceArtifactsExtractionTest {
         try {
             DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath, true);
             Assert.assertEquals(diagnosticResult.errorCount(), 0,
-                    NO_ERRORS_EXPECTED_MSG);
+                    "Expected no compilation/plugin errors");
 
             Path artifactDir = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR);
-            Assert.assertTrue(Files.exists(artifactDir), ARTIFACT_DIR_EXIST_MSG);
+            Assert.assertTrue(Files.exists(artifactDir), "Artifact directory should exist");
 
             Path endpointYaml1 = artifactDir.resolve("service_endpoint.yaml");
             Path endpointYaml2 = artifactDir.resolve("service_too_endpoint.yaml");
             Path expectedDir = YAML_FILES_DIRECTORY;
 
-            Assert.assertTrue(Files.exists(endpointYaml1), ENDPOINT_YAML_GEN_ERROR_MSG);
-            Assert.assertTrue(Files.exists(endpointYaml2), ENDPOINT_YAML_GEN_ERROR_MSG);
+            Assert.assertTrue(Files.exists(endpointYaml1), "Endpoint YAML file should be generated");
+            Assert.assertTrue(Files.exists(endpointYaml2), "Endpoint YAML file should be generated");
 
             verifyYamlContent(endpointYaml1, expectedDir.resolve("service_endpoint.yaml"));
             verifyYamlContent(endpointYaml2, expectedDir.resolve("service_too_endpoint.yaml"));
 
             long schemaCount = countFilesWithSuffix(artifactDir, GQL_SUFFIX);
-            Assert.assertTrue(schemaCount > 1, SCHEMA_ARTIFACTS_FOR_MULTIPLE_SERVICES_MSG);
+            Assert.assertTrue(schemaCount > 1, "Expected schema artifacts for " +
+                    "multiple services");
         } finally {
             deleteDirectories(projectDirPath);
         }
@@ -120,7 +132,7 @@ public class ServiceArtifactsExtractionTest {
         try {
             DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath, false);
             Assert.assertEquals(diagnosticResult.errorCount(), 0,
-                    NO_ERRORS_EXPECTED_MSG);
+                    "Expected no compilation/plugin errors");
             Path artifactDir = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR);
             Assert.assertFalse(Files.exists(artifactDir));
         } finally {
@@ -135,9 +147,9 @@ public class ServiceArtifactsExtractionTest {
         try {
             DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath, true);
             Assert.assertEquals(diagnosticResult.errorCount(), 0,
-                    NO_ERRORS_EXPECTED_MSG);
+                    "Expected no compilation/plugin errors");
             Path artifactDir = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR);
-            Assert.assertTrue(Files.exists(artifactDir), ARTIFACT_DIR_EXIST_MSG);
+            Assert.assertTrue(Files.exists(artifactDir), "Artifact directory should exist");
             long endpointYamlCount = countFilesWithSuffix(artifactDir, ENDPOINT_SUFFIX);
             long schemaCount = countFilesWithSuffix(artifactDir, GQL_SUFFIX);
             Assert.assertTrue(endpointYamlCount >= 2);
@@ -156,7 +168,8 @@ public class ServiceArtifactsExtractionTest {
             Assert.assertTrue(diagnosticResult.errorCount() > 0);
 
             Path artifactDir = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR);
-            Assert.assertFalse(Files.exists(artifactDir), SCHEMA_GEN_ERROR_FOR_INVALID_SCHEMA);
+            Assert.assertFalse(Files.exists(artifactDir), "Artifacts should not be generated " +
+                    "for invalid schema");
         } finally {
             deleteDirectories(projectDirPath);
         }
@@ -186,12 +199,166 @@ public class ServiceArtifactsExtractionTest {
             Assert.assertEquals(diagnosticResult.errorCount(), 0);
 
             Path artifactDir = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR);
-            Assert.assertTrue(Files.exists(artifactDir), ARTIFACT_DIR_EXIST_MSG);
+            Assert.assertTrue(Files.exists(artifactDir), "Artifact directory should exist");
             Assert.assertTrue(countFilesWithSuffix(artifactDir, ENDPOINT_SUFFIX) >= 2);
             Assert.assertTrue(countFilesWithSuffix(artifactDir, GQL_SUFFIX) >= 2);
         } finally {
             deleteDirectories(projectDirPath);
         }
+    }
+
+
+    @Test
+    public void testResolveContractFileNameWithNonExistentOutPath() throws IOException {
+        Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_TESTS_DIR)
+                .resolve("01_hardcoded_port");
+        BuildProject project = loadProject(projectDirPath);
+        List<Diagnostic> diagnostics = new ArrayList<>();
+        TestContextData data = getTestContextData(project);
+        SyntaxNodeAnalysisContext context = createSyntaxNodeAnalysisContext(data, diagnostics);
+
+        Path nonExistentDir = Paths.get("/tmp/does_not_exist_" + System.currentTimeMillis());
+        String result = FileNameGeneratorUtil.resolveContractFileName(
+                nonExistentDir, "service_graphql.graphql", context);
+        Assert.assertEquals(result, "service_graphql.graphql",
+                "File name should be returned unchanged when outPath does not exist");
+        Assert.assertTrue(diagnostics.isEmpty(), "Expected no diagnostics for non-existent outPath");
+    }
+
+    @Test
+    public void testResolveContractFileNameWithNullOutPath() {
+        Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_TESTS_DIR)
+                .resolve("01_hardcoded_port");
+        BuildProject project = loadProject(projectDirPath);
+        List<Diagnostic> diagnostics = new ArrayList<>();
+        TestContextData data = getTestContextData(project);
+        SyntaxNodeAnalysisContext context = createSyntaxNodeAnalysisContext(data, diagnostics);
+
+        String result = FileNameGeneratorUtil.resolveContractFileName(
+                null, "service_graphql.graphql", context);
+        Assert.assertEquals(result, "service_graphql.graphql",
+                "File name should be returned unchanged when outPath is null");
+        Assert.assertTrue(diagnostics.isEmpty(), "Expected no diagnostics when outPath is null");
+    }
+
+    @Test
+    public void testResolveContractFileNameReportsOverwriteWarning() throws IOException {
+        Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_TESTS_DIR)
+                .resolve("01_hardcoded_port");
+        BuildProject project = loadProject(projectDirPath);
+        List<Diagnostic> diagnostics = new ArrayList<>();
+        TestContextData data = getTestContextData(project);
+        SyntaxNodeAnalysisContext context = createSyntaxNodeAnalysisContext(data, diagnostics);
+
+        Path tempDir = Files.createTempDirectory("overwrite_test");
+        try {
+            // pre-create a conflicting file
+            Files.createFile(tempDir.resolve("service_graphql.graphql"));
+
+            FileNameGeneratorUtil.resolveContractFileName(
+                    tempDir, "service_graphql.graphql", context);
+
+            Assert.assertFalse(diagnostics.isEmpty(),
+                    "Expected FILE_BEING_OVERWRITTEN diagnostic to be reported");
+            boolean hasOverwriteWarning = diagnostics.stream()
+                    .anyMatch(d -> d.diagnosticInfo().code().equals("FILE_BEING_OVERWRITTEN")
+                            && d.diagnosticInfo().severity() == DiagnosticSeverity.WARNING);
+            Assert.assertTrue(hasOverwriteWarning,
+                    "Expected FILE_BEING_OVERWRITTEN warning diagnostic");
+        } finally {
+            deleteDirectory(tempDir);
+        }
+    }
+
+    @Test
+    public void testResolveContractFileNameNoConflict() throws IOException {
+        Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_TESTS_DIR)
+                .resolve("01_hardcoded_port");
+        BuildProject project = loadProject(projectDirPath);
+        List<Diagnostic> diagnostics = new ArrayList<>();
+        TestContextData data = getTestContextData(project);
+        SyntaxNodeAnalysisContext context = createSyntaxNodeAnalysisContext(data, diagnostics);
+
+        Path tempDir = Files.createTempDirectory("no_conflict_test");
+        try {
+            String result = FileNameGeneratorUtil.resolveContractFileName(
+                    tempDir, "service_graphql.graphql", context);
+            Assert.assertEquals(result, "service_graphql.graphql",
+                    "File name should be unchanged when no conflict exists");
+            Assert.assertTrue(diagnostics.isEmpty(), "Expected no diagnostics when no conflict");
+        } finally {
+            deleteDirectory(tempDir);
+        }
+    }
+
+    private void deleteDirectory(Path directory) throws IOException {
+        if (!Files.exists(directory)) {
+            return;
+        }
+
+        try (Stream<Path> paths = Files.walk(directory)) {
+            paths.sorted(java.util.Comparator.reverseOrder()).forEach(path -> {
+                try {
+                    Files.delete(path);
+                } catch (IOException e) {
+                    Assert.fail("Failed to delete file: " + path, e);
+                }
+            });
+        }
+    }
+
+    private BuildProject loadProject(Path projectDirPath) {
+        BuildOptions buildOptions = BuildOptions.builder().setExportEndpoints(true).build();
+        return BuildProject.load(getEnvironmentBuilder(), projectDirPath, buildOptions);
+    }
+
+    private TestContextData getTestContextData(BuildProject project) {
+        io.ballerina.projects.Package currentPackage = project.currentPackage();
+        io.ballerina.projects.Module module = currentPackage.getDefaultModule();
+        DocumentId documentId = module.documentIds().iterator().next();
+        Document document = module.document(documentId);
+        SyntaxTree syntaxTree = document.syntaxTree();
+        SemanticModel semanticModel = currentPackage.getCompilation().getSemanticModel(documentId.moduleId());
+        ModulePartNode modulePartNode = syntaxTree.rootNode();
+        ServiceDeclarationNode serviceNode = null;
+
+        for (Node member : modulePartNode.members()) {
+            if (member.kind() == SyntaxKind.SERVICE_DECLARATION) {
+                serviceNode = (io.ballerina.compiler.syntax.tree.ServiceDeclarationNode) member;
+                break;
+            }
+        }
+
+        if (serviceNode == null) {
+            throw new IllegalStateException("No service declaration node found in source file");
+        }
+
+        return new TestContextData(currentPackage, syntaxTree, semanticModel, serviceNode,
+                documentId, currentPackage.getCompilation());
+    }
+
+    private SyntaxNodeAnalysisContext createSyntaxNodeAnalysisContext(TestContextData data,
+                                                                      List<Diagnostic> reportedDiagnostics) {
+        return (SyntaxNodeAnalysisContext) Proxy.newProxyInstance(
+                SyntaxNodeAnalysisContext.class.getClassLoader(),
+                new Class[]{SyntaxNodeAnalysisContext.class},
+                (proxy, method, args) -> switch (method.getName()) {
+                    case "node" -> data.serviceNode;
+                    case "syntaxTree" -> data.syntaxTree;
+                    case "semanticModel" -> data.semanticModel;
+                    case "currentPackage" -> data.currentPackage;
+                    case "documentId" -> data.documentId;
+                    case "moduleId" -> data.documentId.moduleId();
+                    case "compilation" -> data.compilation;
+                    case "reportDiagnostic" -> {
+                        if (args != null && args.length == 1 && args[0] instanceof Diagnostic) {
+                            reportedDiagnostics.add((Diagnostic) args[0]);
+                        }
+                        yield null;
+                    }
+                    default -> throw new UnsupportedOperationException("Unsupported context method: " +
+                            method.getName());
+                });
     }
 
     private static void verifyYamlContent(Path actualYaml, Path expectedYaml) throws IOException {
@@ -203,7 +370,7 @@ public class ServiceArtifactsExtractionTest {
 
     private static DiagnosticResult getDiagnosticResults(Path projectDirPath, boolean isExportEndpoints) {
         BuildOptions buildOptions = BuildOptions.builder().setExportEndpoints(isExportEndpoints).build();
-        BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath, buildOptions);
+        BuildProject project = load(getEnvironmentBuilder(), projectDirPath, buildOptions);
         return project.currentPackage().runCodeGenAndModifyPlugins();
     }
 
@@ -243,4 +410,25 @@ public class ServiceArtifactsExtractionTest {
             Files.delete(dependenciesFile);
         }
     }
+
+    private static class TestContextData {
+        private final io.ballerina.projects.Package currentPackage;
+        private final SyntaxTree syntaxTree;
+        private final SemanticModel semanticModel;
+        private final io.ballerina.compiler.syntax.tree.ServiceDeclarationNode serviceNode;
+        private final DocumentId documentId;
+        private final PackageCompilation compilation;
+
+        private TestContextData(Package currentPackage, SyntaxTree syntaxTree, SemanticModel semanticModel,
+                                io.ballerina.compiler.syntax.tree.ServiceDeclarationNode serviceNode,
+                                DocumentId documentId, PackageCompilation compilation) {
+            this.currentPackage = currentPackage;
+            this.syntaxTree = syntaxTree;
+            this.semanticModel = semanticModel;
+            this.serviceNode = serviceNode;
+            this.documentId = documentId;
+            this.compilation = compilation;
+        }
+    }
+
 }

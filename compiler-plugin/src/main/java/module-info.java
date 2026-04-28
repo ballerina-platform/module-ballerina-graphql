@@ -26,5 +26,4 @@ module io.ballerina.stdlib.graphql.compiler {
     requires org.apache.commons.text;
 
     exports io.ballerina.stdlib.graphql.compiler;
-    exports io.ballerina.stdlib.graphql.compiler.endpointyaml.generator;
 }

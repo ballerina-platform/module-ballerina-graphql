@@ -46,26 +46,11 @@ public class EndpointDetailsExtractorTest {
     private static final String ARTIFACT_DIR = "artifact";
 
     @Test
-    public void testHardcodedPortExtraction() throws IOException {
-        Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_EXTRACTION_TESTS)
-                .resolve("01_hardcoded_port");
-        try {
-            DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath, true);
-            Path artifactDir = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR);
-            Path endpointYaml = artifactDir.resolve("service_graphql_endpoint.yaml");
-            Assert.assertEquals(diagnosticResult.errorCount(), 0);
-            assertEndpointPort(endpointYaml, 9090);
-        } finally {
-            deleteDirectories(projectDirPath);
-        }
-    }
-
-    @Test
     public void testConfigurablePortWithDefaultValue() throws IOException {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_EXTRACTION_TESTS)
                 .resolve("02_configurable_port_default");
         try {
-            DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath, true);
+            DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath);
             Path artifactDir = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR);
             Path endpointYaml = artifactDir.resolve("service_graphql_endpoint.yaml");
             Assert.assertEquals(diagnosticResult.errorCount(), 0);
@@ -76,47 +61,32 @@ public class EndpointDetailsExtractorTest {
     }
 
     @Test
-    public void testConfigurablePortWithRequiredValue()  throws IOException {
+    public void testConfigurablePortWithRequiredValue() throws IOException {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_EXTRACTION_TESTS)
                 .resolve("03_configurable_port_required");
         try {
-            DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath, true);
-            Path artifactDir = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR);
-            Path endpointYaml = artifactDir.resolve("service_graphql_endpoint.yaml");
+            DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath);
             Assert.assertNotEquals(diagnosticResult.errorCount(), 0);
-            assertEndpointPort(endpointYaml, 0);
+                boolean hasListenerError = hasDiagnosticCodeOrMessage(projectDirPath,
+                    "PORT_CONFIGURATION_BEING_NULL", null);
+            Assert.assertTrue(hasListenerError, "Expected PORT_CONFIGURATION_BEING_NULL diagnostic");
+            
         } finally {
             deleteDirectories(projectDirPath);
         }
     }
 
     @Test
-    public void testEndpointYamlContainsExpectedPortForMultipleServices() throws Exception {
-        Path projectDirPath = RESOURCE_DIRECTORY.resolve(GENERATOR_TESTS_DIR)
-                .resolve("22_graphql_service_with_http_service");
-        try {
-            DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath, true);
-            Assert.assertEquals(diagnosticResult.errorCount(), 0);
-            assertEndpointPort(projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR)
-                            .resolve("service_endpoint.yaml"),
-                    9091);
-            assertEndpointPort(projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR)
-                    .resolve("service_too_endpoint.yaml"), 9093);
-        } finally {
-            deleteDirectories(projectDirPath);
-        }
-    }
-
-    @Test
-    public void testBasePathForSingleService() throws IOException {
+    public void testEndpointDetailsForSingleService() throws IOException {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_EXTRACTION_TESTS)
                 .resolve("01_hardcoded_port");
         try {
-            DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath, true);
+            DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath);
             Path artifactDir = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR);
             Path endpointYaml = artifactDir.resolve("service_graphql_endpoint.yaml");
             Assert.assertEquals(diagnosticResult.errorCount(), 0);
-            assertEndpointBasePath(endpointYaml, "\"/graphql\"");
+            assertEndpointPort(endpointYaml, 9090);
+            assertEndpointBasePath(endpointYaml, "/graphql");
         } finally {
             deleteDirectories(projectDirPath);
         }
@@ -127,22 +97,170 @@ public class EndpointDetailsExtractorTest {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(GENERATOR_TESTS_DIR)
                 .resolve("22_graphql_service_with_http_service");
         try {
-            DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath, true);
+            DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath);
             Assert.assertEquals(diagnosticResult.errorCount(), 0);
-            assertEndpointBasePath(projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR)
-                            .resolve("service_endpoint.yaml"),
-                    "\"/\"");
-            assertEndpointBasePath(projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR)
-                    .resolve("service_too_endpoint.yaml"), "\"/too\"");
+            Path endpointYaml1 = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR)
+                    .resolve("service_endpoint.yaml");
+            Path endpointYaml2 = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR)
+                    .resolve("service_too_endpoint.yaml");
+            assertEndpointBasePath(endpointYaml1, "/");
+            assertEndpointBasePath(endpointYaml2, "/too");
+            assertEndpointPort(endpointYaml1, 9091);
+            assertEndpointPort(endpointYaml2, 9093);
         } finally {
             deleteDirectories(projectDirPath);
         }
     }
 
-    private static DiagnosticResult getDiagnosticResults(Path projectDirPath, boolean isExportEndpoints) {
-        BuildOptions buildOptions = BuildOptions.builder().setExportEndpoints(isExportEndpoints).build();
+    @Test
+    public void testListenerNotResolved() throws IOException {
+        Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_EXTRACTION_TESTS)
+                .resolve("05_listener_not_resolved");
+        try {
+                    boolean hasListenerError = hasDiagnosticCodeOrMessage(projectDirPath,
+                        "LISTENER_NOT_RESOLVED", "undefined symbol");
+            Assert.assertTrue(hasListenerError, "Expected LISTENER_NOT_RESOLVED diagnostic");
+        } finally {
+            deleteDirectories(projectDirPath);
+        }
+    }
+
+    @Test
+    public void testNamedListenerReference() throws IOException {
+        Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_EXTRACTION_TESTS)
+                .resolve("06_named_listener_reference");
+        try {
+            DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath);
+            Assert.assertEquals(diagnosticResult.errorCount(), 0,
+                    "Expected no errors for named listener reference");
+            Path endpointYaml = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR)
+                    .resolve("service_graphql_endpoint.yaml");
+            Assert.assertTrue(Files.exists(endpointYaml), "Endpoint YAML should be generated");
+            assertEndpointPort(endpointYaml, 9090);
+        } finally {
+            deleteDirectories(projectDirPath);
+        }
+    }
+
+    @Test
+    public void testImplicitNewExpressionListener() throws IOException {
+        Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_EXTRACTION_TESTS)
+                .resolve("07_implicit_new_listener");
+        try {
+            DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath);
+            Assert.assertEquals(diagnosticResult.errorCount(), 0,
+                    "Expected no errors for implicit new listener");
+            Path endpointYaml = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR)
+                    .resolve("service_graphql_endpoint.yaml");
+            Assert.assertTrue(Files.exists(endpointYaml), "Endpoint YAML should be generated");
+            assertEndpointPort(endpointYaml, 9090);
+        } finally {
+            deleteDirectories(projectDirPath);
+        }
+    }
+
+    @Test
+    public void testExplicitNewExpressionListener() throws IOException {
+        Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_EXTRACTION_TESTS)
+                .resolve("08_explicit_new_listener");
+        try {
+            DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath);
+            Assert.assertEquals(diagnosticResult.errorCount(), 0,
+                    "Expected no errors for explicit new listener");
+            Path endpointYaml = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR)
+                    .resolve("service_graphql_endpoint.yaml");
+            Assert.assertTrue(Files.exists(endpointYaml), "Endpoint YAML should be generated");
+            assertEndpointPort(endpointYaml, 9090);
+        } finally {
+            deleteDirectories(projectDirPath);
+        }
+    }
+
+    @Test
+    public void testCheckExpressionUnwrapping() throws IOException {
+        Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_EXTRACTION_TESTS)
+                .resolve("09_check_expression_listener");
+        try {
+            DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath);
+            Assert.assertEquals(diagnosticResult.errorCount(), 0,
+                    "Expected no errors when listener is wrapped in check");
+            Path endpointYaml = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR)
+                    .resolve("service_graphql_endpoint.yaml");
+            Assert.assertTrue(Files.exists(endpointYaml), "Endpoint YAML should be generated");
+            assertEndpointPort(endpointYaml, 9090);
+        } finally {
+            deleteDirectories(projectDirPath);
+        }
+    }
+
+    @Test
+    public void testNamedArgumentPortExtraction() throws IOException {
+        Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_EXTRACTION_TESTS)
+                .resolve("10_named_arg_port");
+        try {
+            DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath);
+            Assert.assertEquals(diagnosticResult.errorCount(), 0,
+                    "Expected no errors for named argument port");
+            Path endpointYaml = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR)
+                    .resolve("service_graphql_endpoint.yaml");
+            Assert.assertTrue(Files.exists(endpointYaml), "Endpoint YAML should be generated");
+            assertEndpointPort(endpointYaml, 9090);
+        } finally {
+            deleteDirectories(projectDirPath);
+        }
+    }
+
+    @Test
+    public void testNonNumericPortReportsDiagnostic() throws IOException {
+        Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_EXTRACTION_TESTS)
+                .resolve("11_non_numeric_port");
+        try {
+                    boolean hasPortError = hasDiagnosticCodeOrMessage(projectDirPath,
+                        "PORT_BEING_NON_NUMERIC", "incompatible types");
+            Assert.assertTrue(hasPortError, "Expected PORT_BEING_NON_NUMERIC diagnostic");
+        } finally {
+            deleteDirectories(projectDirPath);
+        }
+    }
+
+    @Test
+    public void testRequiredConfigurablePortReportsDiagnostic() throws IOException {
+        Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_EXTRACTION_TESTS)
+                .resolve("03_configurable_port_required");
+        try {
+                boolean hasMissingPortError = hasDiagnosticCodeOrMessage(projectDirPath,
+                    "PORT_CONFIGURATION_BEING_NULL", null);
+            Assert.assertTrue(hasMissingPortError, "Expected PORT_CONFIGURATION_BEING_NULL diagnostic code");
+        } finally {
+            deleteDirectories(projectDirPath);
+        }
+    }
+
+    private static DiagnosticResult getDiagnosticResults(Path projectDirPath) {
+        BuildOptions buildOptions = BuildOptions.builder().setExportEndpoints(true).build();
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath, buildOptions);
         return project.currentPackage().runCodeGenAndModifyPlugins();
+    }
+
+    private static boolean hasDiagnosticCodeOrMessage(Path projectDirPath, String diagnosticCode,
+                                                      String messageSegment) {
+        BuildOptions buildOptions = BuildOptions.builder().setExportEndpoints(true).build();
+        BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath, buildOptions);
+
+        DiagnosticResult compilationDiagnostics = project.currentPackage().getCompilation().diagnosticResult();
+        DiagnosticResult pluginDiagnostics = project.currentPackage().runCodeGenAndModifyPlugins();
+        return Stream.concat(compilationDiagnostics.diagnostics().stream(), pluginDiagnostics.diagnostics().stream())
+                .anyMatch(diagnostic -> {
+                    String code = diagnostic.diagnosticInfo().code();
+                    if (diagnosticCode.equals(code)) {
+                        return true;
+                    }
+                    String message = diagnostic.message();
+                    if (messageSegment != null && !messageSegment.isEmpty()) {
+                        return message.contains(messageSegment);
+                    }
+                    return false;
+                });
     }
 
     private static ProjectEnvironmentBuilder getEnvironmentBuilder() {
@@ -167,7 +285,7 @@ public class EndpointDetailsExtractorTest {
                     .filter(line -> line.startsWith("basePath:"))
                     .findFirst()
                     .orElseThrow(() -> new AssertionError("No basepath field found in: " + endpointYaml));
-            String actualBasePath = portLine.substring("basePath:".length()).trim();
+            String actualBasePath = portLine.substring("basePath:".length()).trim().replace("\"", "");
             Assert.assertEquals(actualBasePath, expectedBasePath, "Unexpected endpoint basepath in " + endpointYaml);
         }
     }

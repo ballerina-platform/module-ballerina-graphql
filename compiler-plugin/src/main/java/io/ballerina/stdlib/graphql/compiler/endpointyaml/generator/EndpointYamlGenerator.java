@@ -72,7 +72,7 @@ public class EndpointYamlGenerator {
     private static final String GRAPHQL = "GraphQL";
     private static final String YAML_EXTENSION = ".yaml";
     private static final String ENDPOINT_SUFFIX = "_endpoint";
-    private static final String PORT_FIELD = "port";
+    private static final String LISTEN_TO = "listenTo";
     private static final String EMPTY_STR = "";
     private static final int PORT_PARAMETER_INDEX = 0;
 
@@ -237,7 +237,7 @@ public class EndpointYamlGenerator {
         for (int i = startIndex; i < arguments.size(); i++) {
             FunctionArgumentNode arg = arguments.get(i);
             if (arg instanceof NamedArgumentNode namedArg &&
-                    namedArg.argumentName().toString().trim().equals(PORT_FIELD)) {
+                    namedArg.argumentName().toString().trim().equals(LISTEN_TO)) {
                 String portValue = getPortValue(namedArg.expression(), context.semanticModel(), context)
                         .orElse(null);
                 if (portValue != null) {
