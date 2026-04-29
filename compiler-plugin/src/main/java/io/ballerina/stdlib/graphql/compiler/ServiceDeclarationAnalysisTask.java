@@ -84,8 +84,8 @@ public class ServiceDeclarationAnalysisTask extends ServiceAnalysisTask {
             // Used to catch the buildOption not found error for earlier ballerina versions
             DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
                     "NO_SUCH_METHOD_ERROR",
-                    "The build option `--export-endpoints` is not available in the ballerina version " +
-                            "you are using. Use ballerina 2201.13.3 or higher." + e.getMessage(),
+                    "The `--export-endpoints` build option is not supported in the current ballerina version. " +
+                            "Use ballerina 2201.13.3 or higher. " + e.getMessage(),
                     DiagnosticSeverity.WARNING
             );
             context.reportDiagnostic(DiagnosticFactory.createDiagnostic(diagnosticInfo, node.location()));
