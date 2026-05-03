@@ -36,6 +36,8 @@ import io.ballerina.projects.environment.Environment;
 import io.ballerina.projects.environment.EnvironmentBuilder;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.endpointyaml.generator.FileNameGeneratorUtil;
+import io.ballerina.stdlib.graphql.compiler.endpointyaml.generator.ModuleMemberVisitor;
+import io.ballerina.stdlib.graphql.compiler.endpointyaml.generator.Utils;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 import org.testng.Assert;
@@ -49,6 +51,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static io.ballerina.projects.directory.BuildProject.load;
@@ -266,7 +269,7 @@ public class ServiceArtifactsExtractionTest {
             Assert.assertTrue(hasOverwriteWarning,
                     "Expected FILE_BEING_OVERWRITTEN warning diagnostic");
         } finally {
-            deleteDirectory(tempDir);
+            deleteDirectories(tempDir);
         }
     }
 
@@ -287,24 +290,127 @@ public class ServiceArtifactsExtractionTest {
                     "File name should be unchanged when no conflict exists");
             Assert.assertTrue(diagnostics.isEmpty(), "Expected no diagnostics when no conflict");
         } finally {
-            deleteDirectory(tempDir);
+            deleteDirectories(tempDir);
         }
     }
 
-    private void deleteDirectory(Path directory) throws IOException {
-        if (!Files.exists(directory)) {
-            return;
-        }
+    @Test
+    public void testUnescapeUnicodeCodepointsBasicCharacter() {
+        Assert.assertEquals(Utils.unescapeUnicodeCodepoints("\\u{0041}"), "A");
+    }
 
-        try (Stream<Path> paths = Files.walk(directory)) {
-            paths.sorted(java.util.Comparator.reverseOrder()).forEach(path -> {
-                try {
-                    Files.delete(path);
-                } catch (IOException e) {
-                    Assert.fail("Failed to delete file: " + path, e);
-                }
-            });
+    @Test
+    public void testUnescapeUnicodeCodepointsLowercaseHex() {
+        Assert.assertEquals(Utils.unescapeUnicodeCodepoints("\\u{0061}"), "a");
+    }
+
+    @Test
+    public void testUnescapeUnicodeCodepointsBackslashCharacter() {
+        String result = Utils.unescapeUnicodeCodepoints("\\u{005C}");
+        Assert.assertTrue(result.contains("\\"),
+                "Backslash codepoint should produce a backslash in output");
+    }
+
+    @Test
+    public void testGetNormalizedFileNameWithSlashes() {
+        Assert.assertEquals(FileNameGeneratorUtil.getNormalizedFileName("/graphql/api"), "graphql_api");
+    }
+
+    @Test
+    public void testGetNormalizedFileNameWithHyphens() {
+        Assert.assertEquals(FileNameGeneratorUtil.getNormalizedFileName("my-service"), "my_service");
+    }
+
+    @Test
+    public void testGetNormalizedFileNameWithMixedSeparators() {
+        Assert.assertEquals(FileNameGeneratorUtil.getNormalizedFileName("/my-graphql/api_v2"), "my_graphql_api_v2");
+    }
+
+    @Test
+    public void testGetNormalizedFileNameWithConsecutiveSeparators() {
+        // blank segments filtered out
+        Assert.assertEquals(FileNameGeneratorUtil.getNormalizedFileName("//graphql"), "graphql");
+    }
+
+    @Test
+    public void testResolveContractFileNameDifferentExtensionSameStem() throws IOException {
+        // existing file has a different extension but same stem → still a conflict
+        // isSameFileName strips extension before comparing
+        Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_TESTS_DIR)
+                .resolve("01_hardcoded_port");
+        BuildProject project = loadProject(projectDirPath);
+        List<Diagnostic> diagnostics = new ArrayList<>();
+        SyntaxNodeAnalysisContext context = createSyntaxNodeAnalysisContext(getTestContextData(project), diagnostics);
+
+        Path tempDir = Files.createTempDirectory("same_stem_test");
+        try {
+            // existing file has .yaml extension, new file has .graphql — same stem
+            Files.createFile(tempDir.resolve("service_graphql.yaml"));
+
+            FileNameGeneratorUtil.resolveContractFileName(
+                    tempDir, "service_graphql.graphql", context);
+
+            boolean hasWarning = diagnostics.stream()
+                    .anyMatch(d -> d.diagnosticInfo().code().equals("FILE_BEING_OVERWRITTEN"));
+            Assert.assertTrue(hasWarning,
+                    "Same stem with different extension should still trigger overwrite warning");
+        } finally {
+            deleteDirectories(tempDir);
         }
+    }
+
+    @Test
+    public void testGetFileNameForRootPathService() {
+        // service / on new graphql:Listener(9090)
+        // fileName.equals(SLASH) → <balFileName>.graphql
+        Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_TESTS_DIR)
+                .resolve("13_service_with_root_path");
+        BuildProject project = loadProject(projectDirPath);
+        List<Diagnostic> diagnostics = new ArrayList<>();
+        SyntaxNodeAnalysisContext context = createSyntaxNodeAnalysisContext(getTestContextData(project), diagnostics);
+
+        FileNameGeneratorUtil util = new FileNameGeneratorUtil(context);
+        String fileName = util.getFileName();
+
+        Assert.assertEquals(fileName, "service.graphql",
+                "Root path service should produce <balFileName>.graphql");
+        Assert.assertTrue(diagnostics.isEmpty(), "Expected no diagnostics");
+    }
+
+    @Test
+    public void testGetFileNameWhenServiceSymbolEmptyWithBasePath() {
+        // serviceSymbol.isEmpty() and base path is non-blank
+        // expected: service_graphql.graphql
+        Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_TESTS_DIR)
+                .resolve("14_service_symbol_empty_with_basepath");
+        BuildProject project = loadProject(projectDirPath);
+        List<Diagnostic> diagnostics = new ArrayList<>();
+        SyntaxNodeAnalysisContext context = createSyntaxNodeAnalysisContext(getTestContextData(project), diagnostics);
+
+        FileNameGeneratorUtil util = new FileNameGeneratorUtil(context);
+        String fileName = util.getFileName();
+
+        Assert.assertTrue(fileName.contains("graphql") && fileName.endsWith(".graphql"),
+                "File name should include base path segment when symbol is unresolved: " + fileName);
+    }
+
+    @Test
+    public void testVisitConstantDeclarationRegistersVariable() {
+        Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_TESTS_DIR)
+                .resolve("15_constant_port");
+        BuildProject project = loadProject(projectDirPath);
+        TestContextData data = getTestContextData(project);
+
+        ModuleMemberVisitor visitor = new ModuleMemberVisitor(data.semanticModel);
+        data.syntaxTree.rootNode().accept(visitor);
+
+        Optional<ModuleMemberVisitor.VariableDeclaredValue> portOpt =
+                visitor.getVariableDeclaredValue("PORT");
+        Assert.assertTrue(portOpt.isPresent(), "Constant PORT should be registered");
+        Assert.assertFalse(portOpt.get().isConfigurable(),
+                "Constant declarations are always non-configurable");
+        Assert.assertEquals(portOpt.get().value().toString().trim(), "9090",
+                "Constant value should be 9090");
     }
 
     private BuildProject loadProject(Path projectDirPath) {

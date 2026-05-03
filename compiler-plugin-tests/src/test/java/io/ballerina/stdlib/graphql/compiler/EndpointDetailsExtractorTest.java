@@ -215,7 +215,7 @@ public class EndpointDetailsExtractorTest {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_EXTRACTION_TESTS)
                 .resolve("11_non_numeric_port");
         try {
-                    boolean hasPortError = hasDiagnosticCodeOrMessage(projectDirPath,
+            boolean hasPortError = hasDiagnosticCodeOrMessage(projectDirPath,
                         "PORT_BEING_NON_NUMERIC", "incompatible types");
             Assert.assertTrue(hasPortError, "Expected PORT_BEING_NON_NUMERIC diagnostic");
         } finally {
