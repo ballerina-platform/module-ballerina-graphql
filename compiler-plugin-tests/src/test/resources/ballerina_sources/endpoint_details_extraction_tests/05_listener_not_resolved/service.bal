@@ -16,8 +16,8 @@
 
 import ballerina/graphql;
 
-// intentionally referencing an undeclared listener variable
-// to trigger LISTENER_NOT_RESOLVED diagnostic
+graphql:Listener ln = check new graphql:Listener(9090);
+
 service /graphql on undeclaredListener {
     resource function get greeting() returns string {
         return "Hello";

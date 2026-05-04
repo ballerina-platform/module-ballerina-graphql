@@ -16,9 +16,9 @@
 
 import ballerina/graphql;
 
-configurable string port = "not-a-number";
+const decimal PORT = 9001.0;
 
-service /graphql on new graphql:Listener(port) {
+service /graphql on new graphql:Listener(PORT) {
     resource function get greeting() returns string {
         return "Hello";
     }
