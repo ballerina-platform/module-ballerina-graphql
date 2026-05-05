@@ -67,10 +67,10 @@ public class EndpointDetailsExtractorTest {
         try {
             DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath);
             Assert.assertNotEquals(diagnosticResult.errorCount(), 0);
-                boolean hasListenerError = hasDiagnosticCodeOrMessage(projectDirPath,
+            boolean hasListenerError = hasDiagnosticCodeOrMessage(projectDirPath,
                     "PORT_CONFIGURATION_BEING_NULL", null);
             Assert.assertTrue(hasListenerError, "Expected PORT_CONFIGURATION_BEING_NULL diagnostic");
-            
+
         } finally {
             deleteDirectories(projectDirPath);
         }
@@ -117,8 +117,8 @@ public class EndpointDetailsExtractorTest {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_EXTRACTION_TESTS)
                 .resolve("05_listener_not_resolved");
         try {
-                    boolean hasListenerError = hasDiagnosticCodeOrMessage(projectDirPath,
-                        "LISTENER_NOT_RESOLVED", "undefined symbol");
+            boolean hasListenerError = hasDiagnosticCodeOrMessage(projectDirPath,
+                    "LISTENER_NOT_RESOLVED", "undefined symbol");
             Assert.assertTrue(hasListenerError, "Expected LISTENER_NOT_RESOLVED diagnostic");
         } finally {
             deleteDirectories(projectDirPath);
@@ -216,7 +216,7 @@ public class EndpointDetailsExtractorTest {
                 .resolve("11_non_numeric_port");
         try {
             boolean hasPortError = hasDiagnosticCodeOrMessage(projectDirPath,
-                        "PORT_BEING_NON_NUMERIC", "incompatible types");
+                    "PORT_BEING_NON_NUMERIC", "incompatible types");
             Assert.assertTrue(hasPortError, "Expected PORT_BEING_NON_NUMERIC diagnostic");
         } finally {
             deleteDirectories(projectDirPath);
@@ -228,7 +228,7 @@ public class EndpointDetailsExtractorTest {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_EXTRACTION_TESTS)
                 .resolve("03_configurable_port_required");
         try {
-                boolean hasMissingPortError = hasDiagnosticCodeOrMessage(projectDirPath,
+            boolean hasMissingPortError = hasDiagnosticCodeOrMessage(projectDirPath,
                     "PORT_CONFIGURATION_BEING_NULL", null);
             Assert.assertTrue(hasMissingPortError, "Expected PORT_CONFIGURATION_BEING_NULL diagnostic code");
         } finally {
