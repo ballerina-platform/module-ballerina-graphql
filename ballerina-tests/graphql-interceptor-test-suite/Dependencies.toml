@@ -5,7 +5,7 @@
 
 [ballerina]
 dependencies-toml-version = "2"
-distribution-version = "2201.13.0"
+distribution-version = "2201.13.3"
 
 [[package]]
 org = "ballerina"
@@ -44,7 +44,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "crypto"
-version = "2.9.2"
+version = "2.9.3"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
@@ -109,7 +109,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql_interceptor_test_suite"
-version = "1.17.0"
+version = "1.18.0"
 dependencies = [
 	{org = "ballerina", name = "graphql"},
 	{org = "ballerina", name = "graphql_test_common"},
@@ -124,7 +124,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql_test_common"
-version = "1.17.0"
+version = "1.18.0"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "file"},
@@ -141,7 +141,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.15.0"
+version = "2.15.5"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "auth"},
@@ -314,7 +314,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "mime"
-version = "2.12.0"
+version = "2.12.1"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "io"},
@@ -359,7 +359,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "task"
-version = "2.11.0"
+version = "2.11.1"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
@@ -414,7 +414,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "websocket"
-version = "2.15.0"
+version = "2.15.2"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "auth"},

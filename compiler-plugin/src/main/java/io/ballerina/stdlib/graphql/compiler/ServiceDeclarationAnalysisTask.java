@@ -20,11 +20,18 @@ package io.ballerina.stdlib.graphql.compiler;
 
 import io.ballerina.compiler.api.symbols.ServiceDeclarationSymbol;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
+import io.ballerina.projects.BuildOptions;
 import io.ballerina.projects.DocumentId;
+import io.ballerina.projects.Project;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
+import io.ballerina.stdlib.graphql.compiler.endpointyaml.generator.EndpointYamlGenerator;
+import io.ballerina.stdlib.graphql.compiler.schema.generator.SchemaExporter;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceEntityFinder;
 import io.ballerina.stdlib.graphql.compiler.service.validator.ServiceValidator;
+import io.ballerina.tools.diagnostics.DiagnosticFactory;
+import io.ballerina.tools.diagnostics.DiagnosticInfo;
+import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 
 import java.util.Map;
 
@@ -65,5 +72,39 @@ public class ServiceDeclarationAnalysisTask extends ServiceAnalysisTask {
         DocumentId documentId = context.documentId();
         addToModifierContextMap(documentId, node, schema);
         addToModifierContextMap(documentId, node, serviceValidator.getCacheConfigContext());
+
+        // Export endpoint.yaml and graphql schema
+        Project project = context.currentPackage().project();
+        BuildOptions buildOptions = project.buildOptions();
+        boolean isExportEndpoints = false;
+
+        try {
+            isExportEndpoints = buildOptions.exportEndpoints();
+        } catch (NoSuchMethodError e) {
+            // Used to catch the buildOption not found error for earlier ballerina versions
+            DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
+                    "NO_SUCH_METHOD_ERROR",
+                    "The `--export-endpoints` build option is not supported in the current ballerina version. " +
+                            "Use ballerina 2201.13.3 or higher. " + e.getMessage(),
+                    DiagnosticSeverity.WARNING
+            );
+            context.reportDiagnostic(DiagnosticFactory.createDiagnostic(diagnosticInfo, node.location()));
+        }
+
+        if (isExportEndpoints) {
+            EndpointYamlGenerator endpointYamlGeneratorImplGql = new EndpointYamlGenerator(node, context);
+            SchemaExporter schemaExporter = new SchemaExporter(schema, context);
+            try {
+                endpointYamlGeneratorImplGql.writeEndpointYaml();
+                schemaExporter.exportSchema();
+            } catch (Exception e) {
+                DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
+                        "EXPORT_FAILED",
+                        "Failed to export endpoint artifacts: " + e.getMessage(),
+                        DiagnosticSeverity.WARNING
+                        );
+                context.reportDiagnostic(DiagnosticFactory.createDiagnostic(diagnosticInfo, node.location()));
+            }
+        }
     }
 }

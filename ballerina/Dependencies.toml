@@ -5,7 +5,7 @@
 
 [ballerina]
 dependencies-toml-version = "2"
-distribution-version = "2201.13.0"
+distribution-version = "2201.13.3"
 
 [[package]]
 org = "ballerina"
@@ -82,7 +82,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql"
-version = "1.17.0"
+version = "1.18.0"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
