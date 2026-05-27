@@ -5,7 +5,7 @@
 
 [ballerina]
 dependencies-toml-version = "2"
-distribution-version = "2201.13.3"
+distribution-version = "2201.14.0-20260527-050400-74f7e6bf"
 
 [[package]]
 org = "ballerina"
@@ -44,7 +44,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "crypto"
-version = "2.9.3"
+version = "2.12.1"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
@@ -64,7 +64,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "file"
-version = "1.12.0"
+version = "1.13.0"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "io"},
@@ -76,7 +76,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "graphql"
-version = "1.17.0"
+version = "1.18.0"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "auth"},
@@ -139,7 +139,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.15.5"
+version = "2.16.3"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "auth"},
@@ -293,7 +293,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "log"
-version = "2.13.0"
+version = "2.17.0"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "io"},
@@ -331,7 +331,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "observe"
-version = "1.5.1"
+version = "1.7.1"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
@@ -405,7 +405,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "websocket"
-version = "2.15.2"
+version = "2.15.3"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "auth"},
