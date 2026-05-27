@@ -17,6 +17,7 @@ pluginManagement {
     }
 
     repositories {
+        mavenLocal()
         gradlePluginPortal()
         maven {
             url = 'https://maven.pkg.github.com/ballerina-platform/*'
@@ -29,7 +30,7 @@ pluginManagement {
 }
 
 plugins {
-   id "com.gradle.enterprise" version "3.2"
+   id "com.gradle.develocity" version "3.19.2"
 }
 
 rootProject.name = 'graphql'
@@ -52,9 +53,9 @@ project(':graphql-ballerina-tests').projectDir = file("ballerina-tests")
 project(':graphql-examples').projectDir = file("examples")
 project(':graphql-commons').projectDir = file("commons")
 
-gradleEnterprise {
+develocity {
    buildScan {
-       termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-       termsOfServiceAgree = 'yes'
+       termsOfUseUrl = 'https://gradle.com/terms-of-service'
+       termsOfUseAgree = 'yes'
    }
 }

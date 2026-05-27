@@ -66,6 +66,14 @@ def moduleVersion = project.version.replace("-SNAPSHOT", "")
 
 subprojects {
 
+    plugins.withId('java') {
+        java {
+            toolchain {
+                languageVersion = JavaLanguageVersion.of(25)
+            }
+        }
+    }
+
     configurations {
         ballerinaStdLibs
         jbalTools
@@ -102,7 +110,7 @@ subprojects {
     }
 }
 
-task build {
+tasks.named('build') {
     dependsOn(':graphql-commons:build')
     dependsOn(':graphql-compiler-plugin:build')
     dependsOn(':graphql-native:build')

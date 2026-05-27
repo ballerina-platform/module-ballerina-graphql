@@ -16,6 +16,51 @@
  */
 
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.process.ExecOperations
+import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.gradle.jvm.toolchain.JavaToolchainService
+import javax.inject.Inject
+
+abstract class BallerinaExecHelper {
+    @Inject abstract ExecOperations getExecOperations()
+}
+
+abstract class PatchBallerinaScriptsTask extends DefaultTask {
+    @Inject abstract JavaToolchainService getJavaToolchainService()
+
+    @TaskAction
+    void patch() {
+        def launcher = javaToolchainService.launcherFor { spec ->
+            spec.languageVersion.set(JavaLanguageVersion.of(25))
+        }.get()
+        def java25Home = launcher.executablePath.asFile.parentFile.parentFile.absolutePath
+
+        def binDirs = [
+            project.layout.buildDirectory.dir("jballerina-tools-${project.ballerinaLangVersion}/bin").get().asFile,
+            new File("${project.rootDir}/target/ballerina-runtime/bin")
+        ]
+        binDirs.each { binDir ->
+            if (binDir.exists()) {
+                binDir.eachFile { file ->
+                    file.setExecutable(true)
+                    if (!file.name.endsWith('.bat') && !file.name.endsWith('.cmd')) {
+                        def original = file.text
+                        def lines = original.split('\n').toList()
+                        // Remove flag removed in Java 25
+                        lines = lines.findAll { !it.contains('--sun-misc-unsafe-memory-access=allow') }
+                        // Inject JAVA_HOME so the bal script picks up Java 25
+                        def shebangIdx = lines.findIndexOf { it.startsWith('#!') }
+                        if (shebangIdx >= 0) {
+                            lines.add(shebangIdx + 1, "export JAVA_HOME='${java25Home}'")
+                        }
+                        def patched = lines.join('\n') + '\n'
+                        if (patched != original) { file.text = patched }
+                    }
+                }
+            }
+        }
+    }
+}
 
 plugins {
     id 'io.ballerina.plugin'
@@ -64,8 +109,9 @@ task updateTomlFiles {
 }
 
 task commitTomlFiles {
+    def execHelper = project.objects.newInstance(BallerinaExecHelper)
     doLast {
-        project.exec {
+        execHelper.execOperations.exec {
             ignoreExitValue true
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
                 commandLine 'cmd', '/c', "git commit -m \"[Automated] Update the native jar versions\" Ballerina.toml Dependencies.toml CompilerPlugin.toml"
@@ -106,3 +152,11 @@ test.dependsOn ":${packageName}-commons:build"
 
 publishToMavenLocal.dependsOn build
 publish.dependsOn build
+
+task patchBallerinaScripts(type: PatchBallerinaScriptsTask) {
+    dependsOn 'unpackJballerinaTools'
+}
+
+build.dependsOn patchBallerinaScripts
+test.dependsOn patchBallerinaScripts
+copyStdlibs.dependsOn patchBallerinaScripts
