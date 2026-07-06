@@ -95,7 +95,7 @@ public class ServiceDeclarationAnalysisTask extends ServiceAnalysisTask {
             EndpointYamlGenerator endpointYamlGeneratorImplGql = new EndpointYamlGenerator(node, context);
             SchemaExporter schemaExporter = new SchemaExporter(schema, context);
             try {
-                endpointYamlGeneratorImplGql.writeEndpointYaml();
+                endpointYamlGeneratorImplGql.addEndpointArtifact();
                 schemaExporter.exportSchema();
             } catch (Exception e) {
                 DiagnosticInfo diagnosticInfo = new DiagnosticInfo(
