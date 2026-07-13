@@ -40,6 +40,7 @@ import io.ballerina.runtime.api.utils.ValueUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
+import io.ballerina.runtime.api.values.BNever;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTypedesc;
@@ -502,7 +503,7 @@ public final class ArgumentHandler {
                 continue;
             }
             if (this.argumentsMap.get(StringUtils.fromString(parameters[i].name)) == null) {
-                result[i] = parameters[i].type.getZeroValue();
+                result[i] = parameters[i].isDefault ? BNever.getValue() : parameters[i].type.getZeroValue();
             } else {
                 result[i] = this.argumentsMap.get(StringUtils.fromString(parameters[i].name));
             }
