@@ -40,6 +40,7 @@ import io.ballerina.runtime.api.utils.ValueUtils;
 import io.ballerina.runtime.api.values.BArray;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BMap;
+import io.ballerina.runtime.api.values.BNever;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTypedesc;
@@ -49,6 +50,7 @@ import io.ballerina.stdlib.graphql.runtime.exception.IdTypeInputValidationExcept
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -83,6 +85,10 @@ public final class ArgumentHandler {
     private final BObject responseGenerator;
     private final boolean validation;
     private final BArray idTypeErrors;
+    // Scoped per `ArgumentHandler` instance since each instance handles the arguments of a single field
+    // resolution. Sharing this across instances (e.g. as a static field) would race when sibling fields
+    // are resolved concurrently.
+    private final List<String> idsList = new ArrayList<>();
 
     private static final String REPRESENTATION_TYPENAME = "Representation";
     private static final String ADD_CONSTRAINT_ERRORS_METHOD = "addConstraintValidationErrors";
@@ -99,7 +105,6 @@ public final class ArgumentHandler {
     private static final int T_BOOLEAN = 5;
     private static final int T_INPUT_OBJECT = 22;
     private static final int T_LIST = 23;
-    private static final ArrayList<String> idsList = new ArrayList<>();
     private static final String ID_ANNOTATION = "ID";
     private static final String PACKAGE_NAME = "ballerina/graphql";
     private static final String RETURN_TYPE_PARAM = "$returns$";
@@ -502,7 +507,7 @@ public final class ArgumentHandler {
                 continue;
             }
             if (this.argumentsMap.get(StringUtils.fromString(parameters[i].name)) == null) {
-                result[i] = parameters[i].type.getZeroValue();
+                result[i] = parameters[i].isDefault ? BNever.getValue() : parameters[i].type.getZeroValue();
             } else {
                 result[i] = this.argumentsMap.get(StringUtils.fromString(parameters[i].name));
             }
