@@ -36,6 +36,7 @@ function dataProviderInputParameters() returns string[][] {
         ["input_parameter_type_not_present_in_return_types"],
         ["query_without_default_parameter"],
         ["query_with_default_parameter"],
+        ["query_without_default_string_parameter"],
         ["float_as_input"],
         ["coerce_int_input_to_float"],
         ["optional_enum_argument_without_value"],
