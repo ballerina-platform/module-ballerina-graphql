@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- [[#8893] Fix Intermittent `ConcurrentModificationException` in GraphQL Interceptor Tests](https://github.com/ballerina-platform/ballerina-library/issues/8893)
+
+## [1.17.0] - 2025-11-06
+
 ### Added
 
 - [[#7711] Introduce GraphQL Document Caching](https://github.com/ballerina-platform/ballerina-library/issues/7711)
