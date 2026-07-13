@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 
 - [[#8891] Fix Default Values not Passed to the Resolver when no Parameter Present](https://github.com/ballerina-platform/ballerina-library/issues/8891)
+- [[#8893] Fix Intermittent `ConcurrentModificationException` in GraphQL Interceptor Tests](https://github.com/ballerina-platform/ballerina-library/issues/8893)
 
 ## [1.17.0] - 2025-11-06
 
