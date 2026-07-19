@@ -66,14 +66,6 @@ def moduleVersion = project.version.replace("-SNAPSHOT", "")
 
 subprojects {
 
-    plugins.withId('java') {
-        java {
-            toolchain {
-                languageVersion = JavaLanguageVersion.of(25)
-            }
-        }
-    }
-
     configurations {
         ballerinaStdLibs
         jbalTools
