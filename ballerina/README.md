@@ -32,6 +32,8 @@ listener graphql:Listener graphqlListener = check new(httpListener);
 
 The Ballerina GraphQL service represents the GraphQL schema. When a service is attached to a `graphql:Listener`, a GraphQL schema will be auto-generated.
 
+> **Authoring guidelines**: A GraphQL service always requires a `graphql:Listener` attached to it, and it needs a base path - `/graphql` is the conventional choice unless a different path is required. Expose **query** operations as `resource` functions and **mutation** operations as `remote` functions. Input fields are represented by function parameters; use only records and basic types as input parameter types.
+
 The GraphQL services are exposed through a single endpoint. The path of the GraphQL service endpoint can be provided via the service path of the GraphQL service. The endpoint of the following Ballerina GraphQL service will be `/graphql`.
 
 ```ballerina
