@@ -25,6 +25,7 @@ import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.Project;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.commons.types.Schema;
+import io.ballerina.stdlib.graphql.compiler.endpointyaml.generator.Endpoint;
 import io.ballerina.stdlib.graphql.compiler.endpointyaml.generator.EndpointYamlGenerator;
 import io.ballerina.stdlib.graphql.compiler.schema.generator.SchemaExporter;
 import io.ballerina.stdlib.graphql.compiler.service.InterfaceEntityFinder;
@@ -33,9 +34,12 @@ import io.ballerina.tools.diagnostics.DiagnosticFactory;
 import io.ballerina.tools.diagnostics.DiagnosticInfo;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static io.ballerina.stdlib.graphql.commons.utils.Utils.isGraphqlService;
+import static io.ballerina.stdlib.graphql.compiler.Utils.GRAPHQL_EXPORTED_ENDPOINTS;
 import static io.ballerina.stdlib.graphql.compiler.Utils.hasCompilationErrors;
 import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUtils.getDescription;
 
@@ -43,9 +47,11 @@ import static io.ballerina.stdlib.graphql.compiler.schema.generator.GeneratorUti
  * Validates a Ballerina GraphQL Service declaration.
  */
 public class ServiceDeclarationAnalysisTask extends ServiceAnalysisTask {
+    private final Map<String, Object> userData;
 
     public ServiceDeclarationAnalysisTask(Map<String, Object> nodeMap) {
         super(nodeMap);
+        this.userData = nodeMap;
     }
 
     @Override
@@ -95,7 +101,12 @@ public class ServiceDeclarationAnalysisTask extends ServiceAnalysisTask {
             EndpointYamlGenerator endpointYamlGeneratorImplGql = new EndpointYamlGenerator(node, context);
             SchemaExporter schemaExporter = new SchemaExporter(schema, context);
             try {
-                endpointYamlGeneratorImplGql.writeEndpointYaml();
+                Optional<Endpoint> endpoint = endpointYamlGeneratorImplGql.getEndpoint();
+                if (endpoint.isPresent()) {
+                    @SuppressWarnings("unchecked")
+                    List<Endpoint> collectedEndpoints = (List<Endpoint>) userData.get(GRAPHQL_EXPORTED_ENDPOINTS);
+                    collectedEndpoints.add(endpoint.get());
+                }
                 schemaExporter.exportSchema();
             } catch (Exception e) {
                 DiagnosticInfo diagnosticInfo = new DiagnosticInfo(

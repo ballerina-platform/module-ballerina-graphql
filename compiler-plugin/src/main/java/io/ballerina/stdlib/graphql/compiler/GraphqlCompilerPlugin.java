@@ -21,6 +21,14 @@ package io.ballerina.stdlib.graphql.compiler;
 import io.ballerina.projects.plugins.CompilerPlugin;
 import io.ballerina.projects.plugins.CompilerPluginContext;
 import io.ballerina.stdlib.graphql.compiler.analyzer.GraphqlCodeAnalyzer;
+import io.ballerina.stdlib.graphql.compiler.endpointyaml.generator.Endpoint;
+import io.ballerina.stdlib.graphql.compiler.endpointyaml.generator.GraphqlEndpointsLifecycleListener;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Map;
+
+import static io.ballerina.stdlib.graphql.compiler.Utils.GRAPHQL_EXPORTED_ENDPOINTS;
 
 /**
  * This is the compiler plugin for Ballerina GraphQL package.
@@ -28,7 +36,10 @@ import io.ballerina.stdlib.graphql.compiler.analyzer.GraphqlCodeAnalyzer;
 public class GraphqlCompilerPlugin extends CompilerPlugin {
     @Override
     public void init(CompilerPluginContext compilerPluginContext) {
-        compilerPluginContext.addCodeModifier(new GraphqlCodeModifier(compilerPluginContext.userData()));
-        compilerPluginContext.addCodeAnalyzer(new GraphqlCodeAnalyzer(compilerPluginContext.userData()));
+        Map<String, Object> userData = compilerPluginContext.userData();
+        userData.put(GRAPHQL_EXPORTED_ENDPOINTS, Collections.synchronizedList(new ArrayList<Endpoint>()));
+        compilerPluginContext.addCodeModifier(new GraphqlCodeModifier(userData));
+        compilerPluginContext.addCodeAnalyzer(new GraphqlCodeAnalyzer(userData));
+        compilerPluginContext.addCompilerLifecycleListener(new GraphqlEndpointsLifecycleListener(userData));
     }
 }

@@ -1,5 +1,0 @@
-endpoint:
-  port: 9091
-  basePath: "/"
-  type: "GraphQL"
-  schemaPath: "service.graphql"

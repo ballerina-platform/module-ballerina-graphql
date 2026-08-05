@@ -18,17 +18,19 @@
 
 package io.ballerina.stdlib.graphql.compiler.endpointyaml.generator;
 
-import java.util.Objects;
+import java.util.List;
 
-public class EndpointWrapper {
-    private final Endpoint endpoint;
-    private static final String ENDPOINT_NOT_NULL_MSG = "endpoint must not be null";
+/*
+ * Represents the wrapper class to serialize the consolidated list of endpoints.
+ */
+public class EndpointsWrapper {
+    private final List<Endpoint> endpoints;
 
-    public EndpointWrapper(Endpoint endpoint) {
-        this.endpoint = Objects.requireNonNull(endpoint, ENDPOINT_NOT_NULL_MSG);
+    public EndpointsWrapper(List<Endpoint> endpoints) {
+        this.endpoints = List.copyOf(endpoints);
     }
 
-    public Endpoint getEndpoint() {
-        return endpoint;
+    public List<Endpoint> getEndpoints() {
+        return endpoints;
     }
 }

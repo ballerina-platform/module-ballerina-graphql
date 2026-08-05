@@ -1,4 +1,5 @@
-endpoint:
+endpoints:
+- name: "/graphql2"
   port: 4001
   basePath: "/graphql2"
   type: "GraphQL"
