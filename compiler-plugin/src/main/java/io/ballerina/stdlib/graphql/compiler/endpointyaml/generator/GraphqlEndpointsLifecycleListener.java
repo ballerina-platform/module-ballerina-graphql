@@ -24,8 +24,8 @@ import io.ballerina.projects.plugins.CompilerLifecycleListener;
 import java.util.Map;
 
 /*
- * Registers the {@code EndpointsYamlWriterTask} to run once the whole compilation's code generation
- * has completed, so it can aggregate every service's endpoint details into a single endpoints.yaml.
+ * Registers the {@code EndpointMetadataTask} to run once the whole compilation's code generation
+ * has completed, so it can publish every service's endpoint metadata to Ballerina lang.
  */
 public class GraphqlEndpointsLifecycleListener extends CompilerLifecycleListener {
     private final Map<String, Object> ctxData;
@@ -36,6 +36,6 @@ public class GraphqlEndpointsLifecycleListener extends CompilerLifecycleListener
 
     @Override
     public void init(CompilerLifecycleContext context) {
-        context.addCodeGenerationCompletedTask(new EndpointsYamlWriterTask(ctxData));
+        context.addCodeGenerationCompletedTask(new EndpointMetadataTask(ctxData));
     }
 }

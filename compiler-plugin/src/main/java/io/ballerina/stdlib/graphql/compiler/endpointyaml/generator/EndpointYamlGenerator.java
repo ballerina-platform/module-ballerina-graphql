@@ -16,12 +16,8 @@
  * under the License.
  */
 
-
 package io.ballerina.stdlib.graphql.compiler.endpointyaml.generator;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.api.symbols.ModuleSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
@@ -47,11 +43,6 @@ import io.ballerina.tools.diagnostics.DiagnosticFactory;
 import io.ballerina.tools.diagnostics.DiagnosticInfo;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -64,9 +55,7 @@ public class EndpointYamlGenerator {
     private int port;
     final PackageMemberVisitor packageMemberVisitor;
 
-    private static final String ARTIFACT_DIR = "artifact";
     private static final String GRAPHQL = "GraphQL";
-    private static final String ENDPOINTS_FILE_NAME = "endpoints.yaml";
     private static final String LISTEN_TO = "listenTo";
     private static final String EMPTY_STR = "";
     private static final int PORT_PARAMETER_INDEX = 0;
@@ -252,26 +241,6 @@ public class EndpointYamlGenerator {
             serviceBasePath = "/";
         }
         return serviceBasePath;
-    }
-
-    public static void writeEndpointsYaml(Path outPath, List<Endpoint> endpoints) throws IOException {
-        Files.createDirectories(outPath.resolve(ARTIFACT_DIR));
-        Path path = outPath.resolve(ARTIFACT_DIR).resolve(ENDPOINTS_FILE_NAME).toAbsolutePath();
-        writeYaml(path, new EndpointsWrapper(endpoints));
-    }
-
-    private static void writeYaml(Path path, EndpointsWrapper wrapper) throws IOException {
-        YAMLFactory yamlFactory = YAMLFactory.builder()
-                .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER)
-                .build();
-        ObjectMapper mapper = new ObjectMapper(yamlFactory);
-        mapper.findAndRegisterModules();
-
-        try (Writer writer = Files.newBufferedWriter(path)) {
-            mapper.writeValue(writer, wrapper);
-        } catch (IOException e) {
-            throw new IOException("Failed to write to: " + path, e);
-        }
     }
 
     private Optional<String> getPortValue(ExpressionNode expression, SemanticModel semanticModel,
