@@ -22,7 +22,6 @@ import io.ballerina.projects.BuildOptions;
 import io.ballerina.projects.DiagnosticResult;
 import io.ballerina.projects.JBallerinaBackend;
 import io.ballerina.projects.JvmTarget;
-import io.ballerina.projects.Package;
 import io.ballerina.projects.PackageCompilation;
 import io.ballerina.projects.ProjectEnvironmentBuilder;
 import io.ballerina.projects.directory.BuildProject;
@@ -245,10 +244,9 @@ public class EndpointDetailsExtractorTest {
         System.setProperty("ballerina.home", DISTRIBUTION_PATH.toString());
         BuildOptions buildOptions = BuildOptions.builder().setExportEndpoints(true).build();
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath, buildOptions);
-        Package currentPackage = project.currentPackage();
-        DiagnosticResult diagnosticResult = currentPackage.runCodeGenAndModifyPlugins();
+        DiagnosticResult diagnosticResult = project.currentPackage().runCodeGenAndModifyPlugins();
         if (diagnosticResult.errorCount() == 0) {
-            PackageCompilation compilation = currentPackage.getCompilation();
+            PackageCompilation compilation = project.currentPackage().getCompilation();
             JBallerinaBackend jBallerinaBackend = JBallerinaBackend.from(compilation, JvmTarget.JAVA_21);
             Path executablePath = project.targetDir().resolve("bin").resolve("output.jar");
             Files.createDirectories(executablePath.getParent());

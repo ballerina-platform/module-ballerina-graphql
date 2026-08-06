@@ -478,10 +478,9 @@ public class ServiceArtifactsExtractionTest {
         System.setProperty("ballerina.home", DISTRIBUTION_PATH.toString());
         BuildOptions buildOptions = BuildOptions.builder().setExportEndpoints(isExportEndpoints).build();
         BuildProject project = load(getEnvironmentBuilder(), projectDirPath, buildOptions);
-        Package currentPackage = project.currentPackage();
-        DiagnosticResult diagnosticResult = currentPackage.runCodeGenAndModifyPlugins();
+        DiagnosticResult diagnosticResult = project.currentPackage().runCodeGenAndModifyPlugins();
         if (diagnosticResult.errorCount() == 0) {
-            PackageCompilation compilation = currentPackage.getCompilation();
+            PackageCompilation compilation = project.currentPackage().getCompilation();
             JBallerinaBackend jBallerinaBackend = JBallerinaBackend.from(compilation, JvmTarget.JAVA_21);
             Path executablePath = project.targetDir().resolve("bin").resolve("output.jar");
             Files.createDirectories(executablePath.getParent());
