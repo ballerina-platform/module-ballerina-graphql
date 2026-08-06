@@ -55,6 +55,7 @@ public class EndpointsYamlWriterTaskTest {
     public void testPerformReportsDiagnosticWhenWriteFails() throws Exception {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve("endpoint_details_extraction_tests")
                 .resolve("01_hardcoded_port");
+        String previousBallerinaHome = System.getProperty("ballerina.home");
         System.setProperty("ballerina.home", DISTRIBUTION_PATH.toString());
         BuildOptions buildOptions = BuildOptions.builder().build();
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath, buildOptions);
@@ -110,6 +111,11 @@ public class EndpointsYamlWriterTaskTest {
                     "Expected diagnostic to describe the write failure: " + reportedDiagnostics.get(0).message());
         } finally {
             deleteDirectories(targetDir);
+            if (previousBallerinaHome == null) {
+                System.clearProperty("ballerina.home");
+            } else {
+                System.setProperty("ballerina.home", previousBallerinaHome);
+            }
         }
     }
 
