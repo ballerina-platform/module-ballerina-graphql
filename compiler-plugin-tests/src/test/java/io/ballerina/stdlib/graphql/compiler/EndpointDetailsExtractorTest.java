@@ -20,6 +20,9 @@ package io.ballerina.stdlib.graphql.compiler;
 
 import io.ballerina.projects.BuildOptions;
 import io.ballerina.projects.DiagnosticResult;
+import io.ballerina.projects.JBallerinaBackend;
+import io.ballerina.projects.JvmTarget;
+import io.ballerina.projects.PackageCompilation;
 import io.ballerina.projects.ProjectEnvironmentBuilder;
 import io.ballerina.projects.directory.BuildProject;
 import io.ballerina.projects.environment.Environment;
@@ -32,6 +35,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public class EndpointDetailsExtractorTest {
@@ -44,6 +48,7 @@ public class EndpointDetailsExtractorTest {
 
     private static final String TARGET_DIR = "target";
     private static final String ARTIFACT_DIR = "artifact";
+    private static final String ENDPOINTS_FILE_NAME = "endpoints.yaml";
 
     @Test
     public void testConfigurablePortWithDefaultValue() throws IOException {
@@ -52,7 +57,7 @@ public class EndpointDetailsExtractorTest {
         try {
             DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath);
             Path artifactDir = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR);
-            Path endpointYaml = artifactDir.resolve("service_graphql_endpoint.yaml");
+            Path endpointYaml = artifactDir.resolve(ENDPOINTS_FILE_NAME);
             Assert.assertEquals(diagnosticResult.errorCount(), 0);
             assertEndpointPort(endpointYaml, 9091);
         } finally {
@@ -83,7 +88,7 @@ public class EndpointDetailsExtractorTest {
         try {
             DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath);
             Path artifactDir = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR);
-            Path endpointYaml = artifactDir.resolve("service_graphql_endpoint.yaml");
+            Path endpointYaml = artifactDir.resolve(ENDPOINTS_FILE_NAME);
             Assert.assertEquals(diagnosticResult.errorCount(), 0);
             assertEndpointPort(endpointYaml, 9090);
             assertEndpointBasePath(endpointYaml, "/graphql");
@@ -99,14 +104,14 @@ public class EndpointDetailsExtractorTest {
         try {
             DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath);
             Assert.assertEquals(diagnosticResult.errorCount(), 0);
-            Path endpointYaml1 = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR)
-                    .resolve("service_endpoint.yaml");
-            Path endpointYaml2 = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR)
-                    .resolve("service_too_endpoint.yaml");
-            assertEndpointBasePath(endpointYaml1, "/");
-            assertEndpointBasePath(endpointYaml2, "/too");
-            assertEndpointPort(endpointYaml1, 9091);
-            assertEndpointPort(endpointYaml2, 9093);
+            Path endpointsYaml = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR)
+                    .resolve(ENDPOINTS_FILE_NAME);
+            String content = Files.readString(endpointsYaml);
+            Assert.assertTrue(content.contains("basePath: \"/\""), "Expected basePath \"/\" for the first service");
+            Assert.assertTrue(content.contains("basePath: \"/too\""),
+                    "Expected basePath \"/too\" for the second service");
+            Assert.assertTrue(content.contains("port: 9091"), "Expected port 9091 for the first service");
+            Assert.assertTrue(content.contains("port: 9093"), "Expected port 9093 for the second service");
         } finally {
             deleteDirectories(projectDirPath);
         }
@@ -134,7 +139,7 @@ public class EndpointDetailsExtractorTest {
             Assert.assertEquals(diagnosticResult.errorCount(), 0,
                     "Expected no errors for named listener reference");
             Path endpointYaml = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR)
-                    .resolve("service_graphql_endpoint.yaml");
+                    .resolve(ENDPOINTS_FILE_NAME);
             Assert.assertTrue(Files.exists(endpointYaml), "Endpoint YAML should be generated");
             assertEndpointPort(endpointYaml, 9090);
         } finally {
@@ -151,7 +156,7 @@ public class EndpointDetailsExtractorTest {
             Assert.assertEquals(diagnosticResult.errorCount(), 0,
                     "Expected no errors for implicit new listener");
             Path endpointYaml = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR)
-                    .resolve("service_graphql_endpoint.yaml");
+                    .resolve(ENDPOINTS_FILE_NAME);
             Assert.assertTrue(Files.exists(endpointYaml), "Endpoint YAML should be generated");
             assertEndpointPort(endpointYaml, 9090);
         } finally {
@@ -168,7 +173,7 @@ public class EndpointDetailsExtractorTest {
             Assert.assertEquals(diagnosticResult.errorCount(), 0,
                     "Expected no errors for explicit new listener");
             Path endpointYaml = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR)
-                    .resolve("service_graphql_endpoint.yaml");
+                    .resolve(ENDPOINTS_FILE_NAME);
             Assert.assertTrue(Files.exists(endpointYaml), "Endpoint YAML should be generated");
             assertEndpointPort(endpointYaml, 9090);
         } finally {
@@ -185,7 +190,7 @@ public class EndpointDetailsExtractorTest {
             Assert.assertEquals(diagnosticResult.errorCount(), 0,
                     "Expected no errors when listener is wrapped in check");
             Path endpointYaml = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR)
-                    .resolve("service_graphql_endpoint.yaml");
+                    .resolve(ENDPOINTS_FILE_NAME);
             Assert.assertTrue(Files.exists(endpointYaml), "Endpoint YAML should be generated");
             assertEndpointPort(endpointYaml, 9090);
         } finally {
@@ -202,7 +207,7 @@ public class EndpointDetailsExtractorTest {
             Assert.assertEquals(diagnosticResult.errorCount(), 0,
                     "Expected no errors for named argument port");
             Path endpointYaml = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR)
-                    .resolve("service_graphql_endpoint.yaml");
+                    .resolve(ENDPOINTS_FILE_NAME);
             Assert.assertTrue(Files.exists(endpointYaml), "Endpoint YAML should be generated");
             assertEndpointPort(endpointYaml, 9090);
         } finally {
@@ -236,10 +241,19 @@ public class EndpointDetailsExtractorTest {
         }
     }
 
-    private static DiagnosticResult getDiagnosticResults(Path projectDirPath) {
+    private static DiagnosticResult getDiagnosticResults(Path projectDirPath) throws IOException {
+        System.setProperty("ballerina.home", DISTRIBUTION_PATH.toString());
         BuildOptions buildOptions = BuildOptions.builder().setExportEndpoints(true).build();
         BuildProject project = BuildProject.load(getEnvironmentBuilder(), projectDirPath, buildOptions);
-        return project.currentPackage().runCodeGenAndModifyPlugins();
+        DiagnosticResult diagnosticResult = project.currentPackage().runCodeGenAndModifyPlugins();
+        if (diagnosticResult.errorCount() == 0) {
+            PackageCompilation compilation = project.currentPackage().getCompilation();
+            JBallerinaBackend jBallerinaBackend = JBallerinaBackend.from(compilation, JvmTarget.JAVA_21);
+            Path executablePath = project.targetDir().resolve("bin").resolve("output.jar");
+            Files.createDirectories(Objects.requireNonNull(executablePath.getParent()));
+            jBallerinaBackend.emit(JBallerinaBackend.OutputType.EXEC, executablePath);
+        }
+        return diagnosticResult;
     }
 
     private static boolean hasDiagnosticCodeOrMessage(Path projectDirPath, String diagnosticCode,

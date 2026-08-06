@@ -101,6 +101,7 @@ public final class Utils {
     // User data map keys
     public static final String IS_ANALYSIS_COMPLETED = "isAnalysisCompleted";
     public static final String MODIFIER_CONTEXT_MAP = "modifierContextMap";
+    public static final String GRAPHQL_EXPORTED_ENDPOINTS = "graphqlExportedEndpoints";
 
     private Utils() {
     }
