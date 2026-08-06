@@ -35,6 +35,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public class EndpointDetailsExtractorTest {
@@ -249,7 +250,7 @@ public class EndpointDetailsExtractorTest {
             PackageCompilation compilation = project.currentPackage().getCompilation();
             JBallerinaBackend jBallerinaBackend = JBallerinaBackend.from(compilation, JvmTarget.JAVA_21);
             Path executablePath = project.targetDir().resolve("bin").resolve("output.jar");
-            Files.createDirectories(executablePath.getParent());
+            Files.createDirectories(Objects.requireNonNull(executablePath.getParent()));
             jBallerinaBackend.emit(JBallerinaBackend.OutputType.EXEC, executablePath);
         }
         return diagnosticResult;
