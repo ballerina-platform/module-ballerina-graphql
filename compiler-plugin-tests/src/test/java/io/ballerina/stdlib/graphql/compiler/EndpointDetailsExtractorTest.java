@@ -229,6 +229,57 @@ public class EndpointDetailsExtractorTest {
     }
 
     @Test
+    public void testGraphqlListenerWrappingSharedHttpListener() throws IOException {
+        Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_EXTRACTION_TESTS)
+                .resolve("16_graphql_wrapping_shared_http_listener");
+        try {
+            DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath);
+            Assert.assertEquals(diagnosticResult.errorCount(), 0,
+                    "Expected no errors when a GraphQL listener wraps a shared http listener");
+            Path endpointYaml = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR)
+                    .resolve(ENDPOINTS_FILE_NAME);
+            Assert.assertTrue(Files.exists(endpointYaml), "Endpoint YAML should be generated");
+            assertPortForEndpointType(endpointYaml, "GraphQL", 9100);
+        } finally {
+            deleteDirectories(projectDirPath);
+        }
+    }
+
+    @Test
+    public void testGraphqlListenerDeclarationWrappingSharedListener() throws IOException {
+        Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_EXTRACTION_TESTS)
+                .resolve("17_graphql_listener_wrapping_shared_listener");
+        try {
+            DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath);
+            Assert.assertEquals(diagnosticResult.errorCount(), 0,
+                    "Expected no errors when a `listener graphql:Listener` wraps a shared http listener");
+            Path endpointYaml = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR)
+                    .resolve(ENDPOINTS_FILE_NAME);
+            Assert.assertTrue(Files.exists(endpointYaml), "Endpoint YAML should be generated");
+            assertEndpointPort(endpointYaml, 9101);
+        } finally {
+            deleteDirectories(projectDirPath);
+        }
+    }
+
+    @Test
+    public void testGraphqlListenerWrappingInlineNewListener() throws IOException {
+        Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_EXTRACTION_TESTS)
+                .resolve("18_graphql_wrapping_inline_new_listener");
+        try {
+            DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath);
+            Assert.assertEquals(diagnosticResult.errorCount(), 0,
+                    "Expected no errors when a GraphQL listener wraps an inline `new` listener expression");
+            Path endpointYaml = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR)
+                    .resolve(ENDPOINTS_FILE_NAME);
+            Assert.assertTrue(Files.exists(endpointYaml), "Endpoint YAML should be generated");
+            assertEndpointPort(endpointYaml, 9102);
+        } finally {
+            deleteDirectories(projectDirPath);
+        }
+    }
+
+    @Test
     public void testRequiredConfigurablePortReportsDiagnostic() throws IOException {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_EXTRACTION_TESTS)
                 .resolve("03_configurable_port_required");
@@ -291,6 +342,28 @@ public class EndpointDetailsExtractorTest {
             int actualPort = Integer.parseInt(portLine.substring("port:".length()).trim());
             Assert.assertEquals(actualPort, expectedPort, "Unexpected endpoint port in " + endpointYaml);
         }
+    }
+
+    private static void assertPortForEndpointType(Path endpointYaml, String type, int expectedPort)
+            throws IOException {
+        String content = Files.readString(endpointYaml);
+        String typeMarker = "type: \"" + type + "\"";
+        for (String block : content.split("(?=- name:)")) {
+            if (!block.contains(typeMarker)) {
+                continue;
+            }
+            String portLine = block.lines()
+                    .map(String::trim)
+                    .filter(line -> line.startsWith("port:"))
+                    .findFirst()
+                    .orElseThrow(() -> new AssertionError("No port field found for type " + type + " in "
+                            + endpointYaml));
+            int actualPort = Integer.parseInt(portLine.substring("port:".length()).trim());
+            Assert.assertEquals(actualPort, expectedPort, "Unexpected port for endpoint type " + type + " in "
+                    + endpointYaml);
+            return;
+        }
+        Assert.fail("No endpoint of type " + type + " found in " + endpointYaml);
     }
 
     private static void assertEndpointBasePath(Path endpointYaml, String expectedBasePath) throws IOException {
