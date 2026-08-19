@@ -200,7 +200,7 @@ public class EndpointYamlGenerator {
      */
     private ParenthesizedArgList resolveEffectiveArgList(ParenthesizedArgList argList, String moduleName) {
         SeparatedNodeList<FunctionArgumentNode> arguments = argList.arguments();
-        if (arguments.isEmpty() || !(arguments.get(0) instanceof PositionalArgumentNode positionalArg)) {
+        if (!(arguments.get(0) instanceof PositionalArgumentNode positionalArg)) {
             return argList;
         }
         ExpressionNode expr = unwrapCheckExpression(positionalArg.expression());

@@ -280,6 +280,23 @@ public class EndpointDetailsExtractorTest {
     }
 
     @Test
+    public void testGraphqlListenerWrappingImplicitNewListener() throws IOException {
+        Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_EXTRACTION_TESTS)
+                .resolve("19_graphql_wrapping_implicit_new_listener");
+        try {
+            DiagnosticResult diagnosticResult = getDiagnosticResults(projectDirPath);
+            Assert.assertEquals(diagnosticResult.errorCount(), 0,
+                    "Expected no errors when a GraphQL listener wraps an implicit `new` listener expression");
+            Path endpointYaml = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR)
+                    .resolve(ENDPOINTS_FILE_NAME);
+            Assert.assertTrue(Files.exists(endpointYaml), "Endpoint YAML should be generated");
+            assertPortForEndpointType(endpointYaml, "GraphQL", 9103);
+        } finally {
+            deleteDirectories(projectDirPath);
+        }
+    }
+
+    @Test
     public void testRequiredConfigurablePortReportsDiagnostic() throws IOException {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_EXTRACTION_TESTS)
                 .resolve("03_configurable_port_required");
