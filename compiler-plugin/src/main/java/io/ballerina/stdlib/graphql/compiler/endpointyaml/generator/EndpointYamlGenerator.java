@@ -88,7 +88,8 @@ public class EndpointYamlGenerator {
             return Optional.empty();
         }
         ListenerInfo listenerInfo = listenerInfoOpt.get();
-        port = resolvePort(listenerInfo.argList());
+        ParenthesizedArgList effectiveArgList = resolveEffectiveArgList(listenerInfo.argList(), moduleName);
+        port = resolvePort(effectiveArgList);
         String basePath = buildBasePath();
 
         return Optional.of(new Endpoint(basePath, port, basePath, GRAPHQL, this.schemaFileName));
@@ -188,6 +189,44 @@ public class EndpointYamlGenerator {
             case IMPLICIT_NEW_EXPRESSION -> ((ImplicitNewExpressionNode) initializer).parenthesizedArgList();
             default -> Optional.empty();
         };
+    }
+
+    /**
+     * A listener passed as the first argument to a {@code new} expression (e.g.
+     * {@code new graphql:Listener(httpListener)}) is not itself the port value; it is a reference to another
+     * listener whose own arguments (or nested wrapped listener) carry the port. This walks through any number of
+     * such wrapping layers, e.g. a module-level listener declaration or a nested {@code new} expression, until it
+     * finds the argument list that actually carries the port.
+     */
+    private ParenthesizedArgList resolveEffectiveArgList(ParenthesizedArgList argList, String moduleName) {
+        SeparatedNodeList<FunctionArgumentNode> arguments = argList.arguments();
+        if (!(arguments.get(0) instanceof PositionalArgumentNode positionalArg)) {
+            return argList;
+        }
+        ExpressionNode expr = unwrapCheckExpression(positionalArg.expression());
+
+        Optional<ParenthesizedArgList> wrappedArgList;
+        if (expr instanceof ExplicitNewExpressionNode explicit) {
+            wrappedArgList = Optional.ofNullable(explicit.parenthesizedArgList());
+        } else if (expr instanceof ImplicitNewExpressionNode implicit) {
+            wrappedArgList = implicit.parenthesizedArgList();
+        } else if (isNameReference(expr)) {
+            wrappedArgList = resolveWrappedListenerArgList(expr, moduleName);
+        } else {
+            wrappedArgList = Optional.empty();
+        }
+
+        return wrappedArgList.map(inner -> resolveEffectiveArgList(inner, moduleName)).orElse(argList);
+    }
+
+    private Optional<ParenthesizedArgList> resolveWrappedListenerArgList(ExpressionNode expr, String moduleName) {
+        String listenerModuleName = getModuleName(context.semanticModel(), expr);
+        if (listenerModuleName.isEmpty()) {
+            listenerModuleName = moduleName;
+        }
+        String listenerName = extractVariableName(expr);
+        return packageMemberVisitor.getListenerDeclaration(listenerModuleName, listenerName)
+                .flatMap(this::extractArgListFromListenerDecl);
     }
 
     private int resolvePort(ParenthesizedArgList argListOpt) {
