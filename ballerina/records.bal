@@ -14,8 +14,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/http;
 import graphql.parser;
+
+import ballerina/http;
+import ballerina/websocket;
 
 # Provides a set of configurations for configure the underlying HTTP listener of the GraphQL listener.
 public type ListenerConfiguration record {|
@@ -106,7 +108,11 @@ public type ProxyConfig record {|
 # + secureSocket - SSL/TLS-related options
 # + proxy - Proxy server related options
 # + validation - Enables the inbound payload validation functionality which provided by the constraint package. Enabled by default
+# + subscription - Configurations related to GraphQL subscriptions over WebSocket. Nil value means the
+#                  default subscription behavior with default configurations
 public type ClientConfiguration record {|
+    // The HTTP-related fields of this record are mapped to the `http:ClientConfiguration` in the
+    // `toHttpClientConfig` function. A new HTTP-related field added here must be mapped there as well.
     ClientHttp1Settings http1Settings = {};
     decimal timeout = 60;
     string forwarded = "disable";
@@ -122,6 +128,110 @@ public type ClientConfiguration record {|
     ClientSecureSocket? secureSocket = ();
     ProxyConfig? proxy = ();
     boolean validation = true;
+    WebSocketConfiguration? subscription = ();
+|};
+
+# Represents the WebSocket transport configurations for GraphQL subscriptions.
+public type WebSocketConfiguration record {|
+    # The WebSocket URL of the subscription endpoint. If not provided, it is derived
+    # from the client's service URL by mapping `http` to `ws` and `https` to `wss`
+    string? serviceUrl = ();
+    # The payload to be sent with the `connection_init` message,
+    # commonly used to pass authentication information
+    map<json>? connectionInitPayload = ();
+    # The maximum time to wait (in seconds) for the `connection_ack` message after sending the
+    # `connection_init` message, when establishing the subscription connection. This bounds the
+    # `graphql-transport-ws` handshake only; the WebSocket upgrade is bounded separately by
+    # `websocketConfig.handShakeTimeout`. This is independent of the client's HTTP `timeout`
+    decimal connectionInitTimeout = 60;
+    # The reconnection configurations. Nil value disables automatic reconnection
+    ReconnectConfig? reconnect = ();
+    # The handler for the `ping` messages received from the server. If not
+    # provided, the client automatically responds with a `pong` message
+    PingMessageHandler? pingMessageHandler = ();
+    # The client-side keep-alive configuration. The client periodically sends `ping` messages to
+    # detect a silently dropped connection and treats it as lost when the corresponding `pong` is
+    # not received in time, triggering reconnection when configured
+    KeepAliveConfig keepAlive = {};
+    # The configurations of the underlying `websocket:Client`
+    WebSocketClientConfiguration websocketConfig = {};
+|};
+
+# Represents the client-side keep-alive configuration for a GraphQL subscription connection. The
+# client periodically sends `ping` messages and, when the corresponding `pong` is not received
+# within the timeout, treats the connection as lost.
+#
+# + enabled - Whether the client-side keep-alive is active
+# + pingInterval - The interval (in seconds) at which the client sends `ping` messages
+# + pongTimeout - The maximum time (in seconds) to wait for the `pong` response to each `ping`
+#                 before considering the connection lost
+public type KeepAliveConfig record {|
+    boolean enabled = true;
+    decimal pingInterval = 15;
+    decimal pongTimeout = 15;
+|};
+
+# Represents the server-side keep-alive configuration for GraphQL subscription connections. The
+# server periodically sends `ping` messages and, when the corresponding `pong` is not received
+# within the timeout, treats the connection as lost and closes it.
+#
+# + enabled - Whether the server-side keep-alive is active
+# + pingInterval - The interval (in seconds) at which the server sends `ping` messages
+# + pongTimeout - The maximum time (in seconds) to wait for the `pong` response to each `ping`
+#                 before considering the connection lost
+public type ServerKeepAliveConfig record {|
+    boolean enabled = true;
+    decimal pingInterval = 15;
+    decimal pongTimeout = 15;
+|};
+
+# Handles the `ping` messages received from the GraphQL server.
+public type PingMessageHandler isolated function (PingMessageCaller caller, map<json>? payload) returns error?;
+
+# Represents the configurations of the underlying WebSocket client used for GraphQL subscriptions.
+# This mirrors the `websocket:ClientConfiguration` without the `subProtocols` field, which is
+# controlled internally by the GraphQL client.
+public type WebSocketClientConfiguration record {|
+    # Custom headers, which should be sent to the server
+    map<string> customHeaders = {};
+    # Read timeout (in seconds) of the client
+    decimal readTimeout = -1;
+    # Write timeout (in seconds) of the client
+    decimal writeTimeout = -1;
+    # SSL/TLS-related options
+    websocket:ClientSecureSocket? secureSocket = ();
+    # The maximum payload size of a WebSocket frame in bytes.
+    # If this is not set, is negative, or is zero, the default frame size of 65536 will be used
+    int maxFrameSize = 65536;
+    # Enable support for compression in the WebSocket
+    boolean webSocketCompressionEnabled = true;
+    # Time (in seconds) that a connection waits to get the response of
+    # the WebSocket handshake. If the timeout exceeds, then the connection is terminated with
+    # an error. If the value < 0, then the value sets to the default value(300)
+    decimal handShakeTimeout = 300;
+    # An Array of `http:Cookie`
+    http:Cookie[] cookies?;
+    # Configurations related to client authentication
+    websocket:ClientAuthConfig auth?;
+    # A service to handle the ping/pong frames.
+    # Resources in this service gets called on the receipt of ping/pong frames from the server
+    websocket:PingPongService pingPongHandler?;
+    # Retry-related configurations
+    websocket:WebSocketRetryConfig? retryConfig = ();
+    # Enable/disable constraint validation
+    boolean validation = true;
+|};
+
+# Represents the reconnection configurations for the subscription connection.
+public type ReconnectConfig record {|
+    # The maximum number of reconnection attempts before giving up
+    int maxAttempts = 5;
+    # The initial interval (in seconds) between reconnection attempts
+    decimal interval = 1;
+    # The multiplier applied to the interval after each failed attempt
+    float backOffFactor = 2.0;
+    # The maximum interval (in seconds) between reconnection attempts
+    decimal maxInterval = 30;
 |};
 
 type Data record {

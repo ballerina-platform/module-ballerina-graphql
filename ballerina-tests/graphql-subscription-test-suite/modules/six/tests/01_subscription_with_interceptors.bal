@@ -14,30 +14,72 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/graphql;
 import ballerina/graphql_test_common as common;
 import ballerina/test;
-import ballerina/websocket;
+
+type MessagesResponse record {|
+    record {| int messages; |} data;
+|};
+
+// The destructive interceptor makes every `messages` event carry a `{data: null, errors: [...]}`
+// execution result, so `data` is always nil here rather than being bound to `json`.
+type MessagesErrorResponse record {|
+    () data;
+    graphql:ErrorDetail[] errors;
+|};
+
+type BooksResponse record {|
+    record {| Book books; |} data;
+|};
+
+type NewBooksResponse record {|
+    record {| Book newBooks; |} data;
+|};
+
+type Student record {|
+    int id;
+    string name;
+|};
+
+type StudentsResponse record {|
+    record {| Student students; |} data;
+|};
+
+type NewStudentsResponse record {|
+    record {| Student newStudents; |} data;
+|};
+
+type PersonData record {|
+    int id?;
+    string name;
+    string subject?;
+|};
+
+type MultipleValues1Response record {|
+    record {| PersonData multipleValues1; |} data;
+|};
+
+type MultipleValues2Response record {|
+    record {| PersonData multipleValues2; |} data;
+|};
 
 @test:Config {
     groups: ["interceptors", "subscriptions"]
 }
 isolated function testInterceptorsWithSubscriptionReturningScalar() returns error? {
     string document = string `subscription { messages }`;
-    string url = "ws://localhost:9091/subscription_interceptor1";
-    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient1 = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient1);
-    check common:sendSubscriptionMessage(wsClient1, document, "1");
-
-    websocket:Client wsClient2 = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient2);
-    check common:sendSubscriptionMessage(wsClient2, document, "2");
-
+    string url = "http://localhost:9091/subscription_interceptor1";
+    graphql:Client graphqlClient = check new (url);
+    stream<MessagesResponse, graphql:ClientError?> messages = check graphqlClient->subscribe(document);
     foreach int i in 1 ..< 4 {
-        json expectedMsgPayload = {data: {messages: (i * 5 - 5) * 5 - 5}};
-        check common:validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
-        check common:validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
+        record {|MessagesResponse value;|}|graphql:ClientError? event = messages.next();
+        test:assertTrue(event is record {|MessagesResponse value;|}, "Expected a messages event");
+        if event is record {|MessagesResponse value;|} {
+            test:assertEquals(event.value.data.messages, (i * 5 - 5) * 5 - 5);
+        }
     }
+    check graphqlClient->close();
 }
 
 @test:Config {
@@ -45,21 +87,30 @@ isolated function testInterceptorsWithSubscriptionReturningScalar() returns erro
 }
 isolated function testInterceptorsWithSubscriptionReturningRecord() returns error? {
     string document = check common:getGraphqlDocumentFromFile("interceptors_with_subscription_return_records");
-    string url = "ws://localhost:9091/subscription_interceptor2";
-    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient1 = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient1);
-    check common:sendSubscriptionMessage(wsClient1, document, operationName = "A");
-    json expectedMsgPayload = {data: {books: {name: "Crime and Punishment", author: "Athur Conan Doyle"}}};
-    check common:validateNextMessage(wsClient1, expectedMsgPayload);
-    expectedMsgPayload = {data: {books: {name: "A Game of Thrones", author: "Athur Conan Doyle"}}};
-    check common:validateNextMessage(wsClient1, expectedMsgPayload);
+    string url = "http://localhost:9091/subscription_interceptor2";
+    graphql:Client graphqlClient = check new (url);
 
-    websocket:Client wsClient2 = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient2);
-    check common:sendSubscriptionMessage(wsClient2, document, operationName = "B");
-    expectedMsgPayload = {data: {newBooks: {name: "A Game of Thrones", author: "George R.R. Martin"}}};
-    check common:validateNextMessage(wsClient2, expectedMsgPayload);
+    stream<BooksResponse, graphql:ClientError?> books =
+        check graphqlClient->subscribe(document, operationName = "A");
+    record {|BooksResponse value;|}|graphql:ClientError? bookEvent = books.next();
+    test:assertTrue(bookEvent is record {|BooksResponse value;|}, "Expected a books event");
+    if bookEvent is record {|BooksResponse value;|} {
+        test:assertEquals(bookEvent.value.data.books, <Book>{name: "Crime and Punishment", author: "Athur Conan Doyle"});
+    }
+    bookEvent = books.next();
+    test:assertTrue(bookEvent is record {|BooksResponse value;|}, "Expected a books event");
+    if bookEvent is record {|BooksResponse value;|} {
+        test:assertEquals(bookEvent.value.data.books, <Book>{name: "A Game of Thrones", author: "Athur Conan Doyle"});
+    }
+
+    stream<NewBooksResponse, graphql:ClientError?> newBooks =
+        check graphqlClient->subscribe(document, operationName = "B");
+    record {|NewBooksResponse value;|}|graphql:ClientError? newBookEvent = newBooks.next();
+    test:assertTrue(newBookEvent is record {|NewBooksResponse value;|}, "Expected a newBooks event");
+    if newBookEvent is record {|NewBooksResponse value;|} {
+        test:assertEquals(newBookEvent.value.data.newBooks, <Book>{name: "A Game of Thrones", author: "George R.R. Martin"});
+    }
+    check graphqlClient->close();
 }
 
 @test:Config {
@@ -67,21 +118,30 @@ isolated function testInterceptorsWithSubscriptionReturningRecord() returns erro
 }
 isolated function testInterceptorsWithSubscriptionAndFragments() returns error? {
     string document = check common:getGraphqlDocumentFromFile("interceptors_with_fragments_and_subscription");
-    string url = "ws://localhost:9091/subscription_interceptor3";
-    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient1 = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient1);
-    check common:sendSubscriptionMessage(wsClient1, document, operationName = "getStudents");
-    json expectedMsgPayload = {data: {students: {id: 1, name: "Harry Potter"}}};
-    check common:validateNextMessage(wsClient1, expectedMsgPayload);
-    expectedMsgPayload = {data: {students: {id: 2, name: "Harry Potter"}}};
-    check common:validateNextMessage(wsClient1, expectedMsgPayload);
+    string url = "http://localhost:9091/subscription_interceptor3";
+    graphql:Client graphqlClient = check new (url);
 
-    websocket:Client wsClient2 = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient2);
-    check common:sendSubscriptionMessage(wsClient2, document, operationName = "getNewStudents");
-    expectedMsgPayload = {data: {newStudents: {id: 4, name: "Ron Weasley"}}};
-    check common:validateNextMessage(wsClient2, expectedMsgPayload);
+    stream<StudentsResponse, graphql:ClientError?> students =
+        check graphqlClient->subscribe(document, operationName = "getStudents");
+    record {|StudentsResponse value;|}|graphql:ClientError? studentEvent = students.next();
+    test:assertTrue(studentEvent is record {|StudentsResponse value;|}, "Expected a students event");
+    if studentEvent is record {|StudentsResponse value;|} {
+        test:assertEquals(studentEvent.value.data.students, <Student>{id: 1, name: "Harry Potter"});
+    }
+    studentEvent = students.next();
+    test:assertTrue(studentEvent is record {|StudentsResponse value;|}, "Expected a students event");
+    if studentEvent is record {|StudentsResponse value;|} {
+        test:assertEquals(studentEvent.value.data.students, <Student>{id: 2, name: "Harry Potter"});
+    }
+
+    stream<NewStudentsResponse, graphql:ClientError?> newStudents =
+        check graphqlClient->subscribe(document, operationName = "getNewStudents");
+    record {|NewStudentsResponse value;|}|graphql:ClientError? newStudentEvent = newStudents.next();
+    test:assertTrue(newStudentEvent is record {|NewStudentsResponse value;|}, "Expected a newStudents event");
+    if newStudentEvent is record {|NewStudentsResponse value;|} {
+        test:assertEquals(newStudentEvent.value.data.newStudents, <Student>{id: 4, name: "Ron Weasley"});
+    }
+    check graphqlClient->close();
 }
 
 @test:Config {
@@ -89,42 +149,30 @@ isolated function testInterceptorsWithSubscriptionAndFragments() returns error? 
 }
 isolated function testInterceptorsWithUnionTypeSubscription() returns error? {
     string document = check common:getGraphqlDocumentFromFile("interceptors_with_subscription_return_union_type");
-    string url = "ws://localhost:9091/subscription_interceptor4";
-    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient1 = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient1);
-    check common:sendSubscriptionMessage(wsClient1, document, operationName = "unionTypes1");
-    json expectedMsgPayload = {
-        data: {
-            multipleValues1: {
-                id: 100,
-                name: "Jesse Pinkman"
-            }
-        }
-    };
-    check common:validateNextMessage(wsClient1, expectedMsgPayload);
-    expectedMsgPayload = {
-        data: {
-            multipleValues1: {
-                name: "Walter White",
-                subject: "Physics"
-            }
-        }
-    };
-    check common:validateNextMessage(wsClient1, expectedMsgPayload);
+    string url = "http://localhost:9091/subscription_interceptor4";
+    graphql:Client graphqlClient = check new (url);
 
-    websocket:Client wsClient2 = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient2);
-    check common:sendSubscriptionMessage(wsClient2, document, operationName = "unionTypes2");
-    expectedMsgPayload = {
-        data: {
-            multipleValues2: {
-                name: "Walter White",
-                subject: "Chemistry"
-            }
-        }
-    };
-    check common:validateNextMessage(wsClient2, expectedMsgPayload);
+    stream<MultipleValues1Response, graphql:ClientError?> unionTypes1 =
+        check graphqlClient->subscribe(document, operationName = "unionTypes1");
+    record {|MultipleValues1Response value;|}|graphql:ClientError? event1 = unionTypes1.next();
+    test:assertTrue(event1 is record {|MultipleValues1Response value;|}, "Expected a multipleValues1 event");
+    if event1 is record {|MultipleValues1Response value;|} {
+        test:assertEquals(event1.value.data.multipleValues1, <PersonData>{id: 100, name: "Jesse Pinkman"});
+    }
+    event1 = unionTypes1.next();
+    test:assertTrue(event1 is record {|MultipleValues1Response value;|}, "Expected a multipleValues1 event");
+    if event1 is record {|MultipleValues1Response value;|} {
+        test:assertEquals(event1.value.data.multipleValues1, <PersonData>{name: "Walter White", subject: "Physics"});
+    }
+
+    stream<MultipleValues2Response, graphql:ClientError?> unionTypes2 =
+        check graphqlClient->subscribe(document, operationName = "unionTypes2");
+    record {|MultipleValues2Response value;|}|graphql:ClientError? event2 = unionTypes2.next();
+    test:assertTrue(event2 is record {|MultipleValues2Response value;|}, "Expected a multipleValues2 event");
+    if event2 is record {|MultipleValues2Response value;|} {
+        test:assertEquals(event2.value.data.multipleValues2, <PersonData>{name: "Walter White", subject: "Chemistry"});
+    }
+    check graphqlClient->close();
 }
 
 @test:Config {
@@ -132,21 +180,17 @@ isolated function testInterceptorsWithUnionTypeSubscription() returns error? {
 }
 isolated function testInterceptorsReturnBeforeResolverWithSubscription() returns error? {
     string document = string `subscription { messages }`;
-    string url = "ws://localhost:9091/subscription_interceptor5";
-    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient1 = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient1);
-    check common:sendSubscriptionMessage(wsClient1, document, "1");
-
-    websocket:Client wsClient2 = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient2);
-    check common:sendSubscriptionMessage(wsClient2, document, "2");
-
-    json expectedMsgPayload = {data: {messages: 1}};
+    string url = "http://localhost:9091/subscription_interceptor5";
+    graphql:Client graphqlClient = check new (url);
+    stream<MessagesResponse, graphql:ClientError?> messages = check graphqlClient->subscribe(document);
     foreach int i in 1 ..< 4 {
-        check common:validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
-        check common:validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
+        record {|MessagesResponse value;|}|graphql:ClientError? event = messages.next();
+        test:assertTrue(event is record {|MessagesResponse value;|}, "Expected a messages event");
+        if event is record {|MessagesResponse value;|} {
+            test:assertEquals(event.value.data.messages, 1);
+        }
     }
+    check graphqlClient->close();
 }
 
 @test:Config {
@@ -154,16 +198,11 @@ isolated function testInterceptorsReturnBeforeResolverWithSubscription() returns
 }
 isolated function testInterceptorsDestructiveModificationWithSubscription() returns error? {
     string document = string `subscription { messages }`;
-    string url = "ws://localhost:9091/subscription_interceptor6";
-    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient1 = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient1);
-    check common:sendSubscriptionMessage(wsClient1, document, "1");
-
-    websocket:Client wsClient2 = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient2);
-    check common:sendSubscriptionMessage(wsClient2, document, "2");
-
+    string url = "http://localhost:9091/subscription_interceptor6";
+    graphql:Client graphqlClient = check new (url);
+    // The interceptor returns an invalid type for the resolver, so the server emits `next` messages
+    // carrying a `{data: null, errors: [...]}` execution result.
+    stream<MessagesErrorResponse, graphql:ClientError?> messages = check graphqlClient->subscribe(document);
     json expectedMsgPayload = {
         errors: [
             {
@@ -192,9 +231,13 @@ isolated function testInterceptorsDestructiveModificationWithSubscription() retu
         data: null
     };
     foreach int i in 1 ..< 4 {
-        check common:validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
-        check common:validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
+        record {|MessagesErrorResponse value;|}|graphql:ClientError? event = messages.next();
+        test:assertTrue(event is record {|MessagesErrorResponse value;|}, "Expected a messages event");
+        if event is record {|MessagesErrorResponse value;|} {
+            test:assertEquals(event.value.toJson(), expectedMsgPayload);
+        }
     }
+    check graphqlClient->close();
 }
 
 @test:Config {
@@ -202,36 +245,42 @@ isolated function testInterceptorsDestructiveModificationWithSubscription() retu
 }
 isolated function testInterceptorsWithSubscribersRunSimultaniously1() returns error? {
     final string document = string `subscription { messages }`;
-    string url = "ws://localhost:9091/subscription_interceptor1";
-    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
-    final websocket:Client wsClient1 = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient1);
-
-    final websocket:Client wsClient2 = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient2);
-
-    final websocket:Client wsClient3 = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient3);
+    final string url = "http://localhost:9091/subscription_interceptor1";
 
     worker A returns error? {
-        check common:sendSubscriptionMessage(wsClient1, document, "1");
+        graphql:Client graphqlClient = check new (url);
+        stream<MessagesResponse, graphql:ClientError?> messages = check graphqlClient->subscribe(document);
         foreach int i in 1 ..< 4 {
-            json expectedMsgPayload = {data: {messages: (i * 5 - 5) * 5 - 5}};
-            check common:validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
+            record {|MessagesResponse value;|}|graphql:ClientError? event = messages.next();
+            test:assertTrue(event is record {|MessagesResponse value;|}, "Expected a messages event");
+            if event is record {|MessagesResponse value;|} {
+                test:assertEquals(event.value.data.messages, (i * 5 - 5) * 5 - 5);
+            }
         }
+        check graphqlClient->close();
     }
     worker B returns error? {
-        check common:sendSubscriptionMessage(wsClient2, document, "2");
+        graphql:Client graphqlClient = check new (url);
+        stream<MessagesResponse, graphql:ClientError?> messages = check graphqlClient->subscribe(document);
         foreach int i in 1 ..< 4 {
-            json expectedMsgPayload = {data: {messages: (i * 5 - 5) * 5 - 5}};
-            check common:validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
+            record {|MessagesResponse value;|}|graphql:ClientError? event = messages.next();
+            test:assertTrue(event is record {|MessagesResponse value;|}, "Expected a messages event");
+            if event is record {|MessagesResponse value;|} {
+                test:assertEquals(event.value.data.messages, (i * 5 - 5) * 5 - 5);
+            }
+        }
+        check graphqlClient->close();
+    }
+    graphql:Client graphqlClient = check new (url);
+    stream<MessagesResponse, graphql:ClientError?> messages = check graphqlClient->subscribe(document);
+    foreach int i in 1 ..< 4 {
+        record {|MessagesResponse value;|}|graphql:ClientError? event = messages.next();
+        test:assertTrue(event is record {|MessagesResponse value;|}, "Expected a messages event");
+        if event is record {|MessagesResponse value;|} {
+            test:assertEquals(event.value.data.messages, (i * 5 - 5) * 5 - 5);
         }
     }
-    check common:sendSubscriptionMessage(wsClient3, document, "3");
-    foreach int i in 1 ..< 4 {
-        json expectedMsgPayload = {data: {messages: (i * 5 - 5) * 5 - 5}};
-        check common:validateNextMessage(wsClient3, expectedMsgPayload, id = "3");
-    }
+    check graphqlClient->close();
     check wait A;
     check wait B;
 }
@@ -241,55 +290,39 @@ isolated function testInterceptorsWithSubscribersRunSimultaniously1() returns er
 }
 isolated function testInterceptorsWithSubscribersRunSimultaniously2() returns error? {
     final string document = check common:getGraphqlDocumentFromFile("interceptors_with_subscription_return_union_type");
-    string url = "ws://localhost:9091/subscription_interceptor4";
-    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
-    final websocket:Client wsClient1 = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient1);
-
-    final websocket:Client wsClient2 = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient2);
+    final string url = "http://localhost:9091/subscription_interceptor4";
 
     worker A returns error? {
-        check common:sendSubscriptionMessage(wsClient1, document, "1", operationName = "unionTypes1");
-        json expectedMsgPayload = {
-            data: {
-                multipleValues1: {
-                    id: 100,
-                    name: "Jesse Pinkman"
-                }
-            }
-        };
-        check common:validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
-        expectedMsgPayload = {
-            data: {
-                multipleValues1: {
-                    name: "Walter White",
-                    subject: "Physics"
-                }
-            }
-        };
-        check common:validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
+        graphql:Client graphqlClient = check new (url);
+        stream<MultipleValues1Response, graphql:ClientError?> unionTypes1 =
+            check graphqlClient->subscribe(document, operationName = "unionTypes1");
+        record {|MultipleValues1Response value;|}|graphql:ClientError? event = unionTypes1.next();
+        test:assertTrue(event is record {|MultipleValues1Response value;|}, "Expected a multipleValues1 event");
+        if event is record {|MultipleValues1Response value;|} {
+            test:assertEquals(event.value.data.multipleValues1, <PersonData>{id: 100, name: "Jesse Pinkman"});
+        }
+        event = unionTypes1.next();
+        test:assertTrue(event is record {|MultipleValues1Response value;|}, "Expected a multipleValues1 event");
+        if event is record {|MultipleValues1Response value;|} {
+            test:assertEquals(event.value.data.multipleValues1, <PersonData>{name: "Walter White", subject: "Physics"});
+        }
+        check graphqlClient->close();
     }
     worker B returns error? {
-        check common:sendSubscriptionMessage(wsClient2, document, "2", operationName = "unionTypes1");
-        json expectedMsgPayload = {
-            data: {
-                multipleValues1: {
-                    id: 100,
-                    name: "Jesse Pinkman"
-                }
-            }
-        };
-        check common:validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
-        expectedMsgPayload = {
-            data: {
-                multipleValues1: {
-                    name: "Walter White",
-                    subject: "Physics"
-                }
-            }
-        };
-        check common:validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
+        graphql:Client graphqlClient = check new (url);
+        stream<MultipleValues1Response, graphql:ClientError?> unionTypes1 =
+            check graphqlClient->subscribe(document, operationName = "unionTypes1");
+        record {|MultipleValues1Response value;|}|graphql:ClientError? event = unionTypes1.next();
+        test:assertTrue(event is record {|MultipleValues1Response value;|}, "Expected a multipleValues1 event");
+        if event is record {|MultipleValues1Response value;|} {
+            test:assertEquals(event.value.data.multipleValues1, <PersonData>{id: 100, name: "Jesse Pinkman"});
+        }
+        event = unionTypes1.next();
+        test:assertTrue(event is record {|MultipleValues1Response value;|}, "Expected a multipleValues1 event");
+        if event is record {|MultipleValues1Response value;|} {
+            test:assertEquals(event.value.data.multipleValues1, <PersonData>{name: "Walter White", subject: "Physics"});
+        }
+        check graphqlClient->close();
     }
     check wait A;
     check wait B;

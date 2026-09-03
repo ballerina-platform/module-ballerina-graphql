@@ -16,6 +16,7 @@
 
 import graphql.parser;
 
+import ballerina/time;
 import ballerina/websocket;
 
 isolated service class WsService {
@@ -26,13 +27,18 @@ isolated service class WsService {
     private final Context context;
     private final map<SubscriptionHandler> activeConnections = {};
     private boolean initiatedConnection = false;
-    private PingMessageJob? pingMessageHandler = ();
-    private PongMessageHandlerJob? pongMessageHandler = ();
+    private final readonly & ServerKeepAliveConfig keepAliveConfig;
+    private final MessageQueue keepAliveSignalQueue;
+    private boolean activityReceived = false;
+    private boolean keepAliveStopped = false;
 
-    isolated function init(Engine engine, __Schema & readonly schema, Context context) {
+    isolated function init(Engine engine, __Schema & readonly schema, Context context,
+            readonly & ServerKeepAliveConfig keepAliveConfig) {
         self.engine = engine;
         self.schema = schema;
         self.context = context;
+        self.keepAliveConfig = keepAliveConfig;
+        self.keepAliveSignalQueue = new;
     }
 
     isolated remote function onIdleTimeout() returns ConnectionInitialisationTimeout? {
@@ -48,6 +54,7 @@ isolated service class WsService {
         dispatcherValue: "ping"
     }
     isolated remote function onPingMessage(Ping ping) returns Pong {
+        self.markActivity();
         return {'type: WS_PONG};
     }
 
@@ -55,15 +62,11 @@ isolated service class WsService {
         dispatcherValue: "pong"
     }
     isolated remote function onPongMessage(Pong pong) {
-        lock {
-            PongMessageHandlerJob? handler = self.pongMessageHandler;
-            if handler !is () {
-                handler.setPongMessageReceived();
-            }
-        }
+        self.markActivity();
     }
 
     isolated remote function onComplete(Complete message) {
+        self.markActivity();
         lock {
             if self.activeConnections.hasKey(message.id) {
                 SubscriptionHandler handler = self.activeConnections.remove(message.id);
@@ -80,13 +83,15 @@ isolated service class WsService {
             }
             self.initiatedConnection = true;
         }
-        self.startSendingPingMessages(caller);
-        self.schedulePongMessageHandler(caller);
+        if self.keepAliveConfig.enabled {
+            _ = start self.runKeepAlive(caller);
+        }
         return {'type: WS_ACK};
     }
 
     remote function onSubscribe(Subscribe message)
     returns stream<Next|Complete|ErrorMessage, error?>|Unauthorized|SubscriberAlreadyExists {
+        self.markActivity();
         SubscriptionHandler|Unauthorized|SubscriberAlreadyExists handler = self.validateSubscriptionRequest(message);
         if handler is Unauthorized|SubscriberAlreadyExists {
             return handler;
@@ -111,28 +116,102 @@ isolated service class WsService {
     }
 
     remote function onClose(websocket:Caller caller) {
-        self.unschedulePingPongHandlers();
-    }
-
-    private isolated function startSendingPingMessages(websocket:Caller caller) {
+        self.stopKeepAlive();
+        // Without this, a subscription whose resolver is mid-call when the connection closes (e.g.
+        // blocked producing the next value) keeps calling that resolver forever: onComplete is the
+        // only other place a handler is marked unsubscribed, and it never fires for a connection that
+        // closes out from under an active subscription (idle timeout, keep-alive teardown, abrupt
+        // client disconnect).
         lock {
-            if self.pingMessageHandler !is () || !self.initiatedConnection {
-                return;
+            foreach SubscriptionHandler handler in self.activeConnections {
+                handler.setUnsubscribed();
             }
-            PingMessageJob job = new PingMessageJob(caller);
-            job.schedule();
-            self.pingMessageHandler = job;
+            self.activeConnections.removeAll();
         }
     }
 
-    private isolated function schedulePongMessageHandler(websocket:Caller caller) {
-        lock {
-            if !self.initiatedConnection || self.pongMessageHandler is PongMessageHandlerJob {
+    // Pings only when idle; tears down only after KEEPALIVE_MAX_MISSED_PROBES silent cycles.
+    isolated function runKeepAlive(websocket:Caller caller) {
+        int missedProbes = 0;
+        while true {
+            self.resetActivity();
+            if self.keepAliveWait(self.keepAliveConfig.pingInterval, false) {
                 return;
             }
-            PongMessageHandlerJob handler = new (caller);
-            handler.schedule();
-            self.pongMessageHandler = handler;
+            if self.isActivityReceived() {
+                missedProbes = 0;
+                continue;
+            }
+            Ping pingMessage = {'type: WS_PING};
+            websocket:Error? result = writeMessage(caller, pingMessage);
+            if result is websocket:Error {
+                return;
+            }
+            if self.keepAliveWait(self.keepAliveConfig.pongTimeout, true) {
+                return;
+            }
+            if self.isActivityReceived() {
+                missedProbes = 0;
+                continue;
+            }
+            // Tolerates isolated misses; see ballerina-library#8929.
+            missedProbes += 1;
+            if missedProbes >= KEEPALIVE_MAX_MISSED_PROBES {
+                ServerSubscriptionError err = error("Request timeout", code = 4408);
+                closeConnection(caller, err);
+                return;
+            }
+        }
+    }
+
+    // Woken early by activity instead of sleeping blindly; mirrors the client's `keepAliveWait`
+    // in `client_subscription_connection.bal`.
+    isolated function keepAliveWait(decimal duration, boolean stopOnActivity) returns boolean {
+        decimal remaining = duration;
+        while remaining > 0d {
+            if self.isKeepAliveStopped() {
+                return true;
+            }
+            if stopOnActivity && self.isActivityReceived() {
+                return false;
+            }
+            decimal waitStart = time:monotonicNow();
+            any|error signal = self.keepAliveSignalQueue.dequeueWithTimeout(remaining);
+            decimal elapsed = time:monotonicNow() - waitStart;
+            remaining = elapsed < remaining ? remaining - elapsed : 0d;
+        }
+        return self.isKeepAliveStopped();
+    }
+
+    isolated function markActivity() {
+        lock {
+            self.activityReceived = true;
+        }
+        self.keepAliveSignalQueue.enqueue(());
+    }
+
+    isolated function resetActivity() {
+        lock {
+            self.activityReceived = false;
+        }
+    }
+
+    isolated function isActivityReceived() returns boolean {
+        lock {
+            return self.activityReceived;
+        }
+    }
+
+    isolated function stopKeepAlive() {
+        lock {
+            self.keepAliveStopped = true;
+        }
+        self.keepAliveSignalQueue.enqueue(());
+    }
+
+    isolated function isKeepAliveStopped() returns boolean {
+        lock {
+            return self.keepAliveStopped;
         }
     }
 
@@ -149,24 +228,5 @@ isolated service class WsService {
             self.activeConnections[message.id] = handler;
         }
         return handler;
-    }
-
-    private isolated function unschedulePingPongHandlers() {
-        lock {
-            PingMessageJob? pingMessageHandler = self.pingMessageHandler;
-            PongMessageHandlerJob? pongMessageHandler = self.pongMessageHandler;
-            if pingMessageHandler is PingMessageJob {
-                error? err = pingMessageHandler.unschedule();
-                if err is error {
-                    logError(err.message(), err);
-                }
-            }
-            if pongMessageHandler is PongMessageHandlerJob {
-                error? err = pongMessageHandler.unschedule();
-                if err is error {
-                    logError(err.message(), err);
-                }
-            }
-        }
     }
 }

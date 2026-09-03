@@ -19,17 +19,22 @@
 package io.ballerina.stdlib.graphql.runtime.client;
 
 import io.ballerina.runtime.api.Environment;
+import io.ballerina.runtime.api.creators.TypeCreator;
+import io.ballerina.runtime.api.creators.ValueCreator;
+import io.ballerina.runtime.api.types.PredefinedTypes;
+import io.ballerina.runtime.api.types.StreamType;
 import io.ballerina.runtime.api.values.BError;
 import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTypedesc;
 
 /**
- * This class is used to execute a GraphQL document using the Ballerina GraphQL client.
+ * This class is used to execute GraphQL operations using the Ballerina GraphQL client.
  */
-public final class QueryExecutor {
+public final class Client {
 
-    private QueryExecutor () {}
+    private Client() {
+    }
 
     /**
      * Executes the GraphQL document when the corresponding Ballerina remote operation is invoked.
@@ -41,12 +46,42 @@ public final class QueryExecutor {
     }
 
     /**
-     * Executes the GraphQL document when the corresponding Ballerina remote operation is invoked.
+     * Executes a GraphQL query operation when the corresponding Ballerina remote operation is invoked.
      */
-    public static Object executeWithType(Environment env, BObject client, BString document, Object variables,
-                                         Object operationName, Object headers, BTypedesc targetType) {
+    public static Object query(Environment env, BObject client, BString document, Object variables,
+                               Object operationName, Object headers, BTypedesc targetType) {
         return invokeClientMethod(env, client, document, variables, operationName, headers, targetType,
-                "processExecuteWithType");
+                "processQuery");
+    }
+
+    /**
+     * Executes a GraphQL mutation operation when the corresponding Ballerina remote operation is invoked.
+     */
+    public static Object mutate(Environment env, BObject client, BString document, Object variables,
+                                Object operationName, Object headers, BTypedesc targetType) {
+        return invokeClientMethod(env, client, document, variables, operationName, headers, targetType,
+                "processMutate");
+    }
+
+    /**
+     * Executes a GraphQL subscription operation when the corresponding Ballerina remote operation is invoked,
+     * and returns a stream of data-bound responses.
+     */
+    public static Object subscribe(Environment env, BObject client, BString document, Object variables,
+                                   Object operationName, Object id, BTypedesc targetType) {
+        Object[] paramFeed = new Object[5];
+        paramFeed[0] = targetType;
+        paramFeed[1] = document;
+        paramFeed[2] = variables;
+        paramFeed[3] = operationName;
+        paramFeed[4] = id;
+        Object result = invokeClientMethod(env, client, "processSubscribe", paramFeed);
+        if (result instanceof BError) {
+            return result;
+        }
+        StreamType streamType = TypeCreator.createStreamType(targetType.getDescribingType(),
+                PredefinedTypes.TYPE_NULL);
+        return ValueCreator.createStreamValue(streamType, (BObject) result);
     }
 
     private static Object invokeClientMethod(Environment env, BObject client, BString document, Object variables,

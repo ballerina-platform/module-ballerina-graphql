@@ -7,6 +7,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+
+- [[BEP-1460] Add GraphQL Client Subscription Support with the `subscribe()` Method](https://github.com/ballerina-platform/ballerina-spec/issues/1460)
+- [[BEP-1460] Introduce the Per-Operation `query()` and `mutate()` Methods and the `close()` Method to the GraphQL Client](https://github.com/ballerina-platform/ballerina-spec/issues/1460)
+- [[BEP-1460] Add Client-Side Keep-Alive with Dead-Connection Detection for GraphQL Subscriptions](https://github.com/ballerina-platform/ballerina-spec/issues/1460)
+- [[BEP-1460] Add Configurable Server-Side Keep-Alive for GraphQL Subscriptions](https://github.com/ballerina-platform/ballerina-spec/issues/1460)
+
+### Changed
+
+- [[BEP-1460] Deprecate the Generic `execute()` Method of the GraphQL Client](https://github.com/ballerina-platform/ballerina-spec/issues/1460)
+- [[BEP-1460] Preserve the Partial `data` and `extensions` of a GraphQL Response in the `graphql:PayloadBindingError`](https://github.com/ballerina-platform/ballerina-spec/issues/1460)
+
+### Removed
+
+- [[BEP-1460] Remove the Deprecated `executeWithType()` Method of the GraphQL Client](https://github.com/ballerina-platform/ballerina-spec/issues/1460)
+- [[BEP-1460] Remove the Deprecated `graphql:ServerError` Type](https://github.com/ballerina-platform/ballerina-spec/issues/1460)
+
 ### Fixed
 
 - [[#8891] Fix Default Values not Passed to the Resolver when no Parameter Present](https://github.com/ballerina-platform/ballerina-library/issues/8891)

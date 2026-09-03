@@ -140,7 +140,7 @@ returns stream<any, error?>|json {
     return outputObject.errors.toJson();
 }
 
-isolated function closeConnection(websocket:Caller caller, SubscriptionError cause, decimal timeout = 5) {
+isolated function closeConnection(websocket:Caller caller, ServerSubscriptionError cause, decimal timeout = 5) {
     string reason = cause.message();
     int statusCode = cause.detail().code;
     error? closedConnection = caller->close(statusCode, reason, timeout);

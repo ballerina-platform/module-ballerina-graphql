@@ -405,59 +405,30 @@ isolated function hasGraphqlErrors(http:ApplicationResponseError applicationResp
     return applicationResponseError.detail().statusCode == 400 && data is json && data.errors is json;
 }
 
-isolated function handleGraphqlErrorResponse(map<json> responseMap) returns RequestError|ServerError {
-    ErrorDetail[]|error errors = responseMap.get("errors").cloneWithType();
-    if errors is error {
-        return error RequestError("GraphQL Client Error", errors);
-    }
-    json? data = (responseMap.hasKey("data")) ? responseMap.get("data") : ();
-    map<json>? extensions = (responseMap.hasKey("extensions")) ? (responseMap.get("extensions") is () ? () :
-        <map<json>> responseMap.get("extensions")) : ();
-    return error ServerError("GraphQL Server Error", errors = errors, data = data, extensions = extensions);
-}
-
-isolated function performDataBinding(typedesc<GenericResponse|record{}|json> targetType, json graphqlResponse)
-                                     returns GenericResponse|record{}|json|RequestError {
-    do {
-        if targetType is typedesc<GenericResponse> {
-            GenericResponse response = check graphqlResponse.cloneWithType(targetType);
-            return response;
-        } else if targetType is typedesc<record{}> {
-            record{} response = check graphqlResponse.cloneWithType(targetType);
-            return response;
-        } else if targetType is typedesc<json> {
-            json response = check graphqlResponse.cloneWithType(targetType);
-            return response;
-        }
-    } on fail error e {
-        return error RequestError("GraphQL Client Error",  e);
-    }
-    return error RequestError("GraphQL Client Error, Invalid binding type.");
-}
-
-isolated function performDataBindingWithErrors(typedesc<GenericResponseWithErrors|record{}|json> targetType,
+isolated function performDataBindingWithErrors(typedesc<GenericResponseWithErrors|record{}> targetType,
                                                json graphqlResponse)
-                                               returns GenericResponseWithErrors|record{}|json|PayloadBindingError {
+                                               returns GenericResponseWithErrors|record{}|PayloadBindingError {
     do {
-        if targetType is typedesc<GenericResponseWithErrors> {
-            GenericResponseWithErrors response = check graphqlResponse.cloneWithType(targetType);
-            return response;
-        } else if targetType is typedesc<record{}> {
-            record{} response = check graphqlResponse.cloneWithType(targetType);
-            return response;
-        } else if targetType is typedesc<json> {
-            json response = check graphqlResponse.cloneWithType(targetType);
-            return response;
-        }
+        return check graphqlResponse.cloneWithType(targetType);
     } on fail error e {
-        map<json>|error responseMap = graphqlResponse.ensureType();
-        if responseMap is error || !responseMap.hasKey("errors") {
-            return error PayloadBindingError(UNABLE_TO_PERFORM_DATA_BINDING, e, errors = ());
-        }
-        ErrorDetail[] errorDetails = checkpanic responseMap.get("errors").cloneWithType();
-        return error PayloadBindingError(UNABLE_TO_PERFORM_DATA_BINDING, e, errors = errorDetails);
+        return getPayloadBindingError(graphqlResponse, e);
     }
-    return error PayloadBindingError(string `${UNABLE_TO_PERFORM_DATA_BINDING}, Invalid binding type.`, errors = ());
+}
+
+isolated function getPayloadBindingError(json graphqlResponse, error e) returns PayloadBindingError {
+    map<json>|error responseMap = graphqlResponse.ensureType();
+    if responseMap is error || !responseMap.hasKey("errors") {
+        return error PayloadBindingError(UNABLE_TO_PERFORM_DATA_BINDING, e, errors = ());
+    }
+    ErrorDetail[]|error errorDetails = responseMap.get("errors").cloneWithType();
+    if errorDetails is error {
+        return error PayloadBindingError(UNABLE_TO_PERFORM_DATA_BINDING, e, errors = ());
+    }
+    json? data = responseMap.hasKey("data") ? responseMap.get("data") : ();
+    json extensionsField = responseMap.hasKey("extensions") ? responseMap.get("extensions") : ();
+    map<json>? extensions = extensionsField is map<json> ? extensionsField : ();
+    return error PayloadBindingError(UNABLE_TO_PERFORM_DATA_BINDING, e,
+            data = data, errors = errorDetails, extensions = extensions);
 }
 
 isolated function getFieldTypeFromParentType(__Type parentType, __Type[] typeArray, parser:FieldNode fieldNode) returns __Type {

@@ -164,12 +164,6 @@ public isolated function validateErrorMessage(websocket:Client wsClient, json ex
     assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
 
-public isolated function validateCompleteMessage(websocket:Client wsClient, string id = "1") returns error? {
-    json expectedPayload = {'type: WS_COMPLETE, id};
-    json actualPayload = check readMessageExcludingPingMessages(wsClient);
-    assertJsonValuesWithOrder(actualPayload, expectedPayload);
-}
-
 public isolated function validateConnectionClosureWithError(websocket:Client wsClient, string expectedErrorMsg) {
     json|error response = readMessageExcludingPingMessages(wsClient);
     if response is error {
