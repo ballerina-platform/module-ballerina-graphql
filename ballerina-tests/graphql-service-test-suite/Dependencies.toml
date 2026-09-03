@@ -37,9 +37,6 @@ version = "1.7.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
-modules = [
-	{org = "ballerina", packageName = "constraint", moduleName = "constraint"}
-]
 
 [[package]]
 org = "ballerina"
@@ -104,20 +101,20 @@ modules = [
 
 [[package]]
 org = "ballerina"
-name = "graphql_advanced_test_suite"
+name = "graphql_service_test_suite"
 version = "1.18.0"
 dependencies = [
-	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "graphql"},
 	{org = "ballerina", name = "graphql_test_common"},
 	{org = "ballerina", name = "http"},
-	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "lang.runtime"},
-	{org = "ballerina", name = "mime"},
-	{org = "ballerina", name = "test"}
+	{org = "ballerina", name = "lang.value"},
+	{org = "ballerina", name = "test"},
+	{org = "ballerina", name = "url"},
+	{org = "ballerina", name = "uuid"}
 ]
 modules = [
-	{org = "ballerina", packageName = "graphql_advanced_test_suite", moduleName = "graphql_advanced_test_suite"}
+	{org = "ballerina", packageName = "graphql_service_test_suite", moduleName = "graphql_service_test_suite"}
 ]
 
 [[package]]
@@ -177,9 +174,6 @@ version = "1.8.1"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.value"}
-]
-modules = [
-	{org = "ballerina", packageName = "io", moduleName = "io"}
 ]
 
 [[package]]
@@ -287,6 +281,9 @@ version = "0.0.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
+modules = [
+	{org = "ballerina", packageName = "lang.value", moduleName = "lang.value"}
+]
 
 [[package]]
 org = "ballerina"
@@ -308,9 +305,6 @@ dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.int"},
 	{org = "ballerina", name = "log"}
-]
-modules = [
-	{org = "ballerina", packageName = "mime", moduleName = "mime"}
 ]
 
 [[package]]
@@ -382,6 +376,9 @@ version = "2.6.2"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
+modules = [
+	{org = "ballerina", packageName = "url", moduleName = "url"}
+]
 
 [[package]]
 org = "ballerina"
@@ -392,6 +389,9 @@ dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.int"},
 	{org = "ballerina", name = "time"}
+]
+modules = [
+	{org = "ballerina", packageName = "uuid", moduleName = "uuid"}
 ]
 
 [[package]]

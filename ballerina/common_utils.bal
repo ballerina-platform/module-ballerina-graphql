@@ -405,6 +405,36 @@ isolated function hasGraphqlErrors(http:ApplicationResponseError applicationResp
     return applicationResponseError.detail().statusCode == 400 && data is json && data.errors is json;
 }
 
+isolated function handleGraphqlErrorResponse(map<json> responseMap) returns RequestError|ServerError {
+    ErrorDetail[]|error errors = responseMap.get("errors").cloneWithType();
+    if errors is error {
+        return error RequestError("GraphQL Client Error", errors);
+    }
+    json? data = (responseMap.hasKey("data")) ? responseMap.get("data") : ();
+    map<json>? extensions = (responseMap.hasKey("extensions")) ? (responseMap.get("extensions") is () ? () :
+        <map<json>> responseMap.get("extensions")) : ();
+    return error ServerError("GraphQL Server Error", errors = errors, data = data, extensions = extensions);
+}
+
+isolated function performDataBinding(typedesc<GenericResponse|record{}|json> targetType, json graphqlResponse)
+                                     returns GenericResponse|record{}|json|RequestError {
+    do {
+        if targetType is typedesc<GenericResponse> {
+            GenericResponse response = check graphqlResponse.cloneWithType(targetType);
+            return response;
+        } else if targetType is typedesc<record{}> {
+            record{} response = check graphqlResponse.cloneWithType(targetType);
+            return response;
+        } else if targetType is typedesc<json> {
+            json response = check graphqlResponse.cloneWithType(targetType);
+            return response;
+        }
+    } on fail error e {
+        return error RequestError("GraphQL Client Error",  e);
+    }
+    return error RequestError("GraphQL Client Error, Invalid binding type.");
+}
+
 isolated function performDataBindingWithErrors(typedesc<GenericResponseWithErrors|record{}> targetType,
                                                json graphqlResponse)
                                                returns GenericResponseWithErrors|record{}|PayloadBindingError {

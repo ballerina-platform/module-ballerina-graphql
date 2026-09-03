@@ -42,6 +42,12 @@ public type InvalidDocumentError distinct (RequestError & error<record {| ErrorD
 # error detail so the caller can still recover them.
 public type PayloadBindingError distinct (ClientError & error<record {| json? data?; ErrorDetail[]? errors; map<json>? extensions?; |}>);
 
+# Represents GraphQL API response during GraphQL API server side errors.
+# # Deprecated
+# This error type will be removed along with the `executeWithType()` API
+@deprecated
+public type ServerError distinct (ClientError & error<record {| json? data?; ErrorDetail[] errors; map<json>? extensions?; |}>);
+
 # Represents errors occurring while establishing or executing a GraphQL subscription.
 public type SubscriptionError distinct (ClientError & error<record {| ErrorDetail[]? errors; |}>);
 

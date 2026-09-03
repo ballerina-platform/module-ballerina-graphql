@@ -46,6 +46,15 @@ public final class Client {
     }
 
     /**
+     * Executes the GraphQL document when the corresponding Ballerina remote operation is invoked.
+     */
+    public static Object executeWithType(Environment env, BObject client, BString document, Object variables,
+                                         Object operationName, Object headers, BTypedesc targetType) {
+        return invokeClientMethod(env, client, document, variables, operationName, headers, targetType,
+                "processExecuteWithType");
+    }
+
+    /**
      * Executes a GraphQL query operation when the corresponding Ballerina remote operation is invoked.
      */
     public static Object query(Environment env, BObject client, BString document, Object variables,

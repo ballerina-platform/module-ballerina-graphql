@@ -102,7 +102,7 @@ public type Interceptor distinct service object {
 
 // GraphQL client related data binding types representation
 
-# Represents the target type binding record with data and extensions of a GraphQL response.
+# Represents the target type binding record with data and extensions of a GraphQL response for `executeWithType` method.
 #
 # + extensions -  Meta information on protocol extensions from the GraphQL server
 # + data -  The requested data from the GraphQL server
