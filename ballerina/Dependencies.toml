@@ -403,7 +403,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "websocket"
-version = "2.15.4"
+version = "2.15.5"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "constraint"},
