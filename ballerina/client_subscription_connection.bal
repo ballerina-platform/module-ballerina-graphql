@@ -403,7 +403,15 @@ isolated class SubscriptionConnection {
                 // Messages received for an unknown ID are ignored.
                 MessageQueue? queue = self.getQueue(id);
                 if queue is MessageQueue {
-                    queue.enqueue(getWsMessagePayload(message));
+                    json payload = getWsMessagePayload(message);
+                    if payload is () {
+                        // A nil item is MessageQueue's stream-completion sentinel; a `next` message
+                        // must never enqueue it, or a malformed/payload-less frame would silently end
+                        // the stream instead of surfacing an error.
+                        queue.enqueue(error SubscriptionError(INVALID_SUBSCRIPTION_MESSAGE, errors = ()));
+                    } else {
+                        queue.enqueue(payload);
+                    }
                 }
                 return;
             }
