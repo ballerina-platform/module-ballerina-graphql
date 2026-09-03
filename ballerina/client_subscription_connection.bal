@@ -250,7 +250,10 @@ isolated class SubscriptionConnection {
                 return;
             }
             if keepAliveMonitor is KeepAliveMonitor {
-                keepAliveMonitor.markPongReceived();
+                // Any incoming message -- not just a `pong` -- counts as a liveness signal: the
+                // connection is demonstrably alive if the server is sending anything at all. See
+                // `markLivenessSignalReceived()`'s doc comment.
+                keepAliveMonitor.markLivenessSignalReceived();
                 self.keepAliveSignalQueue.enqueue(());
                 if getWsMessageType(message) == WS_PONG {
                     continue;
@@ -264,11 +267,11 @@ isolated class SubscriptionConnection {
     isolated function runKeepAlive(websocket:Client wsClient, KeepAliveMonitor monitor) {
         int missedProbes = 0;
         while true {
-            monitor.resetPong();
+            monitor.resetLivenessSignal();
             if self.keepAliveWait(self.keepAlivePingInterval, monitor, false) {
                 return;
             }
-            if monitor.isPongReceived() {
+            if monitor.isLivenessSignalReceived() {
                 missedProbes = 0;
                 continue;
             }
@@ -281,7 +284,7 @@ isolated class SubscriptionConnection {
             if self.keepAliveWait(self.keepAlivePongTimeout, monitor, true) {
                 return;
             }
-            if monitor.isPongReceived() {
+            if monitor.isLivenessSignalReceived() {
                 missedProbes = 0;
                 continue;
             }
@@ -315,7 +318,7 @@ isolated class SubscriptionConnection {
             if self.isClosed() || monitor.isStopped() {
                 return true;
             }
-            if stopOnPong && monitor.isPongReceived() {
+            if stopOnPong && monitor.isLivenessSignalReceived() {
                 return false;
             }
             decimal waitStart = time:monotonicNow();
@@ -621,28 +624,30 @@ isolated class SubscriptionConnection {
 }
 
 // Tracks the liveness signal shared between a connection's keep-alive loop (`runKeepAlive`) and its
-// dispatcher. The keep-alive loop resets and checks `pongReceived` around each `ping`; the
-// dispatcher sets it upon reading a `pong`. `stopped` lets the dispatcher stop the loop promptly
-// when the connection ends for another reason.
+// dispatcher. The keep-alive loop resets and checks `livenessSignalReceived` around each `ping`; the
+// dispatcher sets it upon reading *any* message, not just a `pong` -- receiving anything at all from
+// the server, including ordinary subscription traffic, is itself proof the connection is alive, so it
+// counts as a liveness signal the same way an explicit `pong` does. `stopped` lets the dispatcher stop
+// the loop promptly when the connection ends for another reason.
 isolated class KeepAliveMonitor {
-    private boolean pongReceived = false;
+    private boolean livenessSignalReceived = false;
     private boolean stopped = false;
 
-    isolated function markPongReceived() {
+    isolated function markLivenessSignalReceived() {
         lock {
-            self.pongReceived = true;
+            self.livenessSignalReceived = true;
         }
     }
 
-    isolated function resetPong() {
+    isolated function resetLivenessSignal() {
         lock {
-            self.pongReceived = false;
+            self.livenessSignalReceived = false;
         }
     }
 
-    isolated function isPongReceived() returns boolean {
+    isolated function isLivenessSignalReceived() returns boolean {
         lock {
-            return self.pongReceived;
+            return self.livenessSignalReceived;
         }
     }
 
