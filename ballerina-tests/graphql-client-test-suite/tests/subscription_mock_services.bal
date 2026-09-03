@@ -408,7 +408,22 @@ service /mock_exhaustion on mockSubscriptionListener {
         if connectionNumber > 1 {
             return error("Service unavailable", code = 503);
         }
-        return new MockCloseReconnectWsService();
+        return new MockExhaustionWsService();
+    }
+}
+
+isolated service class MockExhaustionWsService {
+    *websocket:Service;
+
+    isolated remote function onMessage(websocket:Caller caller, json message) returns websocket:Error? {
+        string messageType = getMockMessageType(message);
+        if messageType == common:WS_PING {
+            check caller->writeMessage({'type: common:WS_PONG});
+        } else if messageType == common:WS_INIT {
+            check caller->writeMessage({'type: common:WS_ACK});
+        } else if messageType == common:WS_SUBSCRIBE {
+            return caller->close(MOCK_ABNORMAL_CLOSURE_STATUS_CODE, "Connection dropped", timeout = 1);
+        }
     }
 }
 
