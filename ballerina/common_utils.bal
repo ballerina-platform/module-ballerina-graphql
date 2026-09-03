@@ -22,6 +22,27 @@ import ballerina/http;
 // Error messages
 const UNABLE_TO_PERFORM_DATA_BINDING = "Unable to perform data binding";
 
+// Selects the operation to execute from a parsed document: the one matching `operationName`, or,
+// when no name is given, the sole operation in the document. Shared by `Engine.getOperation` (the
+// server-side execution path) and the GraphQL client (`validateOperationKind`), so both surfaces
+// agree on the same selection rules and error messages.
+isolated function selectOperation(parser:DocumentNode document, string? operationName)
+        returns parser:OperationNode|ErrorDetail {
+    parser:OperationNode[] operations = document.getOperations();
+    if operationName is string {
+        foreach parser:OperationNode operation in operations {
+            if operation.getName() == operationName {
+                return operation;
+            }
+        }
+        return {message: string `Unknown operation named "${operationName}".`, locations: []};
+    }
+    if operations.length() == 1 {
+        return operations[0];
+    }
+    return {message: MULTIPLE_OPERATIONS_MESSAGE, locations: []};
+}
+
 isolated function getFieldNotFoundErrorMessageFromType(string fieldName, __Type rootType) returns string {
     string typeName = getTypeNameFromType(rootType);
     if rootType.kind == UNION {

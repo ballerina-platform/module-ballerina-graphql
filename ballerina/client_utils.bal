@@ -59,23 +59,6 @@ isolated function validateOperationKind(string document, string? operationName,
     return;
 }
 
-isolated function selectOperation(parser:DocumentNode document, string? operationName)
-        returns parser:OperationNode|ErrorDetail {
-    parser:OperationNode[] operations = document.getOperations();
-    if operationName is string {
-        foreach parser:OperationNode operation in operations {
-            if operation.getName() == operationName {
-                return operation;
-            }
-        }
-        return {message: string `Unknown operation named "${operationName}".`, locations: []};
-    }
-    if operations.length() == 1 {
-        return operations[0];
-    }
-    return {message: MULTIPLE_OPERATIONS_MESSAGE, locations: []};
-}
-
 isolated function resolveWebSocketServiceUrl(string? subscriptionServiceUrl, string serviceUrl)
         returns string|ClientError {
     string url = subscriptionServiceUrl ?: serviceUrl;
