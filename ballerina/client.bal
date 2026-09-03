@@ -66,11 +66,8 @@ public isolated client class Client {
     private isolated function processQuery(typedesc<GenericResponseWithErrors|record {}> targetType,
             string document, map<anydata>? variables, string? operationName, map<string|string[]>? headers)
             returns GenericResponseWithErrors|record {}|ClientError {
-        if self.subscriptionConnection.isClosed() {
-            return error ClientError(CLIENT_ALREADY_CLOSED_MESSAGE);
-        }
-        check validateOperationKind(document, operationName, parser:OPERATION_QUERY);
-        return self.executeGraphqlDocument(targetType, document, variables, operationName, headers);
+        return self.processOperation(parser:OPERATION_QUERY, targetType, document, variables, operationName,
+                headers);
     }
 
     # Executes a GraphQL mutation operation and data binds the response.
@@ -94,10 +91,20 @@ public isolated client class Client {
     private isolated function processMutate(typedesc<GenericResponseWithErrors|record {}> targetType,
             string document, map<anydata>? variables, string? operationName, map<string|string[]>? headers)
             returns GenericResponseWithErrors|record {}|ClientError {
+        return self.processOperation(parser:OPERATION_MUTATION, targetType, document, variables, operationName,
+                headers);
+    }
+
+    // Shared implementation of `processQuery`/`processMutate`: the two differ only in the expected
+    // operation kind passed to `validateOperationKind`.
+    private isolated function processOperation(parser:RootOperationType expectedKind,
+            typedesc<GenericResponseWithErrors|record {}> targetType, string document, map<anydata>? variables,
+            string? operationName, map<string|string[]>? headers)
+            returns GenericResponseWithErrors|record {}|ClientError {
         if self.subscriptionConnection.isClosed() {
             return error ClientError(CLIENT_ALREADY_CLOSED_MESSAGE);
         }
-        check validateOperationKind(document, operationName, parser:OPERATION_MUTATION);
+        check validateOperationKind(document, operationName, expectedKind);
         return self.executeGraphqlDocument(targetType, document, variables, operationName, headers);
     }
 
@@ -174,20 +181,25 @@ public isolated client class Client {
                                                      string document, map<anydata>? variables, string? operationName,
                                                      map<string|string[]>? headers)
                                                      returns GenericResponse|record{}|json|ClientError {
-        http:Request request = new;
-        json graphqlPayload = getGraphqlPayload(document, variables, operationName);
-        request.setPayload(graphqlPayload);
-        json|http:ClientError httpResponse = self.httpClient->post("", request, headers = headers);
-
-        if httpResponse is http:ClientError {
-            return handleHttpClientErrorResponse(httpResponse);
+        if self.subscriptionConnection.isClosed() {
+            return error ClientError(CLIENT_ALREADY_CLOSED_MESSAGE);
+        }
+        json|ClientError httpResponse = self.sendGraphqlRequest(document, variables, operationName, headers);
+        if httpResponse is ClientError {
+            return httpResponse;
         }
         map<json>|error responseMap = httpResponse.ensureType();
         if responseMap is error {
             return error RequestError("GraphQL Client Error", responseMap);
         }
         if responseMap.hasKey("errors") {
-            return handleGraphqlErrorResponse(responseMap);
+            // Mirrors the `query()`/`mutate()` behavior: attempt to bind the (possibly partial)
+            // response first, and only fall back to a `ServerError` if the binding itself fails.
+            GenericResponse|record{}|json|RequestError bindingResult = performDataBinding(targetType, httpResponse);
+            if bindingResult is RequestError {
+                return handleGraphqlErrorResponse(responseMap);
+            }
+            return bindingResult;
         } else {
             return check performDataBinding(targetType, httpResponse);
         }
