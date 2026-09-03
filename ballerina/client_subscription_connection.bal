@@ -42,6 +42,51 @@ public isolated client class PingMessageCaller {
     }
 }
 
+// The outcome of the first locked section of `SubscriptionConnection.subscribe()`: either it is
+// already finished (`mustConnect: false`, with `result` as the value to return), or no connection
+// exists yet and none is being established, so this strand must establish it itself
+// (`mustConnect: true`) by calling `connect()` -- outside the lock -- and then
+// `subscribeAfterConnect()`.
+type SubscribeStartOutcome record {|
+    boolean mustConnect;
+    ClientError? result;
+|};
+
+// The outcome of `SubscriptionConnection.subscribe()`'s second locked section, reached only when
+// this strand established the connection itself. `closeConnection` tells the (unlocked) caller
+// whether it must close the just-established connection afterwards -- kept out of this locked
+// section because closing a WebSocket can block for a while, and the lock should not be held
+// across it.
+type SubscribeCompletion record {|
+    ClientError? result;
+    boolean closeConnection;
+|};
+
+// The outcome of the locked section of `SubscriptionConnection.handleConnectionFailure()`: either
+// there is nothing further to do (`action: "none"`), or reconnection is configured and was just
+// started, so the caller must run `reconnect(reconnectConfig)` -- outside the lock.
+type ConnectionFailureOutcome record {|
+    "none"|"reconnect" action;
+    readonly & ReconnectConfig reconnectConfig = {};
+|};
+
+// The outcome of the locked section of `SubscriptionConnection.handleKeepAliveTimeout()`.
+// `"none"`: nothing further to do. `"closeSync"`: the caller must close `failedWsClient`
+// synchronously, then return -- kept out of the lock since closing can block for a while.
+// `"closeAsyncAndReconnect"`: the caller must close `failedWsClient` in the background and run
+// `reconnect(reconnectConfig)`.
+type KeepAliveTimeoutOutcome record {|
+    "none"|"closeSync"|"closeAsyncAndReconnect" action;
+    readonly & ReconnectConfig reconnectConfig = {};
+|};
+
+// The outcome of one locked reconnection attempt inside `SubscriptionConnection.reconnect()`'s
+// retry loop. `"done"`: the connection was (re-)established; the loop returns. `"closeAndReturn"`:
+// the connection was closed by the user mid-attempt; the caller closes `connectionResult` (outside
+// the lock) and returns. `"closeAndRetry"`: sending the pending `subscribe` messages failed; the
+// caller closes `connectionResult` and the loop tries again.
+type ReconnectAttemptOutcome "done"|"closeAndReturn"|"closeAndRetry";
+
 // Manages the WebSocket connection of a GraphQL client used for subscriptions, implementing the
 // `graphql-transport-ws` protocol: the connection establishment with the handshake, the
 // multiplexing of the subscription operations over the single connection, and the reconnection.
@@ -50,6 +95,12 @@ public isolated client class PingMessageCaller {
 // structures (see `SubscriptionConnectionState.java`); compound state transitions are serialized
 // through its `lockState()`/`unlockState()` functions. Ballerina `lock` statements are
 // intentionally not used.
+//
+// Every `lockState()`/`unlockState()` pair brackets a `trap`-wrapped call to a private `...Locked`
+// helper (Ballerina has no try/finally): `unlockState()` always runs right after, whether the
+// helper returned normally or panicked, so a bug in a critical section cannot leave the connection
+// permanently locked. A caught panic is re-panicked (after unlocking) once the trapped value is
+// checked to not already be the helper's own, non-error result type.
 isolated class SubscriptionConnection {
     private final string wsUrl;
     private final decimal connectionInitTimeout;
@@ -95,56 +146,81 @@ isolated class SubscriptionConnection {
             return error ClientError(CLIENT_ALREADY_CLOSED_MESSAGE);
         }
         self.lockState();
-        // Re-check under the lock: the client may have been closed between the check above and
-        // acquiring the lock.
+        // `trap` stands in for a try/finally: whatever happens inside the locked section --
+        // including an unexpected panic -- `unlockState()` right below always runs, so a bug in the
+        // critical section cannot leave the connection permanently locked. A caught panic is
+        // re-panicked after unlocking, since `SubscribeStartOutcome` is a plain record and can never
+        // itself be mistaken for one.
+        SubscribeStartOutcome|error startTrapped = trap self.subscribeStart(id, subscribeMessage, queue);
+        self.unlockState();
+        if startTrapped is error {
+            panic startTrapped;
+        }
+        if !startTrapped.mustConnect {
+            return startTrapped.result;
+        }
+        // No live connection and none being established: this strand establishes it. The lock is
+        // released across the blocking handshake so concurrent subscribe()/unsubscribe()/close()
+        // calls are not stalled for up to `connectionInitTimeout`; the state is re-acquired and
+        // re-validated afterwards (mirrors the reconnect() procedure).
+        websocket:Client|SubscriptionError connectionResult = self.connect();
+        self.lockState();
+        SubscribeCompletion|error completionTrapped = trap self.subscribeAfterConnect(connectionResult);
+        self.unlockState();
+        if completionTrapped is error {
+            panic completionTrapped;
+        }
+        if completionTrapped.closeConnection && connectionResult is websocket:Client {
+            closeWebSocketClient(connectionResult);
+        }
+        return completionTrapped.result;
+    }
+
+    private isolated function subscribeStart(string id, readonly & json subscribeMessage, MessageQueue queue)
+            returns SubscribeStartOutcome {
+        // Re-check under the lock: the client may have been closed between the check in `subscribe()`
+        // and acquiring the lock.
         if self.isClosed() {
-            self.unlockState();
-            return error ClientError(CLIENT_ALREADY_CLOSED_MESSAGE);
+            return {mustConnect: false, result: error ClientError(CLIENT_ALREADY_CLOSED_MESSAGE)};
         }
         if !self.registerOperation(id, queue, subscribeMessage) {
-            self.unlockState();
-            return error SubscriptionError(string `A subscription with the id "${id}" already exists`, errors = ());
+            return {mustConnect: false,
+                    result: error SubscriptionError(string `A subscription with the id "${id}" already exists`,
+                            errors = ())};
         }
         websocket:Client? wsClient = self.loadWsClient();
         if wsClient is websocket:Client {
             websocket:Error? result = wsClient->writeMessage(subscribeMessage);
             if result is websocket:Error {
                 _ = self.removeOperation(id);
-                self.unlockState();
-                return error SubscriptionError(string `Failed to send the subscribe message: ${result.message()}`,
-                        result, errors = ());
+                return {mustConnect: false,
+                        result: error SubscriptionError(
+                                string `Failed to send the subscribe message: ${result.message()}`, result,
+                                errors = ())};
             }
-            self.unlockState();
-            return;
+            return {mustConnect: false, result: ()};
         }
         if self.isConnecting() {
             // A connection is being established (initial or via reconnection); it subscribes this
             // operation upon completion.
-            self.unlockState();
-            return;
+            return {mustConnect: false, result: ()};
         }
-        // No live connection and none being established: this strand establishes it. The lock is
-        // released across the blocking handshake so concurrent subscribe()/unsubscribe()/close()
-        // calls are not stalled for up to `connectionInitTimeout`; the state is re-acquired and
-        // re-validated afterwards (mirrors the reconnect() procedure).
         self.startConnecting();
-        self.unlockState();
-        websocket:Client|SubscriptionError connectionResult = self.connect();
-        self.lockState();
+        return {mustConnect: true, result: ()};
+    }
+
+    private isolated function subscribeAfterConnect(websocket:Client|SubscriptionError connectionResult)
+            returns SubscribeCompletion {
         if self.isClosed() {
             self.markDisconnected();
-            self.unlockState();
-            if connectionResult is websocket:Client {
-                closeWebSocketClient(connectionResult);
-            }
-            return error ClientError(CLIENT_ALREADY_CLOSED_MESSAGE);
+            return {result: error ClientError(CLIENT_ALREADY_CLOSED_MESSAGE),
+                    closeConnection: connectionResult is websocket:Client};
         }
         if connectionResult is SubscriptionError {
             self.markDisconnected();
             // Fail every operation waiting on this establishment, not just the current one.
             self.terminateAllStreams(connectionResult);
-            self.unlockState();
-            return connectionResult;
+            return {result: connectionResult, closeConnection: false};
         }
         self.storeWsClient(connectionResult);
         // Send the subscribe message for this operation and any others registered while connecting.
@@ -153,13 +229,10 @@ isolated class SubscriptionConnection {
             self.storeWsClient(());
             self.markDisconnected();
             self.terminateAllStreams(sendResult);
-            self.unlockState();
-            closeWebSocketClient(connectionResult);
-            return sendResult;
+            return {result: sendResult, closeConnection: true};
         }
         self.markConnected();
-        self.unlockState();
-        return;
+        return {result: (), closeConnection: false};
     }
 
     // Opens a WebSocket connection and performs the `graphql-transport-ws` handshake: sends the
@@ -277,30 +350,42 @@ isolated class SubscriptionConnection {
             return;
         }
         self.lockState();
-        if self.isClosed() || self.loadWsClient() !== failedWsClient {
-            self.unlockState();
+        KeepAliveTimeoutOutcome|error trapped = trap self.handleKeepAliveTimeoutLocked(failedWsClient);
+        self.unlockState();
+        if trapped is error {
+            panic trapped;
+        }
+        if trapped.action == "none" {
             return;
+        }
+        if trapped.action == "closeSync" {
+            closeWebSocketClient(failedWsClient);
+            return;
+        }
+        // "closeAsyncAndReconnect": closing a dead connection can block for up to
+        // GRACEFUL_CLOSE_TIMEOUT waiting on an echo that never arrives; run it concurrently so a
+        // slow close doesn't delay reconnection.
+        _ = start closeWebSocketClient(failedWsClient);
+        self.reconnect(trapped.reconnectConfig);
+    }
+
+    private isolated function handleKeepAliveTimeoutLocked(websocket:Client failedWsClient)
+            returns KeepAliveTimeoutOutcome {
+        if self.isClosed() || self.loadWsClient() !== failedWsClient {
+            return {action: "none"};
         }
         self.storeWsClient(());
         // No active operations: close rather than reconnect to resume nothing.
         if self.getOperationIds().length() == 0 {
-            self.unlockState();
-            closeWebSocketClient(failedWsClient);
-            return;
+            return {action: "closeSync"};
         }
         readonly & ReconnectConfig? reconnectConfig = self.reconnectConfig;
         if reconnectConfig is () {
             self.terminateAllStreams(error SubscriptionError(KEEPALIVE_TIMEOUT_MESSAGE, errors = ()));
-            self.unlockState();
-            closeWebSocketClient(failedWsClient);
-            return;
+            return {action: "closeSync"};
         }
         self.startReconnecting();
-        self.unlockState();
-        // Closing a dead connection can block for up to GRACEFUL_CLOSE_TIMEOUT waiting on an echo
-        // that never arrives; run it concurrently so a slow close doesn't delay reconnection.
-        _ = start closeWebSocketClient(failedWsClient);
-        self.reconnect(reconnectConfig);
+        return {action: "closeAsyncAndReconnect", reconnectConfig: reconnectConfig};
     }
 
     isolated function dispatchMessage(websocket:Client wsClient, json message) {
@@ -356,22 +441,31 @@ isolated class SubscriptionConnection {
             return;
         }
         self.lockState();
+        ConnectionFailureOutcome|error trapped = trap self.handleConnectionFailureLocked(failedWsClient);
+        self.unlockState();
+        if trapped is error {
+            panic trapped;
+        }
+        if trapped.action == "reconnect" {
+            self.reconnect(trapped.reconnectConfig);
+        }
+    }
+
+    private isolated function handleConnectionFailureLocked(websocket:Client failedWsClient)
+            returns ConnectionFailureOutcome {
         websocket:Client? currentWsClient = self.loadWsClient();
         if currentWsClient !== failedWsClient {
             // The failed connection was already replaced or cleaned up.
-            self.unlockState();
-            return;
+            return {action: "none"};
         }
         self.storeWsClient(());
         readonly & ReconnectConfig? reconnectConfig = self.reconnectConfig;
         if reconnectConfig is () {
             self.terminateAllStreams(error SubscriptionError(CONNECTION_DROPPED_MESSAGE, errors = ()));
-            self.unlockState();
-            return;
+            return {action: "none"};
         }
         self.startReconnecting();
-        self.unlockState();
-        self.reconnect(reconnectConfig);
+        return {action: "reconnect", reconnectConfig: reconnectConfig};
     }
 
     // Attempts to re-establish the connection following the configured retry strategy. On success,
@@ -390,27 +484,47 @@ isolated class SubscriptionConnection {
                 continue;
             }
             self.lockState();
-            if self.isClosed() {
-                self.markDisconnected();
-                self.unlockState();
-                closeWebSocketClient(connectionResult);
-                return;
-            }
-            self.storeWsClient(connectionResult);
-            SubscriptionError? sendResult = self.sendPendingSubscribeMessages(connectionResult);
-            if sendResult is () {
-                self.markConnected();
-                self.unlockState();
-                return;
-            }
-            self.storeWsClient(());
+            ReconnectAttemptOutcome|error trapped = trap self.reconnectAttemptLocked(connectionResult);
             self.unlockState();
+            if trapped is error {
+                panic trapped;
+            }
+            if trapped == "done" {
+                return;
+            }
             closeWebSocketClient(connectionResult);
+            if trapped == "closeAndReturn" {
+                return;
+            }
+            // "closeAndRetry": fall through to the next attempt.
         }
         self.lockState();
+        error? trapped = trap self.markReconnectionExhausted();
+        self.unlockState();
+        if trapped is error {
+            panic trapped;
+        }
+    }
+
+    private isolated function reconnectAttemptLocked(websocket:Client connectionResult)
+            returns ReconnectAttemptOutcome {
+        if self.isClosed() {
+            self.markDisconnected();
+            return "closeAndReturn";
+        }
+        self.storeWsClient(connectionResult);
+        SubscriptionError? sendResult = self.sendPendingSubscribeMessages(connectionResult);
+        if sendResult is () {
+            self.markConnected();
+            return "done";
+        }
+        self.storeWsClient(());
+        return "closeAndRetry";
+    }
+
+    private isolated function markReconnectionExhausted() {
         self.markDisconnected();
         self.terminateAllStreams(error SubscriptionError(RECONNECTION_EXHAUSTED_MESSAGE, errors = ()));
-        self.unlockState();
     }
 
     isolated function sendPendingSubscribeMessages(websocket:Client wsClient) returns SubscriptionError? {
@@ -438,6 +552,15 @@ isolated class SubscriptionConnection {
         }
         queue.enqueue(());
         self.lockState();
+        error? trapped = trap self.unsubscribeLocked(id);
+        self.unlockState();
+        if trapped is error {
+            panic trapped;
+        }
+        return;
+    }
+
+    private isolated function unsubscribeLocked(string id) {
         websocket:Client? wsClient = self.loadWsClient();
         if wsClient is websocket:Client {
             Complete completeMessage = {'type: WS_COMPLETE, id: id};
@@ -447,8 +570,6 @@ isolated class SubscriptionConnection {
                 logError("Failed to send the complete message", result);
             }
         }
-        self.unlockState();
-        return;
     }
 
     // Closes the connection: sends a `complete` message per active operation, closes the WebSocket
@@ -462,6 +583,15 @@ isolated class SubscriptionConnection {
         // dispatcher's blocked read errors out after the websocket below is closed.
         self.keepAliveSignalQueue.enqueue(());
         self.lockState();
+        error? trapped = trap self.closeLocked();
+        self.unlockState();
+        if trapped is error {
+            panic trapped;
+        }
+        return;
+    }
+
+    private isolated function closeLocked() {
         websocket:Client? wsClient = self.loadWsClient();
         if wsClient is websocket:Client {
             foreach string id in self.getOperationIds() {
@@ -482,8 +612,6 @@ isolated class SubscriptionConnection {
             self.storeWsClient(());
         }
         self.terminateAllStreams(());
-        self.unlockState();
-        return;
     }
 
     isolated function terminateAllStreams(SubscriptionError? cause) {
