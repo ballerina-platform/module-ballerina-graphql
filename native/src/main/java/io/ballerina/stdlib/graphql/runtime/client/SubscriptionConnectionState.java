@@ -27,12 +27,11 @@ import io.ballerina.runtime.api.values.BString;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * This class holds the shared, mutable state of a GraphQL client subscription connection using concurrent-safe data
- * structures: the active subscription operations, the closed flag, the connecting flag, and the current WebSocket
+ * structures: the active subscription operations, the connection's lifecycle state, and the current WebSocket
  * client. Compound state transitions are serialized through an ownerless lock exposed via the
  * {@code lockState}/{@code unlockState} functions (a strand may resume on a different thread, so a thread-owned lock
  * cannot be used).
@@ -41,8 +40,8 @@ public final class SubscriptionConnectionState {
     private static final String NATIVE_STATE_KEY = "graphql.client.subscription.connection.state";
 
     private final ConcurrentHashMap<String, SubscriptionOperation> operations = new ConcurrentHashMap<>();
-    private final AtomicBoolean closed = new AtomicBoolean(false);
-    private final AtomicBoolean connecting = new AtomicBoolean(false);
+    private final AtomicReference<ConnectionLifecycleState> lifecycleState =
+            new AtomicReference<>(ConnectionLifecycleState.DISCONNECTED);
     private final AtomicReference<Object> wsClient = new AtomicReference<>();
     private final Semaphore stateLock = new Semaphore(1);
     // Written once at init before the connection is used, then read-only. Held in an AtomicReference
@@ -50,6 +49,42 @@ public final class SubscriptionConnectionState {
     private final AtomicReference<BMap<BString, Object>> wsClientConfig = new AtomicReference<>();
 
     private SubscriptionConnectionState() {
+    }
+
+    /**
+     * The lifecycle state of a subscription connection.
+     *
+     * <pre>
+     *                 startConnecting()                markConnected()
+     *   DISCONNECTED -------------------&gt; CONNECTING -------------------&gt; CONNECTED
+     *        ^                                |                              |
+     *        |             markDisconnected() |                              | startReconnecting()
+     *        +----------------------------------------------------------+    v
+     *                                                                    RECONNECTING
+     *                                        markDisconnected()  &lt;----------+  |
+     *                                                                          | markConnected()
+     *                                                                          v
+     *                                                                     CONNECTED
+     *
+     *   Any state ----------------------- markClosed() ------------------&gt; CLOSED (terminal)
+     * </pre>
+     *
+     * {@code CLOSED} is a terminal, sticky state: once reached, every other transition below becomes a no-op (see
+     * {@code transitionUnlessClosed}), matching {@code close()}'s "closing is permanent" contract in
+     * {@code client_subscription_connection.bal}.
+     */
+    private enum ConnectionLifecycleState {
+        /** No live connection and none being established; the initial state, and the state after a failed
+         *  connection attempt or reconnection exhaustion. */
+        DISCONNECTED,
+        /** The very first connection attempt for this client is in flight. */
+        CONNECTING,
+        /** A live WebSocket connection is established and in use. */
+        CONNECTED,
+        /** A previously-established connection was lost and reconnection is being attempted. */
+        RECONNECTING,
+        /** The connection was closed by the user via {@code close()}. Terminal. */
+        CLOSED
     }
 
     public static void initConnectionState(BObject connection) {
@@ -96,15 +131,17 @@ public final class SubscriptionConnectionState {
     }
 
     /**
-     * Marks the connection as closed atomically. Returns false when the connection was already closed, making a
-     * repeated closure a no-op.
+     * Marks the connection as closed atomically, moving it to the terminal {@code CLOSED} state regardless of the
+     * state it was in. Returns false when the connection was already closed, making a repeated closure a no-op.
      */
     public static boolean markClosed(BObject connection) {
-        return getState(connection).closed.compareAndSet(false, true);
+        ConnectionLifecycleState previous =
+                getState(connection).lifecycleState.getAndSet(ConnectionLifecycleState.CLOSED);
+        return previous != ConnectionLifecycleState.CLOSED;
     }
 
     public static boolean isClosed(BObject connection) {
-        return getState(connection).closed.get();
+        return getState(connection).lifecycleState.get() == ConnectionLifecycleState.CLOSED;
     }
 
     /**
@@ -123,12 +160,34 @@ public final class SubscriptionConnectionState {
         getState(connection).stateLock.release();
     }
 
-    public static void setConnecting(BObject connection, boolean connecting) {
-        getState(connection).connecting.set(connecting);
+    /**
+     * Returns true while a connection establishment attempt -- the initial one or a reconnection -- is in flight,
+     * i.e. the state is {@code CONNECTING} or {@code RECONNECTING}. Used by {@code subscribe()} to decide whether it
+     * must establish the connection itself or whether one is already being established on its behalf.
+     */
+    public static boolean isConnecting(BObject connection) {
+        ConnectionLifecycleState current = getState(connection).lifecycleState.get();
+        return current == ConnectionLifecycleState.CONNECTING || current == ConnectionLifecycleState.RECONNECTING;
     }
 
-    public static boolean isConnecting(BObject connection) {
-        return getState(connection).connecting.get();
+    /** DISCONNECTED -&gt; CONNECTING: the initial connection attempt for this client starts. */
+    public static void startConnecting(BObject connection) {
+        getState(connection).transitionUnlessClosed(ConnectionLifecycleState.CONNECTING);
+    }
+
+    /** CONNECTED -&gt; RECONNECTING: a previously-live connection was lost and reconnection starts. */
+    public static void startReconnecting(BObject connection) {
+        getState(connection).transitionUnlessClosed(ConnectionLifecycleState.RECONNECTING);
+    }
+
+    /** CONNECTING|RECONNECTING -&gt; CONNECTED: a connection attempt succeeded. */
+    public static void markConnected(BObject connection) {
+        getState(connection).transitionUnlessClosed(ConnectionLifecycleState.CONNECTED);
+    }
+
+    /** CONNECTING|RECONNECTING -&gt; DISCONNECTED: a connection attempt failed, or reconnection was exhausted. */
+    public static void markDisconnected(BObject connection) {
+        getState(connection).transitionUnlessClosed(ConnectionLifecycleState.DISCONNECTED);
     }
 
     public static void storeWsClient(BObject connection, Object wsClient) {
@@ -137,6 +196,13 @@ public final class SubscriptionConnectionState {
 
     public static Object loadWsClient(BObject connection) {
         return getState(connection).wsClient.get();
+    }
+
+    // CLOSED is terminal and sticky: once reached, every other transition is a no-op, so a background
+    // connect/reconnect attempt racing with a concurrent close() can never move the state back out of CLOSED.
+    private void transitionUnlessClosed(ConnectionLifecycleState newState) {
+        this.lifecycleState.updateAndGet(
+                current -> current == ConnectionLifecycleState.CLOSED ? current : newState);
     }
 
     private boolean register(String id, SubscriptionOperation operation) {

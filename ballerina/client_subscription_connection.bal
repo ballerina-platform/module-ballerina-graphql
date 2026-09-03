@@ -128,12 +128,12 @@ isolated class SubscriptionConnection {
         // released across the blocking handshake so concurrent subscribe()/unsubscribe()/close()
         // calls are not stalled for up to `connectionInitTimeout`; the state is re-acquired and
         // re-validated afterwards (mirrors the reconnect() procedure).
-        self.setConnecting(true);
+        self.startConnecting();
         self.unlockState();
         websocket:Client|SubscriptionError connectionResult = self.connect();
         self.lockState();
         if self.isClosed() {
-            self.setConnecting(false);
+            self.markDisconnected();
             self.unlockState();
             if connectionResult is websocket:Client {
                 closeWebSocketClient(connectionResult);
@@ -141,7 +141,7 @@ isolated class SubscriptionConnection {
             return error ClientError(CLIENT_ALREADY_CLOSED_MESSAGE);
         }
         if connectionResult is SubscriptionError {
-            self.setConnecting(false);
+            self.markDisconnected();
             // Fail every operation waiting on this establishment, not just the current one.
             self.terminateAllStreams(connectionResult);
             self.unlockState();
@@ -150,14 +150,15 @@ isolated class SubscriptionConnection {
         self.storeWsClient(connectionResult);
         // Send the subscribe message for this operation and any others registered while connecting.
         SubscriptionError? sendResult = self.sendPendingSubscribeMessages(connectionResult);
-        self.setConnecting(false);
         if sendResult is SubscriptionError {
             self.storeWsClient(());
+            self.markDisconnected();
             self.terminateAllStreams(sendResult);
             self.unlockState();
             closeWebSocketClient(connectionResult);
             return sendResult;
         }
+        self.markConnected();
         self.unlockState();
         return;
     }
@@ -357,7 +358,7 @@ isolated class SubscriptionConnection {
             closeWebSocketClient(failedWsClient);
             return;
         }
-        self.setConnecting(true);
+        self.startReconnecting();
         self.unlockState();
         // Closing a dead connection can block for up to GRACEFUL_CLOSE_TIMEOUT waiting on an echo
         // that never arrives; run it concurrently so a slow close doesn't delay reconnection.
@@ -431,7 +432,7 @@ isolated class SubscriptionConnection {
             self.unlockState();
             return;
         }
-        self.setConnecting(true);
+        self.startReconnecting();
         self.unlockState();
         self.reconnect(reconnectConfig);
     }
@@ -444,7 +445,7 @@ isolated class SubscriptionConnection {
             runtime:sleep(calculateBackOffDelay(reconnectConfig, attemptIndex));
             attemptIndex += 1;
             if self.isClosed() {
-                self.setConnecting(false);
+                self.markDisconnected();
                 return;
             }
             websocket:Client|SubscriptionError connectionResult = self.connect();
@@ -453,7 +454,7 @@ isolated class SubscriptionConnection {
             }
             self.lockState();
             if self.isClosed() {
-                self.setConnecting(false);
+                self.markDisconnected();
                 self.unlockState();
                 closeWebSocketClient(connectionResult);
                 return;
@@ -461,7 +462,7 @@ isolated class SubscriptionConnection {
             self.storeWsClient(connectionResult);
             SubscriptionError? sendResult = self.sendPendingSubscribeMessages(connectionResult);
             if sendResult is () {
-                self.setConnecting(false);
+                self.markConnected();
                 self.unlockState();
                 return;
             }
@@ -470,7 +471,7 @@ isolated class SubscriptionConnection {
             closeWebSocketClient(connectionResult);
         }
         self.lockState();
-        self.setConnecting(false);
+        self.markDisconnected();
         self.terminateAllStreams(error SubscriptionError(RECONNECTION_EXHAUSTED_MESSAGE, errors = ()));
         self.unlockState();
     }
@@ -606,11 +607,27 @@ isolated class SubscriptionConnection {
         'class: "io.ballerina.stdlib.graphql.runtime.client.SubscriptionConnectionState"
     } external;
 
-    isolated function setConnecting(boolean connecting) = @java:Method {
+    isolated function isConnecting() returns boolean = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.client.SubscriptionConnectionState"
     } external;
 
-    isolated function isConnecting() returns boolean = @java:Method {
+    // DISCONNECTED -> CONNECTING: the initial connection attempt for this client starts.
+    isolated function startConnecting() = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.client.SubscriptionConnectionState"
+    } external;
+
+    // CONNECTED -> RECONNECTING: a previously-live connection was lost and reconnection starts.
+    isolated function startReconnecting() = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.client.SubscriptionConnectionState"
+    } external;
+
+    // CONNECTING|RECONNECTING -> CONNECTED: a connection attempt succeeded.
+    isolated function markConnected() = @java:Method {
+        'class: "io.ballerina.stdlib.graphql.runtime.client.SubscriptionConnectionState"
+    } external;
+
+    // CONNECTING|RECONNECTING -> DISCONNECTED: a connection attempt failed, or reconnection was exhausted.
+    isolated function markDisconnected() = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.client.SubscriptionConnectionState"
     } external;
 
