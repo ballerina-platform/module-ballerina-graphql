@@ -16,7 +16,6 @@
 
 import graphql.parser;
 
-import ballerina/time;
 import ballerina/websocket;
 
 isolated service class WsService {
@@ -29,8 +28,9 @@ isolated service class WsService {
     private boolean initiatedConnection = false;
     private final readonly & ServerKeepAliveConfig keepAliveConfig;
     private final MessageQueue keepAliveSignalQueue;
-    private boolean pongReceived = false;
-    private boolean keepAliveStopped = false;
+    // Created once `onConnectionInit` starts the keep-alive loop (if enabled); `onPongMessage` and
+    // `onClose` reach it through `loadKeepAliveMonitor()` to report a pong or a stop.
+    private KeepAliveMonitor? keepAliveMonitor = ();
 
     isolated function init(Engine engine, __Schema & readonly schema, Context context,
             readonly & ServerKeepAliveConfig keepAliveConfig) {
@@ -64,7 +64,11 @@ isolated service class WsService {
         dispatcherValue: "pong"
     }
     isolated remote function onPongMessage(Pong pong) {
-        self.markPongReceived();
+        KeepAliveMonitor? monitor = self.loadKeepAliveMonitor();
+        if monitor is KeepAliveMonitor {
+            monitor.markPongReceived();
+            self.keepAliveSignalQueue.enqueue(());
+        }
     }
 
     isolated remote function onComplete(Complete message) {
@@ -85,7 +89,13 @@ isolated service class WsService {
             self.initiatedConnection = true;
         }
         if self.keepAliveConfig.enabled {
-            _ = start self.runKeepAlive(caller);
+            // `runKeepAliveLoop` (in `keep_alive.bal`) is shared with the client's keep-alive; only
+            // the `ServerKeepAlivePeer` adapter below is specific to this side.
+            KeepAliveMonitor monitor = new;
+            self.storeKeepAliveMonitor(monitor);
+            ServerKeepAlivePeer peer = new (caller);
+            _ = start runKeepAliveLoop(monitor, self.keepAliveSignalQueue, self.keepAliveConfig.pingInterval,
+                    self.keepAliveConfig.pongTimeout, peer);
         }
         return {'type: WS_ACK};
     }
@@ -116,7 +126,11 @@ isolated service class WsService {
     }
 
     remote function onClose(websocket:Caller caller) {
-        self.stopKeepAlive();
+        KeepAliveMonitor? monitor = self.loadKeepAliveMonitor();
+        if monitor is KeepAliveMonitor {
+            monitor.stop();
+            self.keepAliveSignalQueue.enqueue(());
+        }
         // Without this, a subscription whose resolver is mid-call when the connection closes (e.g.
         // blocked producing the next value) keeps calling that resolver forever: onComplete is the
         // only other place a handler is marked unsubscribed, and it never fires for a connection that
@@ -130,91 +144,15 @@ isolated service class WsService {
         }
     }
 
-    // Pings only when idle; tears down only after KEEPALIVE_MAX_MISSED_PROBES silent cycles.
-    isolated function runKeepAlive(websocket:Caller caller) {
-        int missedProbes = 0;
-        while true {
-            self.resetPong();
-            if self.keepAliveWait(self.keepAliveConfig.pingInterval, false) {
-                return;
-            }
-            if self.isPongReceived() {
-                missedProbes = 0;
-                continue;
-            }
-            Ping pingMessage = {'type: WS_PING};
-            websocket:Error? result = writeMessage(caller, pingMessage);
-            if result is websocket:Error {
-                return;
-            }
-            if self.keepAliveWait(self.keepAliveConfig.pongTimeout, true) {
-                return;
-            }
-            if self.isPongReceived() {
-                missedProbes = 0;
-                continue;
-            }
-            // Tolerates isolated misses; see ballerina-library#8929.
-            missedProbes += 1;
-            if missedProbes >= KEEPALIVE_MAX_MISSED_PROBES {
-                ServerSubscriptionError err = error("Request timeout", code = 4408);
-                closeConnection(caller, err);
-                return;
-            }
-        }
-    }
-
-    // Woken early by a pong instead of sleeping blindly; mirrors the client's `keepAliveWait`
-    // in `client_subscription_connection.bal`. Only an actual `pong` resets the timer -- not
-    // other traffic (`subscribe`/`complete`/an inbound `ping`) -- matching the convention of the
-    // `graphql-ws` reference client (`enisdenjo/graphql-ws`), which only resets on
-    // `message.type === 'pong'`.
-    isolated function keepAliveWait(decimal duration, boolean stopOnPong) returns boolean {
-        decimal remaining = duration;
-        while remaining > 0d {
-            if self.isKeepAliveStopped() {
-                return true;
-            }
-            if stopOnPong && self.isPongReceived() {
-                return false;
-            }
-            decimal waitStart = time:monotonicNow();
-            any|error signal = self.keepAliveSignalQueue.dequeueWithTimeout(remaining);
-            decimal elapsed = time:monotonicNow() - waitStart;
-            remaining = elapsed < remaining ? remaining - elapsed : 0d;
-        }
-        return self.isKeepAliveStopped();
-    }
-
-    isolated function markPongReceived() {
+    isolated function storeKeepAliveMonitor(KeepAliveMonitor monitor) {
         lock {
-            self.pongReceived = true;
-        }
-        self.keepAliveSignalQueue.enqueue(());
-    }
-
-    isolated function resetPong() {
-        lock {
-            self.pongReceived = false;
+            self.keepAliveMonitor = monitor;
         }
     }
 
-    isolated function isPongReceived() returns boolean {
+    isolated function loadKeepAliveMonitor() returns KeepAliveMonitor? {
         lock {
-            return self.pongReceived;
-        }
-    }
-
-    isolated function stopKeepAlive() {
-        lock {
-            self.keepAliveStopped = true;
-        }
-        self.keepAliveSignalQueue.enqueue(());
-    }
-
-    isolated function isKeepAliveStopped() returns boolean {
-        lock {
-            return self.keepAliveStopped;
+            return self.keepAliveMonitor;
         }
     }
 
@@ -231,5 +169,35 @@ isolated service class WsService {
             self.activeConnections[message.id] = handler;
         }
         return handler;
+    }
+}
+
+// Adapts a WebSocket caller to `KeepAlivePeer` (`keep_alive.bal`) so the server's keep-alive loop
+// can share `runKeepAliveLoop` with the client's (`client_subscription_connection.bal`'s
+// `ClientKeepAlivePeer`).
+isolated class ServerKeepAlivePeer {
+    *KeepAlivePeer;
+
+    private final websocket:Caller caller;
+
+    isolated function init(websocket:Caller caller) {
+        self.caller = caller;
+    }
+
+    isolated function sendPing() returns boolean {
+        Ping pingMessage = {'type: WS_PING};
+        websocket:Error? result = writeMessage(self.caller, pingMessage);
+        return result is ();
+    }
+
+    isolated function onKeepAliveTimeout() {
+        ServerSubscriptionError err = error("Request timeout", code = 4408);
+        closeConnection(self.caller, err);
+    }
+
+    isolated function isExternallyStopped() returns boolean {
+        // WsService.onClose() calls stop() on this connection's one keep-alive monitor directly,
+        // so there is no additional stop condition to report here.
+        return false;
     }
 }
