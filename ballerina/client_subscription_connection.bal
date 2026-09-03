@@ -250,12 +250,12 @@ isolated class SubscriptionConnection {
                 return;
             }
             if keepAliveMonitor is KeepAliveMonitor {
-                // Any incoming message -- not just a `pong` -- counts as a liveness signal: the
-                // connection is demonstrably alive if the server is sending anything at all. See
-                // `markLivenessSignalReceived()`'s doc comment.
-                keepAliveMonitor.markLivenessSignalReceived();
-                self.keepAliveSignalQueue.enqueue(());
                 if getWsMessageType(message) == WS_PONG {
+                    // Only an actual `pong` resets the keep-alive timer, matching the convention
+                    // established by the `graphql-ws` reference implementation (`enisdenjo/graphql-ws`):
+                    // its client only resets on `message.type === 'pong'`, not on arbitrary traffic.
+                    keepAliveMonitor.markPongReceived();
+                    self.keepAliveSignalQueue.enqueue(());
                     continue;
                 }
             }
@@ -267,11 +267,11 @@ isolated class SubscriptionConnection {
     isolated function runKeepAlive(websocket:Client wsClient, KeepAliveMonitor monitor) {
         int missedProbes = 0;
         while true {
-            monitor.resetLivenessSignal();
+            monitor.resetPong();
             if self.keepAliveWait(self.keepAlivePingInterval, monitor, false) {
                 return;
             }
-            if monitor.isLivenessSignalReceived() {
+            if monitor.isPongReceived() {
                 missedProbes = 0;
                 continue;
             }
@@ -284,7 +284,7 @@ isolated class SubscriptionConnection {
             if self.keepAliveWait(self.keepAlivePongTimeout, monitor, true) {
                 return;
             }
-            if monitor.isLivenessSignalReceived() {
+            if monitor.isPongReceived() {
                 missedProbes = 0;
                 continue;
             }
@@ -318,7 +318,7 @@ isolated class SubscriptionConnection {
             if self.isClosed() || monitor.isStopped() {
                 return true;
             }
-            if stopOnPong && monitor.isLivenessSignalReceived() {
+            if stopOnPong && monitor.isPongReceived() {
                 return false;
             }
             decimal waitStart = time:monotonicNow();
@@ -623,31 +623,32 @@ isolated class SubscriptionConnection {
     } external;
 }
 
-// Tracks the liveness signal shared between a connection's keep-alive loop (`runKeepAlive`) and its
-// dispatcher. The keep-alive loop resets and checks `livenessSignalReceived` around each `ping`; the
-// dispatcher sets it upon reading *any* message, not just a `pong` -- receiving anything at all from
-// the server, including ordinary subscription traffic, is itself proof the connection is alive, so it
-// counts as a liveness signal the same way an explicit `pong` does. `stopped` lets the dispatcher stop
-// the loop promptly when the connection ends for another reason.
+// Tracks the pong signal shared between a connection's keep-alive loop (`runKeepAlive`) and its
+// dispatcher. The keep-alive loop resets and checks `pongReceived` around each `ping`; the
+// dispatcher sets it specifically upon reading a `pong` -- not on other traffic (`next`/`error`/
+// `complete`/`ping`) -- matching the convention of the `graphql-ws` reference implementation
+// (`enisdenjo/graphql-ws`), whose client only resets its keep-alive timer on an actual `pong`
+// message. `stopped` lets the dispatcher stop the loop promptly when the connection ends for
+// another reason.
 isolated class KeepAliveMonitor {
-    private boolean livenessSignalReceived = false;
+    private boolean pongReceived = false;
     private boolean stopped = false;
 
-    isolated function markLivenessSignalReceived() {
+    isolated function markPongReceived() {
         lock {
-            self.livenessSignalReceived = true;
+            self.pongReceived = true;
         }
     }
 
-    isolated function resetLivenessSignal() {
+    isolated function resetPong() {
         lock {
-            self.livenessSignalReceived = false;
+            self.pongReceived = false;
         }
     }
 
-    isolated function isLivenessSignalReceived() returns boolean {
+    isolated function isPongReceived() returns boolean {
         lock {
-            return self.livenessSignalReceived;
+            return self.pongReceived;
         }
     }
 

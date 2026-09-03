@@ -29,7 +29,7 @@ isolated service class WsService {
     private boolean initiatedConnection = false;
     private final readonly & ServerKeepAliveConfig keepAliveConfig;
     private final MessageQueue keepAliveSignalQueue;
-    private boolean activityReceived = false;
+    private boolean pongReceived = false;
     private boolean keepAliveStopped = false;
 
     isolated function init(Engine engine, __Schema & readonly schema, Context context,
@@ -54,7 +54,9 @@ isolated service class WsService {
         dispatcherValue: "ping"
     }
     isolated remote function onPingMessage(Ping ping) returns Pong {
-        self.markActivity();
+        // A `ping` initiated by the client is answered with a `pong` (required by the protocol),
+        // but it is not itself a response to this server's own keep-alive probe, so it does not
+        // reset the missed-probe counter -- only an actual `pong` does (see `onPongMessage`).
         return {'type: WS_PONG};
     }
 
@@ -62,11 +64,10 @@ isolated service class WsService {
         dispatcherValue: "pong"
     }
     isolated remote function onPongMessage(Pong pong) {
-        self.markActivity();
+        self.markPongReceived();
     }
 
     isolated remote function onComplete(Complete message) {
-        self.markActivity();
         lock {
             if self.activeConnections.hasKey(message.id) {
                 SubscriptionHandler handler = self.activeConnections.remove(message.id);
@@ -91,7 +92,6 @@ isolated service class WsService {
 
     remote function onSubscribe(Subscribe message)
     returns stream<Next|Complete|ErrorMessage, error?>|Unauthorized|SubscriberAlreadyExists {
-        self.markActivity();
         SubscriptionHandler|Unauthorized|SubscriberAlreadyExists handler = self.validateSubscriptionRequest(message);
         if handler is Unauthorized|SubscriberAlreadyExists {
             return handler;
@@ -134,11 +134,11 @@ isolated service class WsService {
     isolated function runKeepAlive(websocket:Caller caller) {
         int missedProbes = 0;
         while true {
-            self.resetActivity();
+            self.resetPong();
             if self.keepAliveWait(self.keepAliveConfig.pingInterval, false) {
                 return;
             }
-            if self.isActivityReceived() {
+            if self.isPongReceived() {
                 missedProbes = 0;
                 continue;
             }
@@ -150,7 +150,7 @@ isolated service class WsService {
             if self.keepAliveWait(self.keepAliveConfig.pongTimeout, true) {
                 return;
             }
-            if self.isActivityReceived() {
+            if self.isPongReceived() {
                 missedProbes = 0;
                 continue;
             }
@@ -164,15 +164,18 @@ isolated service class WsService {
         }
     }
 
-    // Woken early by activity instead of sleeping blindly; mirrors the client's `keepAliveWait`
-    // in `client_subscription_connection.bal`.
-    isolated function keepAliveWait(decimal duration, boolean stopOnActivity) returns boolean {
+    // Woken early by a pong instead of sleeping blindly; mirrors the client's `keepAliveWait`
+    // in `client_subscription_connection.bal`. Only an actual `pong` resets the timer -- not
+    // other traffic (`subscribe`/`complete`/an inbound `ping`) -- matching the convention of the
+    // `graphql-ws` reference client (`enisdenjo/graphql-ws`), which only resets on
+    // `message.type === 'pong'`.
+    isolated function keepAliveWait(decimal duration, boolean stopOnPong) returns boolean {
         decimal remaining = duration;
         while remaining > 0d {
             if self.isKeepAliveStopped() {
                 return true;
             }
-            if stopOnActivity && self.isActivityReceived() {
+            if stopOnPong && self.isPongReceived() {
                 return false;
             }
             decimal waitStart = time:monotonicNow();
@@ -183,22 +186,22 @@ isolated service class WsService {
         return self.isKeepAliveStopped();
     }
 
-    isolated function markActivity() {
+    isolated function markPongReceived() {
         lock {
-            self.activityReceived = true;
+            self.pongReceived = true;
         }
         self.keepAliveSignalQueue.enqueue(());
     }
 
-    isolated function resetActivity() {
+    isolated function resetPong() {
         lock {
-            self.activityReceived = false;
+            self.pongReceived = false;
         }
     }
 
-    isolated function isActivityReceived() returns boolean {
+    isolated function isPongReceived() returns boolean {
         lock {
-            return self.activityReceived;
+            return self.pongReceived;
         }
     }
 
