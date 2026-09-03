@@ -616,7 +616,7 @@ The reconnection attempt `n` waits `min(interval * backOffFactor^(n-1), maxInter
 ###### Example: Subscription Configuration with Authentication and Reconnection
 
 ```ballerina
-graphql:Client donationsClient = check new ("http://localhost:9090/donations",
+graphql:Client donationsClient = check new ("https://localhost:9090/donations",
     subscription = {
         connectionInitPayload: {authToken: token},
         reconnect: {maxAttempts: 3, interval: 2},
