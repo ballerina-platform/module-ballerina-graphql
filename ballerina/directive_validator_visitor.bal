@@ -92,8 +92,7 @@ class DirectiveValidatorVisitor {
         self.errors.push(errorDetail);
     }
 
-    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
-    }
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
 
     private isolated function validateDirective(parser:DirectiveNode directiveNode, __Directive definedDirective) {
         parser:DirectiveLocation[] validLocations = definedDirective.locations;

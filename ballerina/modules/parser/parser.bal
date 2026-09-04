@@ -100,8 +100,7 @@ public class Parser {
         }
         SelectionNode[] selectionNodes = check self.parseSelections(name);
         FragmentNode fragmentNode = new (name, location, false, onType = onType, selections = selectionNodes,
-            directives = directiveNodes
-        );
+                                         directives = directiveNodes);
         self.addFragmentToMap(fragmentNode);
     }
 
@@ -216,13 +215,12 @@ public class Parser {
         string fragmentName = check getIdentifierTokenvalue(token);
         DirectiveNode[] directiveNodes = check self.parseDirectives(FRAGMENT_SPREAD);
         FragmentNode fragmentNode = new (fragmentName, token.location, false, spreadLocation,
-            directives = directiveNodes
-        );
+                                         directives = directiveNodes);
         selectionNodes.push(fragmentNode);
     }
 
     isolated function addInlineFragmentToNode(string parentNodeName, Location spreadLocation,
-            SelectionNode[] selectionNodes) returns Error? {
+                                              SelectionNode[] selectionNodes) returns Error? {
         Token token = check self.readNextNonSeparatorToken(); //Consume on keyword
         token = check self.readNextNonSeparatorToken();
         Location location = token.location;
@@ -235,8 +233,7 @@ public class Parser {
         }
         SelectionNode[] selections = check self.parseSelections(fragmentName);
         FragmentNode fragmentNode = new (fragmentName, location, true, spreadLocation, onType, selections = selections,
-            directives = directiveNodes
-        );
+                                         directives = directiveNodes);
         self.addFragmentToMap(fragmentNode);
         selectionNodes.push(fragmentNode);
     }
@@ -379,8 +376,7 @@ public class Parser {
                         token = check self.readNextNonSeparatorToken();
                         string varName = check getIdentifierTokenvalue(token);
                         ArgumentNode nestedVariableFields = new (fieldName, token.location, T_IDENTIFIER,
-                            isVarDef = true, variableName = varName
-                        );
+                                                                isVarDef = true, variableName = varName);
                         fields.push(nestedVariableFields);
                         visitedFields.push(fieldName);
                     } else {
@@ -392,8 +388,7 @@ public class Parser {
                     ArgumentType argType = <ArgumentType>token.kind;
                     ArgumentValue fieldValue = check getArgumentValue(token);
                     ArgumentNode inputObjectFieldNode = new (fieldName, fieldLocation, argType, value = fieldValue,
-                        valueLocation = token.location
-                    );
+                                                             valueLocation = token.location);
                     fields.push(inputObjectFieldNode);
                     visitedFields.push(fieldName);
                 }
@@ -429,8 +424,7 @@ public class Parser {
                         token = check self.readNextNonSeparatorToken();
                         string varName = check getIdentifierTokenvalue(token);
                         ArgumentNode variableValue = new (name, token.location, T_IDENTIFIER, isVarDef = true,
-                            variableName = varName
-                        );
+                                                          variableName = varName);
                         listMembers.push(variableValue);
                     } else {
                         return getUnexpectedTokenError(token);

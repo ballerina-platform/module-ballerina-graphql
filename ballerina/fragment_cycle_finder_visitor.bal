@@ -24,7 +24,7 @@ class FragmentCycleFinderVisitor {
     private final map<parser:FragmentNode> fragments;
     private final NodeModifierContext nodeModifierContext;
     private map<parser:FragmentNode> visitedSpreads;
-
+    
     isolated function init(map<parser:FragmentNode> fragments, NodeModifierContext nodeModifierContext) {
         self.fragments = fragments;
         self.visitedSpreads = {};
@@ -47,8 +47,7 @@ class FragmentCycleFinderVisitor {
         }
     }
 
-    public isolated function visitOperation(parser:OperationNode operationNode, anydata data) {
-    }
+    public isolated function visitOperation(parser:OperationNode operationNode, anydata data) {}
 
     public isolated function visitField(parser:FieldNode fieldNode, anydata data) {
         foreach parser:SelectionNode selectionNode in fieldNode.getSelections() {
@@ -74,14 +73,11 @@ class FragmentCycleFinderVisitor {
         }
     }
 
-    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data) {
-    }
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data) {}
 
-    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data) {
-    }
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data) {}
 
-    public isolated function visitVariable(parser:VariableNode variableNode, anydata data) {
-    }
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data) {}
 
     public isolated function getErrors() returns ErrorDetail[]? {
         return self.errors.length() > 0 ? self.errors : ();

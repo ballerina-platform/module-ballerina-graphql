@@ -184,23 +184,19 @@ isolated class SubscriptionConnection {
             return {mustConnect: false, result: error ClientError(CLIENT_ALREADY_CLOSED_MESSAGE)};
         }
         if !self.registerOperation(id, queue, subscribeMessage) {
-            return {
-                mustConnect: false,
-                result: error SubscriptionError(string `A subscription with the id "${id}" already exists`,
-                            errors = ())
-            };
+            return {mustConnect: false,
+                    result: error SubscriptionError(string `A subscription with the id "${id}" already exists`,
+                            errors = ())};
         }
         websocket:Client? wsClient = self.loadWsClient();
         if wsClient is websocket:Client {
             websocket:Error? result = wsClient->writeMessage(subscribeMessage);
             if result is websocket:Error {
                 _ = self.removeOperation(id);
-                return {
-                    mustConnect: false,
-                    result: error SubscriptionError(
+                return {mustConnect: false,
+                        result: error SubscriptionError(
                                 string `Failed to send the subscribe message: ${result.message()}`, result,
-                                errors = ())
-                };
+                                errors = ())};
             }
             return {mustConnect: false, result: ()};
         }
@@ -217,10 +213,8 @@ isolated class SubscriptionConnection {
             returns SubscribeCompletion {
         if self.isClosed() {
             self.markDisconnected();
-            return {
-                result: error ClientError(CLIENT_ALREADY_CLOSED_MESSAGE),
-                closeConnection: connectionResult is websocket:Client
-            };
+            return {result: error ClientError(CLIENT_ALREADY_CLOSED_MESSAGE),
+                    closeConnection: connectionResult is websocket:Client};
         }
         if connectionResult is SubscriptionError {
             self.markDisconnected();

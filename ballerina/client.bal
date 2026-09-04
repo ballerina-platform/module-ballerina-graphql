@@ -35,7 +35,7 @@ public isolated client class Client {
         httpClientConfig.httpVersion = http:HTTP_1_1;
         http:Client|http:ClientError httpClient = new (serviceUrl, httpClientConfig);
         if httpClient is http:ClientError {
-            return error HttpError("GraphQL Client Error", httpClient, body = ());
+             return error HttpError("GraphQL Client Error", httpClient, body = ());
         }
         self.httpClient = httpClient;
         WebSocketConfiguration subscriptionConfig = clientConfig.subscription ?: {};
@@ -48,10 +48,10 @@ public isolated client class Client {
     # Executes a GraphQL query operation and data binds the response.
     #
     # + document - The GraphQL document containing the query operation.
-    # For example `query countryByCode($code: ID!) { country(code: $code) { name } }`
+    #              For example `query countryByCode($code: ID!) { country(code: $code) { name } }`
     # + variables - The GraphQL variables. For example `{"code": "<variable_value>"}`
     # + operationName - The GraphQL operation name. If the document has more than one operation,
-    # the operation name must be provided
+    #                   the operation name must be provided
     # + headers - The headers to be sent with the request
     # + targetType - The type the response is expected to be bound to
     # + return - The data-bound response, or a `graphql:ClientError` if the execution fails
@@ -73,10 +73,10 @@ public isolated client class Client {
     # Executes a GraphQL mutation operation and data binds the response.
     #
     # + document - The GraphQL document containing the mutation operation.
-    # For example `mutation { addCountry(name: "<country_name>") { code } }`
+    #              For example `mutation { addCountry(name: "<country_name>") { code } }`
     # + variables - The GraphQL variables. For example `{"code": "<variable_value>"}`
     # + operationName - The GraphQL operation name. If the document has more than one operation,
-    # the operation name must be provided
+    #                   the operation name must be provided
     # + headers - The headers to be sent with the request
     # + targetType - The type the response is expected to be bound to
     # + return - The data-bound response, or a `graphql:ClientError` if the execution fails
@@ -95,6 +95,8 @@ public isolated client class Client {
                 headers);
     }
 
+    // Shared implementation of `processQuery`/`processMutate`: the two differ only in the expected
+    // operation kind passed to `validateOperationKind`.
     private isolated function processOperation(parser:RootOperationType expectedKind,
             typedesc<GenericResponseWithErrors|record {}> targetType, string document, map<anydata>? variables,
             string? operationName, map<string|string[]>? headers)
@@ -109,15 +111,15 @@ public isolated client class Client {
     # Executes a GraphQL subscription document and returns a stream of data-bound responses.
     #
     # + document - The GraphQL document containing the subscription operation.
-    # For example `subscription { totalDonations }`
+    #              For example `subscription { totalDonations }`
     # + variables - The GraphQL variables. For example `{"code": "<variable_value>"}`
     # + operationName - The GraphQL operation name. If the document has more than one operation,
-    # the operation name must be provided
+    #                   the operation name must be provided
     # + id - The unique ID for the subscription operation. If not provided, a UUID is generated.
-    # The ID must be unique among the active subscriptions of this client
+    #        The ID must be unique among the active subscriptions of this client
     # + targetType - The type each subscription event is expected to be bound to
     # + return - A stream of data-bound responses, or a `graphql:ClientError` if the subscription
-    # could not be established
+    #            could not be established
     remote isolated function subscribe(string document, map<anydata>? variables = (),
             string? operationName = (), string? id = (),
             typedesc<GenericResponseWithErrors|record {}> targetType = <>)
@@ -156,29 +158,29 @@ public isolated client class Client {
     # which is a subtype of GenericResponse.
     #
     # + document - The GraphQL document. It can include queries & mutations.
-    # For example `query OperationName($code:ID!) {country(code:$code) {name}}`.
+    #              For example `query OperationName($code:ID!) {country(code:$code) {name}}`.
     # + variables - The GraphQL variables. For example `{"code": "<variable_value>"}`.
     # + operationName - The GraphQL operation name. If a request has two or more operations, then each operation must have a name.
-    # A request can only execute one operation, so you must also include the operation name to execute.
+    #                   A request can only execute one operation, so you must also include the operation name to execute.
     # + headers - The GraphQL API headers to execute each query
     # + targetType - The payload, which is expected to be returned after data binding. For example
-    # `type CountryByCodeResponse record {| map<json?> extensions?; record {| record{|string name;|}? country; |} data;`
+    #                `type CountryByCodeResponse record {| map<json?> extensions?; record {| record{|string name;|}? country; |} data;`
     # + return - The GraphQL response or a `graphql:ClientError` if failed to execute the query
     # # Deprecated
     # This method is now deprecated. Use the `client->query()` or `client->mutate()` API instead.
     @deprecated
     remote isolated function executeWithType(string document, map<anydata>? variables = (), string? operationName = (),
-            map<string|string[]>? headers = (),
-            typedesc<GenericResponse|record {}|json> targetType = <>)
-                                            returns targetType|ClientError = @java:Method {
+                                             map<string|string[]>? headers = (),
+                                             typedesc<GenericResponse|record{}|json> targetType = <>)
+                                             returns targetType|ClientError = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.client.Client",
         name: "executeWithType"
     } external;
 
-    private isolated function processExecuteWithType(typedesc<GenericResponse|record {}|json> targetType,
-            string document, map<anydata>? variables, string? operationName,
-            map<string|string[]>? headers)
-                                                    returns GenericResponse|record {}|json|ClientError {
+    private isolated function processExecuteWithType(typedesc<GenericResponse|record{}|json> targetType,
+                                                     string document, map<anydata>? variables, string? operationName,
+                                                     map<string|string[]>? headers)
+                                                     returns GenericResponse|record{}|json|ClientError {
         if self.subscriptionConnection.isClosed() {
             return error ClientError(CLIENT_ALREADY_CLOSED_MESSAGE);
         }
@@ -191,7 +193,9 @@ public isolated client class Client {
             return error RequestError("GraphQL Client Error", responseMap);
         }
         if responseMap.hasKey("errors") {
-            GenericResponse|record {}|json|RequestError bindingResult = performDataBinding(targetType, httpResponse);
+            // Mirrors the `query()`/`mutate()` behavior: attempt to bind the (possibly partial)
+            // response first, and only fall back to a `ServerError` if the binding itself fails.
+            GenericResponse|record{}|json|RequestError bindingResult = performDataBinding(targetType, httpResponse);
             if bindingResult is RequestError {
                 return handleGraphqlErrorResponse(responseMap);
             }
@@ -205,29 +209,29 @@ public isolated client class Client {
     # which is a subtype of GenericResponseWithErrors.
     #
     # + document - The GraphQL document. It can include queries & mutations.
-    # For example `query countryByCode($code:ID!) {country(code:$code) {name}}`.
+    #              For example `query countryByCode($code:ID!) {country(code:$code) {name}}`.
     # + variables - The GraphQL variables. For example `{"code": "<variable_value>"}`.
     # + operationName - The GraphQL operation name. If a request has two or more operations, then each operation must have a name.
-    # A request can only execute one operation, so you must also include the operation name to execute.
+    #                   A request can only execute one operation, so you must also include the operation name to execute.
     # + headers - The GraphQL API headers to execute each query
     # + targetType - The payload (`GenericResponseWithErrors`), which is expected to be returned after data binding. For example
-    # `type CountryByCodeResponse record {| map<json?> extensions?; record {| record{|string name;|}? country; |} data; ErrorDetail[] errors?; |};`
+    #               `type CountryByCodeResponse record {| map<json?> extensions?; record {| record{|string name;|}? country; |} data; ErrorDetail[] errors?; |};`
     # + return - The GraphQL response or a `graphql:ClientError` if failed to execute the query
     # # Deprecated
     # This method is now deprecated. Use the per-operation `query()`, `mutate()`, and `subscribe()` APIs instead
     @deprecated
     remote isolated function execute(string document, map<anydata>? variables = (), string? operationName = (),
-            map<string|string[]>? headers = (),
-            typedesc<GenericResponseWithErrors|record {}|json> targetType = <>)
-                                    returns targetType|ClientError = @java:Method {
+                                     map<string|string[]>? headers = (),
+                                     typedesc<GenericResponseWithErrors|record{}|json> targetType = <>)
+                                     returns targetType|ClientError = @java:Method {
         'class: "io.ballerina.stdlib.graphql.runtime.client.Client",
         name: "execute"
     } external;
 
-    private isolated function processExecute(typedesc<GenericResponseWithErrors|record {}|json> targetType,
-            string document, map<anydata>? variables, string? operationName,
-            map<string|string[]>? headers)
-                                            returns GenericResponseWithErrors|record {}|json|ClientError {
+    private isolated function processExecute(typedesc<GenericResponseWithErrors|record{}|json> targetType,
+                                             string document, map<anydata>? variables, string? operationName,
+                                             map<string|string[]>? headers)
+                                             returns GenericResponseWithErrors|record{}|json|ClientError {
         if self.subscriptionConnection.isClosed() {
             return error ClientError(CLIENT_ALREADY_CLOSED_MESSAGE);
         }

@@ -56,14 +56,11 @@ class DefaultDirectiveProcessorVisitor {
         }
     }
 
-    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
-    }
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {}
 
-    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
-    }
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
 
-    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
-    }
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
 
     private isolated function includeField(parser:DirectiveNode[] directives) returns boolean {
         boolean isSkipped = false;

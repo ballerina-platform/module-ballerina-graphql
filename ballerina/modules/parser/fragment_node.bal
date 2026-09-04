@@ -26,7 +26,7 @@ public readonly class FragmentNode {
     private DirectiveNode[] directives;
 
     public isolated function init(string name, Location location, boolean inlineFragment, Location? spreadLocation = (),
-            string onType = "", SelectionNode[] selections = [], DirectiveNode[] directives = []) {
+                                  string onType = "", SelectionNode[] selections = [], DirectiveNode[] directives = []) {
         self.name = name;
         self.location = location.cloneReadOnly();
         self.spreadLocation = spreadLocation.cloneReadOnly();
@@ -72,8 +72,7 @@ public readonly class FragmentNode {
     returns FragmentNode {
         string onTypeValue = onType is () ? self.onType : onType;
         return new (self.name, self.location, self.inlineFragment, self.spreadLocation, onTypeValue, selections,
-            directives
-        );
+                    directives);
     }
 
     public isolated function modifyWithSelections(SelectionNode[] selections) returns FragmentNode {

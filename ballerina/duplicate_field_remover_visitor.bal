@@ -69,14 +69,11 @@ class DuplicateFieldRemoverVisitor {
         }
     }
 
-    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
-    }
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {}
 
-    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
-    }
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
 
-    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
-    }
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
 
     public isolated function getErrors() returns ErrorDetail[]? {
         return self.errors.length() > 0 ? self.errors : ();
@@ -169,7 +166,7 @@ class DuplicateFieldRemoverVisitor {
     }
 
     private isolated function isDuplicateArgValue(parser:ArgumentNode original, parser:ArgumentNode duplicate) returns boolean {
-        if original.getVariableName() is string || duplicate.getVariableName() is string {
+        if original.getVariableName() is string || duplicate.getVariableName() is string  {
             return original.getVariableName() == duplicate.getVariableName();
         }
         parser:ArgumentValue|parser:ArgumentValue[] originalValue = original.getValue();
@@ -222,7 +219,7 @@ class DuplicateFieldRemoverVisitor {
     private isolated function addDuplicateFieldErrors(map<Location[]> duplicates) {
         foreach string key in duplicates.keys() {
             string message = string `Field(s) "${key}" conflict because they have differing arguments. ` +
-                            string `Use different aliases on the fields to fetch both if this was intentional.`;
+                             string `Use different aliases on the fields to fetch both if this was intentional.`;
             self.errors.push(getErrorDetailRecord(message, <Location[]>duplicates[key]));
         }
     }

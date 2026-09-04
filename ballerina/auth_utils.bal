@@ -75,9 +75,9 @@ isolated function authenticateWithFileUserStore(FileUserStoreConfigWithScopes co
     lock {
         string key = config.fileUserStoreConfig.toString();
         if authHandlers.hasKey(key) {
-            handler = <http:ListenerFileUserStoreBasicAuthHandler>authHandlers.get(key);
+            handler = <http:ListenerFileUserStoreBasicAuthHandler> authHandlers.get(key);
         } else {
-            handler = new (config.fileUserStoreConfig.cloneReadOnly());
+            handler = new(config.fileUserStoreConfig.cloneReadOnly());
             authHandlers[key] = handler;
         }
     }
@@ -94,14 +94,14 @@ isolated function authenticateWithFileUserStore(FileUserStoreConfigWithScopes co
 }
 
 isolated function authenticateWithLdapUserStoreConfig(LdapUserStoreConfigWithScopes config, string header)
-                                                    returns http:Unauthorized|http:Forbidden? {
+                                                      returns http:Unauthorized|http:Forbidden? {
     http:ListenerLdapUserStoreBasicAuthHandler handler;
     lock {
         string key = config.ldapUserStoreConfig.toString();
         if authHandlers.hasKey(key) {
-            handler = <http:ListenerLdapUserStoreBasicAuthHandler>authHandlers.get(key);
+            handler = <http:ListenerLdapUserStoreBasicAuthHandler> authHandlers.get(key);
         } else {
-            handler = new (config.ldapUserStoreConfig.cloneReadOnly());
+            handler = new(config.ldapUserStoreConfig.cloneReadOnly());
             authHandlers[key] = handler;
         }
     }
@@ -118,14 +118,14 @@ isolated function authenticateWithLdapUserStoreConfig(LdapUserStoreConfigWithSco
 }
 
 isolated function authenticateWithJwtValidatorConfig(JwtValidatorConfigWithScopes config, string header)
-                                                    returns http:Unauthorized|http:Forbidden? {
+                                                     returns http:Unauthorized|http:Forbidden? {
     http:ListenerJwtAuthHandler handler;
     lock {
         string key = config.jwtValidatorConfig.toString();
         if authHandlers.hasKey(key) {
-            handler = <http:ListenerJwtAuthHandler>authHandlers.get(key);
+            handler = <http:ListenerJwtAuthHandler> authHandlers.get(key);
         } else {
-            handler = new (config.jwtValidatorConfig.cloneReadOnly());
+            handler = new(config.jwtValidatorConfig.cloneReadOnly());
             authHandlers[key] = handler;
         }
     }
@@ -150,9 +150,9 @@ isolated function authenticateWithOAuth2IntrospectionConfig(OAuth2IntrospectionC
     lock {
         string key = config.oauth2IntrospectionConfig.toString();
         if authHandlers.hasKey(key) {
-            handler = <http:ListenerOAuth2Handler>authHandlers.get(key);
+            handler = <http:ListenerOAuth2Handler> authHandlers.get(key);
         } else {
-            handler = new (config.oauth2IntrospectionConfig.cloneReadOnly());
+            handler = new(config.oauth2IntrospectionConfig.cloneReadOnly());
             authHandlers[key] = handler;
         }
     }
@@ -168,7 +168,7 @@ isolated function authenticateWithOAuth2IntrospectionConfig(OAuth2IntrospectionC
 
 // Extract the scheme from `string` header.
 isolated function extractScheme(string header) returns string {
-    return re ` `.split(header)[0];
+    return re` `.split(header)[0];
 }
 
 isolated function createUnauthorizedResponse() returns http:Response {

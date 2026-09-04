@@ -35,7 +35,7 @@ class IntrospectionExecutor {
     isolated function getTypeIntrospection(parser:FieldNode fieldNode) returns Data {
         Data result = {};
         parser:ArgumentNode argNode = fieldNode.getArguments()[0];
-        parser:ArgumentValue argValue = <parser:ArgumentValue>argNode.getValue();
+        parser:ArgumentValue argValue = <parser:ArgumentValue> argNode.getValue();
         string requiredTypeName = argValue.toString();
         __Type? requiredType = getTypeFromTypeArray(self.schema.types, requiredTypeName);
         if requiredType is () {
@@ -106,6 +106,7 @@ class IntrospectionExecutor {
         result[fieldNode.getAlias()] = resultArray;
     }
 }
+
 
 isolated function isDeprecated(map<anydata> value) returns boolean {
     return value.hasKey(IS_DEPRECATED_FIELD) && <boolean>value.get(IS_DEPRECATED_FIELD);

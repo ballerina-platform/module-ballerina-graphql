@@ -14,9 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import graphql.parser;
-
 import ballerina/test;
+import graphql.parser;
 
 @test:Config {
     groups: ["directives"],

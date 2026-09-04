@@ -55,17 +55,17 @@ isolated function getFieldNotFoundErrorMessageFromType(string fieldName, __Type 
 }
 
 isolated function getFieldNotFoundErrorMessage(string fieldName, string rootType) returns string {
-    return string `Cannot query field "${fieldName}" on type "${rootType}".`;
+    return string`Cannot query field "${fieldName}" on type "${rootType}".`;
 }
 
 isolated function getNoSubfieldsErrorMessage(__Field 'field) returns string {
     string typeName = getTypeNameFromType('field.'type);
-    return string `Field "${'field.name}" must not have a selection since type "${typeName}" has no subfields.`;
+    return string`Field "${'field.name}" must not have a selection since type "${typeName}" has no subfields.`;
 }
 
 isolated function getUnknownArgumentErrorMessage(string argName, string parentName, string fieldName)
 returns string {
-    return string `Unknown argument "${argName}" on field "${parentName}.${fieldName}".`;
+    return string`Unknown argument "${argName}" on field "${parentName}.${fieldName}".`;
 }
 
 isolated function getMissingSubfieldsErrorFromType(__Field 'field) returns string {
@@ -74,50 +74,50 @@ isolated function getMissingSubfieldsErrorFromType(__Field 'field) returns strin
 }
 
 isolated function getMissingSubfieldsError(string fieldName, string typeName) returns string {
-    return string `Field "${fieldName}" of type "${typeName}" must have a selection of subfields. Did you mean "${fieldName} { ... }"?`;
+    return string`Field "${fieldName}" of type "${typeName}" must have a selection of subfields. Did you mean "${fieldName} { ... }"?`;
 }
 
 isolated function getInvalidFieldOnUnionTypeError(string fieldName, __Type unionType) returns string {
     __Type[] possibleTypes = <__Type[]>unionType?.possibleTypes;
-    string onTypes = string `"${getOfType(possibleTypes[0]).name.toString()}"`;
-    foreach int i in 1 ... possibleTypes.length() - 1 {
-        onTypes += string ` or "${getOfType(possibleTypes[i]).name.toString()}"`;
+    string onTypes = string`"${getOfType(possibleTypes[0]).name.toString()}"`;
+    foreach int i in 1...possibleTypes.length() - 1 {
+        onTypes += string` or "${getOfType(possibleTypes[i]).name.toString()}"`;
     }
-    return string `Cannot query field "${fieldName}" on type "${unionType.name.toString()}". Did you mean to use a fragment on ${onTypes}?`;
+    return string`Cannot query field "${fieldName}" on type "${unionType.name.toString()}". Did you mean to use a fragment on ${onTypes}?`;
 }
 
 isolated function getInvalidFieldOnInterfaceError(string fieldName, string typeName) returns string {
-    return string `Cannot query field "${fieldName}" on type "${typeName}". Did you mean to use a fragment on a subtype?`;
+    return string`Cannot query field "${fieldName}" on type "${typeName}". Did you mean to use a fragment on a subtype?`;
 }
 
 isolated function getFragmentCannotSpreadError(parser:FragmentNode fragmentNode, string fragmentName, __Type ofType)
 returns string {
     string fragmentOnTypeName = fragmentNode.getOnType();
     if fragmentNode.isInlineFragment() {
-        return string `Fragment cannot be spread here as objects of type "${ofType.name.toString()}" can never be of type "${fragmentOnTypeName}".`;
+        return string`Fragment cannot be spread here as objects of type "${ofType.name.toString()}" can never be of type "${fragmentOnTypeName}".`;
     }
-    return string `Fragment "${fragmentName}" cannot be spread here as objects of type "${ofType.name.toString()}" can never be of type "${fragmentOnTypeName}".`;
+    return string`Fragment "${fragmentName}" cannot be spread here as objects of type "${ofType.name.toString()}" can never be of type "${fragmentOnTypeName}".`;
 }
 
 isolated function getMissingRequiredArgError(parser:FieldNode node, __InputValue input) returns string {
     string typeName = getTypeNameFromType(input.'type);
-    return string `Field "${node.getName()}" argument "${input.name}" of type "${typeName}" is required, but it was not provided.`;
+    return string`Field "${node.getName()}" argument "${input.name}" of type "${typeName}" is required, but it was not provided.`;
 }
 
 isolated function getInvalidDefaultValueError(string variableName, string typeName, parser:ArgumentNode value) returns string {
     string errorValue = getErrorValueInString(value);
-    return string `Variable "${variableName}" expected value of type "${typeName}", found ${errorValue}`;
+    return string`Variable "${variableName}" expected value of type "${typeName}", found ${errorValue}`;
 }
 
 isolated function getInvalidArgumentValueError(string listIndexOfError, string expectedTypeName,
-        parser:ArgumentValue value) returns string {
+                                               parser:ArgumentValue value) returns string {
     if value is parser:ArgumentNode {
         string errorValue = getErrorValueInString(value);
-        return string `${listIndexOfError}${expectedTypeName} cannot represent non ${expectedTypeName} value: ${errorValue}`;
+        return string`${listIndexOfError}${expectedTypeName} cannot represent non ${expectedTypeName} value: ${errorValue}`;
     } else if value is () {
-        return string `${listIndexOfError}${expectedTypeName} cannot represent non ${expectedTypeName} value: null`;
+        return string`${listIndexOfError}${expectedTypeName} cannot represent non ${expectedTypeName} value: null`;
     } else {
-        return string `${listIndexOfError}${expectedTypeName} cannot represent non ${expectedTypeName} value: ${value}`;
+        return string`${listIndexOfError}${expectedTypeName} cannot represent non ${expectedTypeName} value: ${value}`;
     }
 }
 
@@ -219,9 +219,9 @@ isolated function getOfTypeName(__Type schemaType) returns string {
 
 isolated function getTypeNameFromType(__Type schemaType) returns string {
     if schemaType.kind == NON_NULL {
-        return string `${getTypeNameFromType(<__Type>schemaType?.ofType)}!`;
+        return string`${getTypeNameFromType(<__Type>schemaType?.ofType)}!`;
     } else if schemaType.kind == LIST {
-        return string `[${getTypeNameFromType(<__Type>schemaType?.ofType)}]`;
+        return string`[${getTypeNameFromType(<__Type>schemaType?.ofType)}]`;
     }
     return schemaType.name.toString();
 }
@@ -255,7 +255,7 @@ isolated function getErrorDetailRecord(string message, Location|Location[] locat
 
 isolated function getArgumentTypeIdentifierFromType(__Type argType) returns parser:ArgumentType {
     if argType.kind == NON_NULL {
-        return getArgumentTypeIdentifierFromType(<__Type>argType?.ofType);
+        return getArgumentTypeIdentifierFromType(<__Type> argType?.ofType);
     } else if argType.kind == LIST {
         return parser:T_LIST;
     } else if argType.kind == INPUT_OBJECT {
@@ -263,7 +263,7 @@ isolated function getArgumentTypeIdentifierFromType(__Type argType) returns pars
     } else if argType.kind == ENUM {
         return parser:T_IDENTIFIER;
     } else {
-        return getArgumentTypeKind(<string>argType.name);
+        return getArgumentTypeKind(<string> argType.name);
     }
 }
 
@@ -279,10 +279,10 @@ isolated function getListElementError((string|int)[] path) returns string {
     if path.length() > 1 {
         string listIndex = "";
         string argName = "";
-        foreach int i in 0 ..< path.length() {
+        foreach int i in 0..< path.length() {
             string|int pathSegment = path[i];
             if pathSegment is int && argName.length() > 0 {
-                listIndex += string `: In element #${pathSegment.toString()}`;
+                listIndex += string`: In element #${pathSegment.toString()}`;
             } else if pathSegment is string && i == 0 {
                 argName = pathSegment;
             } else if pathSegment is string && pathSegment == argName {
@@ -293,7 +293,7 @@ isolated function getListElementError((string|int)[] path) returns string {
             }
         }
         if listIndex.length() > 1 {
-            errorMsg = string `${argName}${listIndex}:`;
+            errorMsg = string`${argName}${listIndex}:`;
         }
     }
     return errorMsg;
@@ -323,21 +323,21 @@ isolated function getErrorValueInString(parser:ArgumentNode argNode, string erro
 isolated function getInputObjectErrorValueInString(parser:ArgumentValue[] argValue, string errorValue = "") returns string {
     string inputFields = errorValue;
     inputFields += "{";
-    foreach int i in 0 ..< argValue.length() {
+    foreach int i in 0..< argValue.length() {
         parser:ArgumentValue value = argValue[i];
         if value is parser:ArgumentNode {
             parser:ArgumentValue|parser:ArgumentValue[] fieldValue = value.getValue();
             if fieldValue is parser:ArgumentValue[] {
                 if value.getKind() is parser:T_LIST {
-                    inputFields += string `${value.getName()}:`;
+                    inputFields += string`${value.getName()}:`;
                 }
                 inputFields = getErrorValueInString(value, inputFields);
             } else if fieldValue is string {
-                inputFields += string `${value.getName()}: "${fieldValue}"`;
+                inputFields += string`${value.getName()}: "${fieldValue}"`;
             } else if fieldValue is () {
-                inputFields += string `${value.getName()}: null`;
+                inputFields += string`${value.getName()}: null`;
             } else if fieldValue is Scalar {
-                inputFields += string `${value.getName()}: ${fieldValue}`;
+                inputFields += string`${value.getName()}: ${fieldValue}`;
             }
         } else {
             inputFields = appendScalarValues(value, inputFields);
@@ -353,18 +353,18 @@ isolated function getInputObjectErrorValueInString(parser:ArgumentValue[] argVal
 isolated function getListErrorValueInString(parser:ArgumentValue[] argValue, string errorValue = "") returns string {
     string listItems = errorValue;
     listItems += "[";
-    foreach int i in 0 ..< argValue.length() {
+    foreach int i in 0..< argValue.length() {
         parser:ArgumentValue value = argValue[i];
         if value is parser:ArgumentNode {
             parser:ArgumentValue|parser:ArgumentValue[] listItemValue = value.getValue();
             if listItemValue is parser:ArgumentValue[] {
                 listItems = getErrorValueInString(value, listItems);
             } else if listItemValue is string {
-                listItems += string `"${listItemValue}"`;
+                listItems += string`"${listItemValue}"`;
             } else if listItemValue is () {
                 listItems += "null";
             } else if listItemValue is Scalar {
-                listItems += string `${listItemValue}`;
+                listItems += string`${listItemValue}`;
             }
         } else {
             listItems = appendScalarValues(value, listItems);
@@ -379,9 +379,9 @@ isolated function getListErrorValueInString(parser:ArgumentValue[] argValue, str
 
 isolated function appendScalarValues(parser:ArgumentValue argValue, string errorValue = "") returns string {
     if argValue is Scalar {
-        return string `${errorValue}${argValue}`;
+        return string`${errorValue}${argValue}`;
     } else if argValue is () {
-        return string `${errorValue}null`;
+        return string`${errorValue}null`;
     }
     return errorValue;
 }
@@ -390,9 +390,9 @@ isolated function getInputObjectFieldFormPath((string|int)[] path, string name) 
     int? index = path.indexOf(name);
     if index is int {
         if index > 0 {
-            string|int pathValue = path[index - 1];
+            string|int pathValue = path[index-1];
             if pathValue is string {
-                return string `${getInputObjectFieldFormPath(path, pathValue)}.${name}`;
+                return string`${getInputObjectFieldFormPath(path, pathValue)}.${name}`;
             }
         }
     }
@@ -433,32 +433,32 @@ isolated function handleGraphqlErrorResponse(map<json> responseMap) returns Requ
     }
     json? data = (responseMap.hasKey("data")) ? responseMap.get("data") : ();
     map<json>? extensions = (responseMap.hasKey("extensions")) ? (responseMap.get("extensions") is () ? () :
-            <map<json>>responseMap.get("extensions")) : ();
+        <map<json>> responseMap.get("extensions")) : ();
     return error ServerError("GraphQL Server Error", errors = errors, data = data, extensions = extensions);
 }
 
-isolated function performDataBinding(typedesc<GenericResponse|record {}|json> targetType, json graphqlResponse)
-                                    returns GenericResponse|record {}|json|RequestError {
+isolated function performDataBinding(typedesc<GenericResponse|record{}|json> targetType, json graphqlResponse)
+                                     returns GenericResponse|record{}|json|RequestError {
     do {
         if targetType is typedesc<GenericResponse> {
             GenericResponse response = check graphqlResponse.cloneWithType(targetType);
             return response;
-        } else if targetType is typedesc<record {}> {
-            record {} response = check graphqlResponse.cloneWithType(targetType);
+        } else if targetType is typedesc<record{}> {
+            record{} response = check graphqlResponse.cloneWithType(targetType);
             return response;
         } else if targetType is typedesc<json> {
             json response = check graphqlResponse.cloneWithType(targetType);
             return response;
         }
     } on fail error e {
-        return error RequestError("GraphQL Client Error", e);
+        return error RequestError("GraphQL Client Error",  e);
     }
     return error RequestError("GraphQL Client Error, Invalid binding type.");
 }
 
-isolated function performDataBindingWithErrors(typedesc<GenericResponseWithErrors|record {}> targetType,
-        json graphqlResponse)
-                                                returns GenericResponseWithErrors|record {}|PayloadBindingError {
+isolated function performDataBindingWithErrors(typedesc<GenericResponseWithErrors|record{}> targetType,
+                                               json graphqlResponse)
+                                               returns GenericResponseWithErrors|record{}|PayloadBindingError {
     do {
         return check graphqlResponse.cloneWithType(targetType);
     } on fail error e {
@@ -539,7 +539,7 @@ public isolated function __addError(Context context, ErrorDetail errorDetail) {
 }
 
 isolated function generateArgHash(parser:ArgumentNode[] arguments, string[] parentArgHashes = [],
-        string[] optionalFields = []) returns string {
+                                  string[] optionalFields = []) returns string {
     any[] argValues = [...parentArgHashes, ...optionalFields];
     argValues.push(...arguments.'map((arg) => getValueArrayFromArgumentNode(arg)));
     byte[] hash = crypto:hashMd5(argValues.toString().toBytes());

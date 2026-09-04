@@ -254,8 +254,7 @@ isolated class Engine {
             }
             parser:OperationNode operation = modifiedDocument.getOperations()[0];
             QueryComplexityValidatorVisitor validator = new (self, schema, queryComplexityConfig, operation.getName(),
-                nodeModifierContext
-            );
+                nodeModifierContext);
             operation.accept(validator);
             return validator.getErrors() ?: [];
         }
@@ -327,10 +326,10 @@ isolated class Engine {
                     ?: getDefaultPrefetchMethodName(fieldNode.getName());
                 if self.hasPrefetchMethod(serviceObject, prefetchMethodName) {
                     addTracingInfomation({
-                                             context,
-                                             serviceName: prefetchMethodName,
-                                             operationType: 'field.getOperationType()
-                                         });
+                        context,
+                        serviceName: prefetchMethodName,
+                        operationType: 'field.getOperationType()
+                    });
                     anydata result = self.getResultFromPrefetchMethodExecution(context, 'field, serviceObject, prefetchMethodName);
                     stopTracing(context);
                     return result;
@@ -347,10 +346,10 @@ isolated class Engine {
             if interceptor is readonly & Interceptor {
                 string interceptorName = self.getInterceptorName(interceptor);
                 addTracingInfomation({
-                                         context,
-                                         serviceName: interceptorName,
-                                         operationType: 'field.getOperationType()
-                                     });
+                    context,
+                    serviceName: interceptorName,
+                    operationType: 'field.getOperationType()
+                });
                 any|error result = self.executeInterceptor(interceptor, 'field, context);
                 anydata response = check validateInterceptorReturnValue(fieldType, result, interceptorName);
                 stopTracing(context);
@@ -376,10 +375,10 @@ isolated class Engine {
                 }
             } else {
                 addTracingInfomation({
-                                         context,
-                                         serviceName: 'field.getName(),
-                                         operationType
-                                     });
+                    context,
+                    serviceName: 'field.getName(),
+                    operationType
+                });
                 addFieldMetric('field);
                 fieldValue = check self.getFieldValue(context, 'field, responseGenerator);
             }

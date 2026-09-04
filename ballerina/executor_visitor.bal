@@ -35,8 +35,7 @@ isolated class ExecutorVisitor {
         self.initializeDataMap();
     }
 
-    public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
-    }
+    public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {}
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
         string[] path = [];
@@ -48,14 +47,14 @@ isolated class ExecutorVisitor {
             serviceObject = self.engine.getService();
         }
         if operationNode.getKind() != parser:OPERATION_MUTATION && serviceObject is isolated service object {} {
-            map<anydata> dataMap = {[OPERATION_TYPE]: operationNode.getKind(), [PATH]: path};
+            map<anydata> dataMap = {[OPERATION_TYPE] : operationNode.getKind(), [PATH] : path};
             return self.visitSelectionsParallelly(operationNode, dataMap.cloneReadOnly());
         }
         foreach parser:SelectionNode selection in operationNode.getSelections() {
             if selection is parser:FieldNode {
                 path.push(selection.getName());
             }
-            map<anydata> dataMap = {[OPERATION_TYPE]: operationNode.getKind(), [PATH]: path};
+            map<anydata> dataMap = {[OPERATION_TYPE] : operationNode.getKind(), [PATH] : path};
             selection.accept(self, dataMap);
         }
     }
@@ -86,25 +85,23 @@ isolated class ExecutorVisitor {
         }
     }
 
-    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
-    }
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {}
 
     public isolated function visitFragment(parser:FragmentNode fragmentNode, anydata data = ()) {
         parser:RootOperationType operationType = self.getOperationTypeFromData(data);
         string[] path = self.getSelectionPathFromData(data);
         if operationType != parser:OPERATION_MUTATION {
-            map<anydata> dataMap = {[OPERATION_TYPE]: operationType, [PATH]: path};
+            map<anydata> dataMap = {[OPERATION_TYPE] : operationType, [PATH] : path};
             return self.visitSelectionsParallelly(fragmentNode, dataMap.cloneReadOnly());
         }
         foreach parser:SelectionNode selection in fragmentNode.getSelections() {
             if selection is parser:FieldNode {
                 path.push(selection.getName());
             }
-            map<anydata> dataMap = {[OPERATION_TYPE]: operationType, [PATH]: path};
+            map<anydata> dataMap = {[OPERATION_TYPE] : operationType, [PATH] : path};
             selection.accept(self, dataMap);
         }
     }
-
     public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
     }
 
@@ -152,7 +149,7 @@ isolated class ExecutorVisitor {
             if selection is parser:FieldNode {
                 path.push(selection.getName());
             }
-            map<anydata> dataMap = {[OPERATION_TYPE]: operationType, [PATH]: path};
+            map<anydata> dataMap = {[OPERATION_TYPE] : operationType, [PATH] : path};
             future<()> 'future = start selection.accept(self, dataMap.cloneReadOnly());
             selectionFutures.push([selection, 'future]);
         }

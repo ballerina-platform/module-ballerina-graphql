@@ -45,7 +45,7 @@ public class Listener {
         self.configuration = configuration.clone();
         self.wsListener = ();
         self.graphiql = {};
-        [string, string] [httpEndpoint, websocketEndpoint] = getEndpoints(listenTo, configuration);
+        [string, string][httpEndpoint, websocketEndpoint] = getEndpoints(listenTo, configuration);
         self.httpEndpoint = httpEndpoint;
         self.websocketEndpoint = websocketEndpoint;
     }
@@ -55,7 +55,7 @@ public class Listener {
     # + s - The `graphql:Service` object to attach to the listener
     # + name - The path of the service to be hosted
     # + return - A `graphql:Error` if an error occurred during the service-attaching process or the schema
-    # generation process or else `()`
+    #            generation process or else `()`
     public isolated function attach(Service s, string[]|string? name = ()) returns Error? {
         GraphqlServiceConfig serviceConfig = check getServiceConfig(s);
         self.graphiql = serviceConfig.graphiql;
@@ -68,10 +68,9 @@ public class Listener {
         ServerCacheConfig? fieldCacheConfig = serviceConfig.fieldCacheConfig;
         QueryComplexityConfig? queryComplexityConfig = serviceConfig.queryComplexityConfig;
         DocumentCacheConfig? documentCacheConfig = serviceConfig.documentCacheConfig;
-        Engine engine = check new (schemaString, maxQueryDepth, s, interceptors, introspection, validation,
-            operationCacheConfig, fieldCacheConfig, queryComplexityConfig,
-            documentCacheConfig
-        );
+        Engine engine  = check new (schemaString, maxQueryDepth, s, interceptors, introspection, validation,
+                                    operationCacheConfig, fieldCacheConfig, queryComplexityConfig,
+                                    documentCacheConfig);
         HttpService httpService = getHttpService(engine, serviceConfig);
         attachHttpServiceToGraphqlService(s, httpService);
         __Schema & readonly schema = engine.getSchema();
@@ -214,7 +213,7 @@ public class Listener {
     }
 
     private isolated function initWebsocketListener(boolean isSubscriptionService) returns Error? {
-        if self.wsListener is websocket:Listener || !isSubscriptionService {
+        if self.wsListener is websocket:Listener ||!isSubscriptionService {
             return;
         }
         http:Listener|Error httpListener = self.getHttpListener();
@@ -223,7 +222,7 @@ public class Listener {
         }
         check validateHttpVersion(httpListener);
 
-        websocket:Listener|error wsListener = new (httpListener);
+        websocket:Listener|error wsListener = new(httpListener);
         if wsListener is error {
             return error Error("Websocket listener initialization failed", wsListener);
         }
@@ -231,7 +230,7 @@ public class Listener {
     }
 
     private isolated function attachWebSocketService(Service s, Engine engine, __Schema & readonly schema,
-            GraphqlServiceConfig serviceConfig, string[]|string? name) returns Error? {
+        GraphqlServiceConfig serviceConfig, string[]|string? name) returns Error? {
         websocket:Listener? wsListener = self.wsListener;
         if wsListener is () {
             return error Error("Websocket listener is not initialized");
@@ -266,8 +265,8 @@ public class Listener {
         string graphqlUrl = string `${self.httpEndpoint}/${gqlServiceBasePath}`;
         string subscriptionUrl = string `${self.websocketEndpoint}/${gqlServiceBasePath}`;
         HttpService graphiqlService = subscriptionType is __Type
-            ? getGraphiqlService(serviceConfig, graphqlUrl, subscriptionUrl)
-            : getGraphiqlService(serviceConfig, graphqlUrl);
+                                    ? getGraphiqlService(serviceConfig, graphqlUrl, subscriptionUrl)
+                                    : getGraphiqlService(serviceConfig, graphqlUrl);
         attachGraphiqlServiceToGraphqlService(s, graphiqlService);
         error? result = (check self.getHttpListener()).attach(graphiqlService, self.graphiql.path);
         if result is error {

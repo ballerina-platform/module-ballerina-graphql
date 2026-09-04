@@ -14,13 +14,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import graphql.parser;
-
 import ballerina/jballerina.java;
+import graphql.parser;
 
 isolated function getCorsConfig(GraphqlServiceConfig? serviceConfig) returns CorsConfig {
     if serviceConfig is GraphqlServiceConfig && serviceConfig.cors is CorsConfig {
-        return <CorsConfig>serviceConfig.cors;
+        return <CorsConfig> serviceConfig.cors;
     }
     return {};
 }
@@ -76,7 +75,7 @@ isolated function getFieldInterceptors(service object {} serviceObj, parser:Root
 
 isolated function getPrefetchMethodName(service object {} serviceObj, Field 'field) returns string? {
     GraphqlResourceConfig? resourceConfig = getResourceAnnotation(serviceObj,
-            'field.getOperationType(), 'field.getResourcePath(), 'field.getName());
+        'field.getOperationType(), 'field.getResourcePath(), 'field.getName());
     if resourceConfig is GraphqlResourceConfig {
         return resourceConfig.prefetchMethodName;
     }
