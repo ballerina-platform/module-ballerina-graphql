@@ -119,7 +119,8 @@ public enum DiagnosticMessage {
                         + "resolve this warning"),
     WARNING_210("unable to validate the default values of input type ''{0}''. This could potentially lead to the "
                         + "generation of an incorrect GraphQL schema. Try defining this type in the same module where"
-                        + " the graphql:Service is defined to resolve this warning");
+                        + " the graphql:Service is defined to resolve this warning"),
+    WARNING_211("the Ballerina version is not supported for endpoints.yaml. Try using Ballerina 2201.13.6 or above");
 
     private final String message;
 
