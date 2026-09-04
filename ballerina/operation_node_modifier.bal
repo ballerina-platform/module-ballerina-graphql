@@ -28,7 +28,8 @@ class OperationNodeModifierVisitor {
         self.removedNodes = removedNodes;
     }
 
-    public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {}
+    public isolated function visitDocument(parser:DocumentNode documentNode, anydata data = ()) {
+    }
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
         parser:SelectionNode[] selections = self.getModifiedSelections(operationNode);
@@ -49,11 +50,14 @@ class OperationNodeModifierVisitor {
         self.addModifiedNode(fragmentNode, modifiedFragmentNode);
     }
 
-    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {}
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
+    }
 
-    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
+    }
 
-    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
+    }
 
     public isolated function getOperationNode() returns parser:OperationNode {
         return <parser:OperationNode>self.operation;

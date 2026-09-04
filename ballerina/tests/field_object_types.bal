@@ -131,16 +131,18 @@ __Type PersonQuery = {
     fields: [
         {
             name: "person",
-            args: [{
-                name: "id",
-                'type: {
-                    kind: "NON_NULL",
-                    ofType: {
-                        kind: "SCALAR",
-                        name: "Int"
+            args: [
+                {
+                    name: "id",
+                    'type: {
+                        kind: "NON_NULL",
+                        ofType: {
+                            kind: "SCALAR",
+                            name: "Int"
+                        }
                     }
                 }
-            }],
+            ],
             'type: Person
         }
     ]

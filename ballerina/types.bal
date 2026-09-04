@@ -70,7 +70,7 @@ public type Graphiql record {|
 # + enabled - State of the caching
 # + maxAge - TTL of the cache in seconds
 # + maxSize - Maximum number of cache entries
-public type ServerCacheConfig  readonly & record{|
+public type ServerCacheConfig readonly & record {|
     boolean enabled = true;
     decimal maxAge = 60;
     int maxSize = 120;
@@ -80,7 +80,7 @@ public type ServerCacheConfig  readonly & record{|
 #
 # + enabled - State of the document caching
 # + maxSize - Maximum number of cache entries
-public type DocumentCacheConfig readonly & record{|
+public type DocumentCacheConfig readonly & record {|
     boolean enabled = true;
     int maxSize = 100;
 |};
@@ -104,11 +104,11 @@ public type Interceptor distinct service object {
 
 # Represents the target type binding record with data and extensions of a GraphQL response for `executeWithType` method.
 #
-# + extensions -  Meta information on protocol extensions from the GraphQL server
-# + data -  The requested data from the GraphQL server
+# + extensions - Meta information on protocol extensions from the GraphQL server
+# + data - The requested data from the GraphQL server
 public type GenericResponse record {|
-   map<json?> extensions?;
-   record {| anydata...; |}|map<json?> data?;
+    map<json?> extensions?;
+    record {|anydata...;|}|map<json?> data?;
 |};
 
 # Represents the target type binding record with data, extensions and errors of a GraphQL response for the
@@ -116,8 +116,8 @@ public type GenericResponse record {|
 #
 # + errors - The errors occurred (if present) while processing the GraphQL request.
 public type GenericResponseWithErrors record {|
-   *GenericResponse;
-   ErrorDetail[] errors?;
+    *GenericResponse;
+    ErrorDetail[] errors?;
 |};
 
 # When service behaves as a HTTP gateway inbound request/response accept-encoding option is set as the

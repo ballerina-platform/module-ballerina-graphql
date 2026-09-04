@@ -109,7 +109,7 @@ public type ProxyConfig record {|
 # + proxy - Proxy server related options
 # + validation - Enables the inbound payload validation functionality which provided by the constraint package. Enabled by default
 # + subscription - Configurations related to GraphQL subscriptions over WebSocket. Nil value means the
-#                  default subscription behavior with default configurations
+# default subscription behavior with default configurations
 public type ClientConfiguration record {|
     // The HTTP-related fields of this record are mapped to the `http:ClientConfiguration` in the
     // `toHttpClientConfig` function. A new HTTP-related field added here must be mapped there as well.
@@ -164,7 +164,7 @@ public type WebSocketConfiguration record {|
 # + enabled - Whether the client-side keep-alive is active
 # + pingInterval - The interval (in seconds) at which the client sends `ping` messages
 # + pongTimeout - The maximum time (in seconds) to wait for the `pong` response to each `ping`
-#                 before considering the connection lost
+# before considering the connection lost
 public type KeepAliveConfig record {|
     boolean enabled = true;
     decimal pingInterval = 15;
@@ -178,7 +178,7 @@ public type KeepAliveConfig record {|
 # + enabled - Whether the server-side keep-alive is active
 # + pingInterval - The interval (in seconds) at which the server sends `ping` messages
 # + pongTimeout - The maximum time (in seconds) to wait for the `pong` response to each `ping`
-#                 before considering the connection lost
+# before considering the connection lost
 public type ServerKeepAliveConfig record {|
     boolean enabled = true;
     decimal pingInterval = 15;
@@ -267,14 +267,14 @@ type __Schema record {|
 # + name - The name of the type. This can be nil if the type is `NON_NULL` or `LIST`
 # + description - The description of the type
 # + fields - The fields of the type. This only applies if the `kind` is `OBJECT` or `INTERFACE`. Otherwise,
-#       this will be nil.
+# this will be nil.
 # + interfaces - The interfaces of the type. This only applies if the `kind` is `OBJECT` or `INTERFACE`. Otherwise,
-#       this will be nil.
+# this will be nil.
 # + possibleTypes - The possible types of the type. This only applies if the `kind` is `UNION` or `INTERFACE`.
-#       Otherwise, this will be nil.
+# Otherwise, this will be nil.
 # + enumValues - The enum values of the type. This only applies if the `kind` is `ENUM`. Otherwise, this will be nil.
 # + inputFields - The input fields of the type. This only applies if the `kind` is `INPUT_OBJECT`. Otherwise,
-#       this will be nil.
+# this will be nil.
 # + ofType - The type of the type. This only applies if the `kind` is `NON_NULL` or `LIST`. Otherwise, this will be nil.
 public type __Type record {|
     __TypeKind kind;

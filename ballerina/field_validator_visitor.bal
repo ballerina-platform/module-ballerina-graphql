@@ -39,7 +39,7 @@ class FieldValidatorVisitor {
 
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
         __Field? operationField = createSchemaFieldFromOperation(self.schema.types, operationNode, self.errors,
-                                                                 self.nodeModifierContext);
+                self.nodeModifierContext);
         if operationField is __Field {
             foreach parser:SelectionNode selection in operationNode.getSelections() {
                 selection.accept(self, operationField);
@@ -116,7 +116,7 @@ class FieldValidatorVisitor {
             if fieldValue is parser:ArgumentValue {
                 self.coerceArgumentNodeValue(argumentNode, schemaArg);
                 self.validateArgumentValue(fieldValue, modifiedArgNode.getValueLocation(), getTypeName(modifiedArgNode),
-                                           schemaArg);
+                                            schemaArg);
             }
         }
     }
@@ -191,7 +191,7 @@ class FieldValidatorVisitor {
                     if subInputValue.'type.kind == NON_NULL && subInputValue.defaultValue is () {
                         string inputFieldName = getInputObjectFieldFormPath(self.argumentPath, subInputValue.name);
                         string message = string `Field "${inputFieldName}" of required type ` +
-                                         string `"${getTypeNameFromType(subInputValue.'type)}" was not provided.`;
+                                        string `"${getTypeNameFromType(subInputValue.'type)}" was not provided.`;
                         self.errors.push(getErrorDetailRecord(message, modifiedArgumentNode.getLocation()));
                     }
                 }
@@ -201,7 +201,7 @@ class FieldValidatorVisitor {
         } else {
             string listError = getListElementError(self.argumentPath);
             string message = getInvalidArgumentValueError(listError, getTypeNameFromType(schemaArg.'type),
-                                                          modifiedArgumentNode);
+                    modifiedArgumentNode);
             ErrorDetail errorDetail = getErrorDetailRecord(message, modifiedArgumentNode.getLocation());
             self.errors.push(errorDetail);
         }
@@ -233,7 +233,7 @@ class FieldValidatorVisitor {
         } else {
             string listError = getListElementError(self.argumentPath);
             string message = getInvalidArgumentValueError(listError, getTypeNameFromType(schemaArg.'type),
-                                                          modifiedArgNode);
+                    modifiedArgNode);
             ErrorDetail errorDetail = getErrorDetailRecord(message, modifiedArgNode.getLocation());
             self.errors.push(errorDetail);
         }
@@ -246,27 +246,27 @@ class FieldValidatorVisitor {
         if getOfType(schemaArg.'type).name == UPLOAD {
             return;
         } else if variableValue is Scalar && (getTypeKind(schemaArg.'type) == SCALAR
-                  || getTypeKind(schemaArg.'type) == ENUM) {
+                || getTypeKind(schemaArg.'type) == ENUM) {
             self.coerceArgumentNodeValue(argumentNode, schemaArg);
             self.validateArgumentValue(variableValue, modifiedArgNode.getValueLocation(), getTypeName(modifiedArgNode),
-                                       schemaArg);
+                                        schemaArg);
         } else if variableValue is map<json> && getTypeKind(schemaArg.'type) == INPUT_OBJECT {
             self.updatePath(modifiedArgNode.getName());
             map<json> variableValueClone = {...variableValue};
             self.validateInputObjectVariableValue(variableValueClone, schemaArg, modifiedArgNode.getValueLocation(),
-                                                  fieldName);
+                                                fieldName);
             self.modifyArgumentNode(argumentNode, variableValue = variableValueClone);
             self.removePath();
         } else if variableValue is json[] && getTypeKind(schemaArg.'type) == LIST {
             self.updatePath(modifiedArgNode.getName());
             json[] clonedVariableValue = [...variableValue];
             self.validateListVariableValue(clonedVariableValue, schemaArg, modifiedArgNode.getValueLocation(),
-                                           fieldName);
+                                            fieldName);
             self.modifyArgumentNode(argumentNode, variableValue = clonedVariableValue);
             self.removePath();
         } else if variableValue is () {
             self.validateArgumentValue(variableValue, modifiedArgNode.getValueLocation(), getTypeName(modifiedArgNode),
-                                       schemaArg);
+                                        schemaArg);
         } else {
             string expectedTypeName = getOfTypeName(schemaArg.'type);
             if variableValue is map<json> && getTypeKind(schemaArg.'type) == LIST {
@@ -275,19 +275,19 @@ class FieldValidatorVisitor {
             string listError = getListElementError(self.argumentPath);
             string value = variableValue is () ? "null" : variableValue.toString();
             string message = string `${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value:` +
-                             string ` ${value}`;
+                            string ` ${value}`;
             ErrorDetail errorDetail = getErrorDetailRecord(message, modifiedArgNode.getValueLocation());
             self.errors.push(errorDetail);
         }
     }
 
     isolated function validateArgumentValue(parser:ArgumentValue value, Location valueLocation, string actualTypeName,
-                                            __InputValue schemaArg) {
+            __InputValue schemaArg) {
         if value is () {
             if schemaArg.'type.kind == NON_NULL {
                 string listError = getListElementError(self.argumentPath);
                 string message = string `${listError}Expected value of type "${getTypeNameFromType(schemaArg.'type)}"` +
-                                 string `, found null.`;
+                                string `, found null.`;
                 ErrorDetail errorDetail = getErrorDetailRecord(message, valueLocation);
                 self.errors.push(errorDetail);
             }
@@ -311,7 +311,7 @@ class FieldValidatorVisitor {
             }
             string listError = getListElementError(self.argumentPath);
             string message = string `${listError}${expectedTypeName} cannot represent non ${expectedTypeName} value: ` +
-                             string `${value.toString()}`;
+                            string `${value.toString()}`;
             ErrorDetail errorDetail = getErrorDetailRecord(message, valueLocation);
             self.errors.push(errorDetail);
         } else {
@@ -323,7 +323,7 @@ class FieldValidatorVisitor {
     }
 
     isolated function validateInputObjectVariableValue(map<json> variableValues, __InputValue inputValue,
-                                                       Location location, string fieldName) {
+            Location location, string fieldName) {
         __Type argType = getOfType(inputValue.'type);
         __InputValue[]? inputFields = argType?.inputFields;
         if inputFields is __InputValue[] {
@@ -344,9 +344,9 @@ class FieldValidatorVisitor {
                             string expectedTypeName = getOfTypeName(subInputValue.'type);
                             string actualTypeName = getTypeNameFromScalarValue(fieldValue);
                             variableValues[subInputValue.name] = self.coerceValue(fieldValue, expectedTypeName,
-                                                                                  actualTypeName, location);
+                                                                                actualTypeName, location);
                             self.validateArgumentValue(fieldValue, location, getTypeNameFromScalarValue(fieldValue),
-                                                       subInputValue);
+                                                        subInputValue);
                         }
                     } else if fieldValue is map<json> {
                         self.updatePath(subInputValue.name);
@@ -368,7 +368,7 @@ class FieldValidatorVisitor {
                     if subInputValue.'type.kind == NON_NULL && inputValue?.defaultValue is () {
                         string inputField = getInputObjectFieldFormPath(self.argumentPath, subInputValue.name);
                         string message = string `Field "${inputField}" of required type ` +
-                                         string `"${getTypeNameFromType(subInputValue.'type)}" was not provided.`;
+                                        string `"${getTypeNameFromType(subInputValue.'type)}" was not provided.`;
                         self.errors.push(getErrorDetailRecord(message, location));
                     }
                 }
@@ -390,7 +390,7 @@ class FieldValidatorVisitor {
     }
 
     isolated function validateListVariableValue(json[] variableValues, __InputValue inputValue,
-                                                Location location, string fieldName) {
+            Location location, string fieldName) {
         if getTypeKind(inputValue.'type) == LIST {
             __InputValue listItemInputValue = createInputValueForListItem(inputValue);
             if getOfType(listItemInputValue.'type).name == UPLOAD {
@@ -412,15 +412,15 @@ class FieldValidatorVisitor {
                             string expectedTypeName = getOfTypeName(listItemInputValue.'type);
                             string actualTypeName = getTypeNameFromScalarValue(listItemValue);
                             variableValues[i] = self.coerceValue(listItemValue, expectedTypeName, actualTypeName,
-                                                                 location);
+                                                                location);
                             self.validateArgumentValue(listItemValue, location,
-                                                       getTypeNameFromScalarValue(listItemValue), listItemInputValue);
+                                                        getTypeNameFromScalarValue(listItemValue), listItemInputValue);
                         }
                     } else if listItemValue is map<json> {
                         self.updatePath(listItemInputValue.name);
                         map<json> listItemValueClone = {...listItemValue};
                         self.validateInputObjectVariableValue(listItemValueClone, listItemInputValue, location,
-                                                              fieldName);
+                                                            fieldName);
                         variableValues[i] = listItemValueClone;
                         self.removePath();
                     } else if listItemValue is json[] {
@@ -448,7 +448,7 @@ class FieldValidatorVisitor {
         if value !is map<json> {
             string listError = getListElementError(self.argumentPath);
             string message = string `${listError} "${schemaTypeName}" cannot represent non ${schemaTypeName}` +
-                             string ` value: "${value.toString()}"`;
+                            string ` value: "${value.toString()}"`;
             ErrorDetail errorDetail = getErrorDetailRecord(message, valueLocation);
             self.errors.push(errorDetail);
             return;
@@ -456,7 +456,7 @@ class FieldValidatorVisitor {
         if value?.__typename == () {
             string listError = getListElementError(self.argumentPath);
             string message = string `${listError} "${schemaTypeName}" cannot represent non ${schemaTypeName}` +
-                             string ` value: "__typename" field is absent`;
+                            string ` value: "__typename" field is absent`;
             ErrorDetail errorDetail = getErrorDetailRecord(message, valueLocation);
             self.errors.push(errorDetail);
             return;
@@ -469,7 +469,7 @@ class FieldValidatorVisitor {
         if modifiedArgNode.isVariableDefinition() && modifiedArgNode.getVariableValue() is Scalar {
             Scalar value = <Scalar>modifiedArgNode.getVariableValue();
             value = self.coerceValue(value, expectedTypeName, getTypeNameFromScalarValue(value),
-                                     modifiedArgNode.getValueLocation());
+                                    modifiedArgNode.getValueLocation());
             self.modifyArgumentNode(argumentNode, value = value);
             if value is decimal|float {
                 self.modifyArgumentNode(argumentNode, kind = parser:T_FLOAT);
@@ -477,7 +477,7 @@ class FieldValidatorVisitor {
         } else if modifiedArgNode.getValue() is Scalar {
             Scalar value = <Scalar>modifiedArgNode.getValue();
             value = self.coerceValue(value, expectedTypeName, getTypeNameFromScalarValue(value),
-                                     modifiedArgNode.getValueLocation());
+                                    modifiedArgNode.getValueLocation());
             self.modifyArgumentNode(argumentNode, value = value);
             if value is decimal|float {
                 self.modifyArgumentNode(argumentNode, kind = parser:T_FLOAT);
@@ -494,7 +494,7 @@ class FieldValidatorVisitor {
                     return coerceValue;
                 } else {
                     string message = string `${expectedTypeName} cannot represent non ${expectedTypeName} value: ` +
-                                     string `${value}`;
+                                    string `${value}`;
                     ErrorDetail errorDetail = getErrorDetailRecord(message, location);
                     self.errors.push(errorDetail);
                 }
@@ -506,7 +506,7 @@ class FieldValidatorVisitor {
                     return coerceValue;
                 } else {
                     string message = string `${expectedTypeName} cannot represent non ${expectedTypeName} value: ` +
-                                     string `${value}`;
+                                    string `${value}`;
                     ErrorDetail errorDetail = getErrorDetailRecord(message, location);
                     self.errors.push(errorDetail);
                 }
@@ -546,7 +546,7 @@ class FieldValidatorVisitor {
 
         foreach __InputValue inputValue in notFoundInputValues {
             if inputValue.'type.kind == NON_NULL && inputValue?.defaultValue is ()
-               && getOfType(inputValue.'type).name != UPLOAD {
+                && getOfType(inputValue.'type).name != UPLOAD {
                 string message = getMissingRequiredArgError(fieldNode, inputValue);
                 self.errors.push(getErrorDetailRecord(message, fieldNode.getLocation()));
             }
@@ -555,7 +555,7 @@ class FieldValidatorVisitor {
 
     isolated function validateFragment(parser:FragmentNode fragmentNode, string schemaTypeName) returns __Type? {
         if self.nodeModifierContext.isUnknownFragment(fragmentNode)
-           || self.nodeModifierContext.isFragmentWithCycles(fragmentNode) {
+            || self.nodeModifierContext.isFragmentWithCycles(fragmentNode) {
             return;
         }
         string fragmentOnTypeName = fragmentNode.getOnType();
@@ -594,7 +594,7 @@ class FieldValidatorVisitor {
                     int? index = definedFields.indexOf('field.getName());
                     if index is () {
                         string message = string `Field "${'field.getName()}" is not defined by type ` +
-                                         string `"${node.getName()}".`;
+                                        string `"${node.getName()}".`;
                         self.errors.push(getErrorDetailRecord(message, 'field.getLocation()));
                     }
                 }
@@ -611,12 +611,12 @@ class FieldValidatorVisitor {
     }
 
     isolated function validateEnumArgument(parser:ArgumentValue value, Location valueLocation, string actualArgType,
-                                           __InputValue inputValue) {
+            __InputValue inputValue) {
         __Type argType = getOfType(inputValue.'type);
         if getArgumentTypeKind(actualArgType) != parser:T_IDENTIFIER {
             string listError = getListElementError(self.argumentPath);
             string message = string `${listError}Enum "${getTypeNameFromType(argType)}" cannot represent non-enum` +
-                             string ` value: "${value.toString()}"`;
+                            string ` value: "${value.toString()}"`;
             ErrorDetail errorDetail = getErrorDetailRecord(message, valueLocation);
             self.errors.push(errorDetail);
             return;
@@ -657,17 +657,19 @@ class FieldValidatorVisitor {
         _ = self.argumentPath.pop();
     }
 
-    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
+    }
 
-    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
+    }
 
     public isolated function getErrors() returns ErrorDetail[]? {
         return self.errors.length() > 0 ? self.errors : ();
     }
 
     private isolated function modifyArgumentNode(parser:ArgumentNode originalNode, parser:ArgumentType? kind = (),
-                                                 parser:ArgumentValue|parser:ArgumentValue[] value = (),
-                                                 json variableValue = ()) {
+            parser:ArgumentValue|parser:ArgumentValue[] value = (),
+            json variableValue = ()) {
         parser:ArgumentNode previouslyModifiedNode = self.nodeModifierContext.getModifiedArgumentNode(originalNode);
         parser:ArgumentNode newModifiedNode = previouslyModifiedNode.modifyWith(kind = kind, value = value,
                                                                                 variableValue = variableValue);
@@ -677,7 +679,7 @@ class FieldValidatorVisitor {
 }
 
 isolated function createSchemaFieldFromOperation(__Type[] typeArray, parser:OperationNode operationNode,
-                                                 ErrorDetail[] errors, NodeModifierContext nodeModifierContext)
+        ErrorDetail[] errors, NodeModifierContext nodeModifierContext)
 returns __Field? {
     if nodeModifierContext.isNonConfiguredOperation(operationNode) {
         return;
@@ -696,7 +698,7 @@ returns __Field? {
 }
 
 isolated function getRequiredFieldFromType(__Type parentType, __Type[] typeArray,
-                                           parser:FieldNode fieldNode) returns __Field? {
+        parser:FieldNode fieldNode) returns __Field? {
     __Field[] fields = getFieldsArrayFromType(parentType);
     __Field? requiredField = getFieldFromFieldArray(fields, fieldNode.getName());
     if requiredField is () {

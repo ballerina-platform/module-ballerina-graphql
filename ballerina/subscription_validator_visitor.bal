@@ -62,12 +62,13 @@ class SubscriptionValidatorVisitor {
         }
     }
 
-    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {}
+    public isolated function visitArgument(parser:ArgumentNode argumentNode, anydata data = ()) {
+    }
 
     public isolated function addErrorDetail(parser:SelectionNode selection, string operationName) {
         string message = operationName != "<anonymous>"
-                        ? string `Subscription "${operationName}" must select only one top level field.`
-                        : string `Anonymous Subscription must select only one top level field.`;
+            ? string `Subscription "${operationName}" must select only one top level field.`
+            : string `Anonymous Subscription must select only one top level field.`;
         if selection is parser:FragmentNode {
             ErrorDetail errorDetail = getErrorDetailRecord(message, selection.getLocation());
             self.errors.push(errorDetail);
@@ -79,15 +80,17 @@ class SubscriptionValidatorVisitor {
 
     public isolated function addIntrospectionErrorDetail(parser:FieldNode fieldNode, string operationName) {
         string message = operationName != "<anonymous>"
-                        ? string `Subscription "${operationName}" must not select an introspection top level field.`
-                        : string `Anonymous Subscription must not select an introspection top level field.`;
+            ? string `Subscription "${operationName}" must not select an introspection top level field.`
+            : string `Anonymous Subscription must not select an introspection top level field.`;
         ErrorDetail errorDetail = getErrorDetailRecord(message, fieldNode.getLocation());
         self.errors.push(errorDetail);
     }
 
-    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
+    }
 
-    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
+    }
 
     public isolated function getErrors() returns ErrorDetail[]? {
         return self.errors.length() > 0 ? self.errors : ();

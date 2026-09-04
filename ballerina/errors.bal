@@ -32,24 +32,24 @@ public type ClientError distinct error;
 public type RequestError distinct ClientError;
 
 # Represents network level errors.
-public type HttpError distinct (RequestError & error<record {| anydata body; |}>);
+public type HttpError distinct (RequestError & error<record {|anydata body;|}>);
 
 # Represents GraphQL errors due to request validation.
-public type InvalidDocumentError distinct (RequestError & error<record {| ErrorDetail[]? errors; |}>);
+public type InvalidDocumentError distinct (RequestError & error<record {|ErrorDetail[]? errors;|}>);
 
 # Represents client side data binding error. When the binding fails because the GraphQL response
 # carried `errors`, the partial `data` and the `extensions` from the response are preserved in the
 # error detail so the caller can still recover them.
-public type PayloadBindingError distinct (ClientError & error<record {| json? data?; ErrorDetail[]? errors; map<json>? extensions?; |}>);
+public type PayloadBindingError distinct (ClientError & error<record {|json? data?; ErrorDetail[]? errors; map<json>? extensions?;|}>);
 
 # Represents GraphQL API response during GraphQL API server side errors.
 # # Deprecated
 # This error type will be removed along with the `executeWithType()` API
 @deprecated
-public type ServerError distinct (ClientError & error<record {| json? data?; ErrorDetail[] errors; map<json>? extensions?; |}>);
+public type ServerError distinct (ClientError & error<record {|json? data?; ErrorDetail[] errors; map<json>? extensions?;|}>);
 
 # Represents errors occurring while establishing or executing a GraphQL subscription.
-public type SubscriptionError distinct (ClientError & error<record {| ErrorDetail[]? errors; |}>);
+public type SubscriptionError distinct (ClientError & error<record {|ErrorDetail[]? errors;|}>);
 
 // Represents errors related to the termination of a WebSocket subscription connection.
 type ServerSubscriptionError distinct error<record {|int code;|}>;

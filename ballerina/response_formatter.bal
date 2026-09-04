@@ -14,9 +14,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/lang.array;
-
 import graphql.parser;
+
+import ballerina/lang.array;
 
 class ResponseFormatter {
     private final readonly & __Schema schema;
@@ -85,7 +85,7 @@ class ResponseFormatter {
     }
 
     isolated function coerceFragmentValues(Data data, Data result, parser:FragmentNode fragmentNode, __Type parentType,
-                                           string onType) returns Data? {
+            string onType) returns Data? {
         foreach parser:SelectionNode selection in fragmentNode.getSelections() {
             if selection is parser:FragmentNode {
                 Data? fieldResult = self.coerceFragmentValues(data, result, selection, parentType, selection.getOnType());
@@ -172,12 +172,12 @@ class ResponseFormatter {
         } else if fieldName == TYPE_FIELD {
             __Type fieldType = <__Type>getTypeFromTypeArray(self.schema.types, TYPE_TYPE_NAME);
             __Type argumentType = <__Type>getTypeFromTypeArray(self.schema.types, STRING);
-            __Type wrapperType = { kind: NON_NULL, ofType: argumentType };
-            __InputValue[] args = [{ name: NAME_ARGUMENT, 'type: wrapperType }];
+            __Type wrapperType = {kind: NON_NULL, ofType: argumentType};
+            __InputValue[] args = [{name: NAME_ARGUMENT, 'type: wrapperType}];
             return createField(TYPE_FIELD, fieldType, args);
         } else if fieldName == TYPE_NAME_FIELD {
             __Type ofType = <__Type>getTypeFromTypeArray(self.schema.types, STRING);
-            __Type wrappingType = { kind: NON_NULL, ofType: ofType };
+            __Type wrappingType = {kind: NON_NULL, ofType: ofType};
             return createField(TYPE_NAME_FIELD, wrappingType);
         } else {
             if parentType.kind is UNION && onType is string {

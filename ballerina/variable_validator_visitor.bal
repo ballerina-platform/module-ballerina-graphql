@@ -43,7 +43,7 @@ class VariableValidatorVisitor {
     public isolated function visitOperation(parser:OperationNode operationNode, anydata data = ()) {
         self.variableDefinitions = operationNode.getVaribleDefinitions();
         __Field? schemaFieldForOperation = createSchemaFieldFromOperation(self.schema.types, operationNode, self.errors,
-                                                                          self.nodeModifierContext);
+                self.nodeModifierContext);
         self.validateDirectiveVariables(operationNode);
         if schemaFieldForOperation is __Field {
             foreach parser:SelectionNode selection in operationNode.getSelections() {
@@ -143,7 +143,7 @@ class VariableValidatorVisitor {
     }
 
     isolated function validateVariableDefinition(parser:ArgumentNode argumentNode, parser:VariableNode variable,
-                                                 __Type variableType) {
+            __Type variableType) {
         string variableName = <string>argumentNode.getVariableName();
         parser:ArgumentNode? defaultValue = variable.getDefaultValue();
         if self.variables.hasKey(variableName) {
@@ -158,13 +158,13 @@ class VariableValidatorVisitor {
                 self.modifyArgumentNode(argumentNode, containsInvalidValue = true);
             } else {
                 self.setDefaultValueToArgumentNode(argumentNode, getArgumentTypeIdentifierFromType(variableType),
-                                                   defaultValue.getValue(), defaultValue.getValueLocation());
+                                                    defaultValue.getValue(), defaultValue.getValueLocation());
             }
         } else {
             parser:Location location = argumentNode.getLocation();
             if variableType.kind == NON_NULL {
-                string message = string `Variable "$${variableName}" of required type ${variable.getTypeName()} was `+
-                                 string `not provided.`;
+                string message = string `Variable "$${variableName}" of required type ${variable.getTypeName()} was ` +
+                                string `not provided.`;
                 self.errors.push(getErrorDetailRecord(message, location));
                 self.modifyArgumentNode(argumentNode, containsInvalidValue = true);
             } else {
@@ -216,13 +216,13 @@ class VariableValidatorVisitor {
     }
 
     isolated function setDefaultValueToArgumentNode(parser:ArgumentNode argumentNode, parser:ArgumentType kind,
-                                                    parser:ArgumentValue|parser:ArgumentValue[] defaultValue,
-                                                    parser:Location valueLocation) {
+            parser:ArgumentValue|parser:ArgumentValue[] defaultValue,
+            parser:Location valueLocation) {
         self.modifyArgumentNode(argumentNode, kind = kind, value = defaultValue, valueLocation = valueLocation, isVarDef = false);
     }
 
     isolated function setArgumentValue(json value, parser:ArgumentNode argument, string variableTypeName,
-                                       __Type variableType) {
+            __Type variableType) {
         parser:ArgumentNode modifiedArgNode = self.nodeModifierContext.getModifiedArgumentNode(argument);
         if getOfType(variableType).name == UPLOAD {
             return;
@@ -236,24 +236,24 @@ class VariableValidatorVisitor {
         } else if value is () && variableType.kind != NON_NULL {
             self.modifyArgumentNode(argument, variableValue = value);
         } else {
-            string invalidValue = value is () ? "null": value.toString();
-            string message = string `Variable ${<string> modifiedArgNode.getVariableName()} expected value of type ` +
-                             string `"${variableTypeName}", found ${invalidValue}`;
+            string invalidValue = value is () ? "null" : value.toString();
+            string message = string `Variable ${<string>modifiedArgNode.getVariableName()} expected value of type ` +
+                            string `"${variableTypeName}", found ${invalidValue}`;
             self.errors.push(getErrorDetailRecord(message, modifiedArgNode.getLocation()));
             self.modifyArgumentNode(argument, containsInvalidValue = true);
         }
     }
 
     isolated function checkVariableUsageCompatibility(__Type varType, __InputValue[] inputValues,
-                                                      parser:VariableNode variable,
-                                                      parser:ArgumentNode argNode) {
+            parser:VariableNode variable,
+            parser:ArgumentNode argNode) {
         parser:ArgumentNode modifiedArgNode = self.nodeModifierContext.getModifiedArgumentNode(argNode);
         __InputValue? inputValue = getInputValueFromArray(inputValues, modifiedArgNode.getName());
         if inputValue is __InputValue {
             if !self.isVariableUsageAllowed(varType, variable, inputValue) {
-                string message = string `Variable "${<string>modifiedArgNode.getVariableName()}" of type `+
-                                 string `"${variable.getTypeName()}" used in position expecting type `+
-                                 string `"${getTypeNameFromType(inputValue.'type)}".`;
+                string message = string `Variable "${<string>modifiedArgNode.getVariableName()}" of type ` +
+                                string `"${variable.getTypeName()}" used in position expecting type ` +
+                                string `"${getTypeNameFromType(inputValue.'type)}".`;
                 self.errors.push(getErrorDetailRecord(message, modifiedArgNode.getLocation()));
                 self.modifyArgumentNode(argNode, containsInvalidValue = true);
             }
@@ -261,7 +261,7 @@ class VariableValidatorVisitor {
     }
 
     isolated function isVariableUsageAllowed(__Type varType, parser:VariableNode variable,
-                                             __InputValue inputValue) returns boolean {
+            __InputValue inputValue) returns boolean {
         if inputValue.'type.kind == NON_NULL && varType.kind != NON_NULL {
             if inputValue?.defaultValue is () && variable.getDefaultValue() is () {
                 return false;
@@ -355,18 +355,20 @@ class VariableValidatorVisitor {
         _ = self.argumentPath.pop();
     }
 
-    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {}
+    public isolated function visitDirective(parser:DirectiveNode directiveNode, anydata data = ()) {
+    }
 
-    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
+    }
 
     public isolated function getErrors() returns ErrorDetail[]? {
         return self.errors.length() > 0 ? self.errors : ();
     }
 
     private isolated function modifyArgumentNode(parser:ArgumentNode originalNode, parser:ArgumentType? kind = (),
-                                                parser:ArgumentValue|parser:ArgumentValue[] value = (),
-                                                Location? valueLocation = (), boolean? isVarDef = (),
-                                                json variableValue = (), boolean? containsInvalidValue = ()) {
+            parser:ArgumentValue|parser:ArgumentValue[] value = (),
+            Location? valueLocation = (), boolean? isVarDef = (),
+            json variableValue = (), boolean? containsInvalidValue = ()) {
         parser:ArgumentNode previouslyModifiedNode = self.nodeModifierContext.getModifiedArgumentNode(originalNode);
         parser:ArgumentNode newModifiedNode = previouslyModifiedNode.modifyWith(kind, value, valueLocation, isVarDef,
                                                                                 variableValue, containsInvalidValue);

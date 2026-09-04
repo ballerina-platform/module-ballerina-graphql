@@ -14,8 +14,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/test;
 import graphql.parser;
+
+import ballerina/test;
 
 @test:Config {
     groups: ["variables", "input"],
@@ -35,16 +36,16 @@ function testVariableValidation(string resourceFileName, map<json>? vars) return
 
 function dataProviderVariableValidation() returns map<[string, map<json>?]> {
     map<[string, map<json>?]> dataSet = {
-        "1": ["undefined_input_variables", { userName:"Thisaru" }],
-        "2": ["unused_input_variables", { userName:"Thisaru" }],
-        "3": ["input_variables_with_invalid_argument_type", { userName: 4 }],
-        "4": ["input_variables_with_empty_input_object_value", { userName: {} }],
-        "5": ["fragments_with_undefined_variables", { profileId: 1 }],
-        "6": ["fragments_with_unused_variables", { profileId: 1 }],
+        "1": ["undefined_input_variables", {userName: "Thisaru"}],
+        "2": ["unused_input_variables", {userName: "Thisaru"}],
+        "3": ["input_variables_with_invalid_argument_type", {userName: 4}],
+        "4": ["input_variables_with_empty_input_object_value", {userName: {}}],
+        "5": ["fragments_with_undefined_variables", {profileId: 1}],
+        "6": ["fragments_with_unused_variables", {profileId: 1}],
         "7": ["variables_with_missing_required_argument", {}],
-        "8": ["invalid_usage_of_nullable_variable", { weight: 1 }],
-        "9": ["variables_with_invalid_type", { userName: 4 }],
-        "10": ["variables_with_unknown_type", { userName: 4 }],
+        "8": ["invalid_usage_of_nullable_variable", {weight: 1}],
+        "9": ["variables_with_invalid_type", {userName: 4}],
+        "10": ["variables_with_unknown_type", {userName: 4}],
         "11": ["variable_with_invalid_default_value1", {}],
         "12": ["variable_with_invalid_default_value2", {}],
         "13": ["variable_with_invalid_default_value3", {}],

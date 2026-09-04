@@ -17,27 +17,27 @@
 import ballerina/jballerina.java;
 
 isolated function getUnexpectedTokenError(Token token) returns InvalidTokenError {
-    string message = string`Syntax Error: Unexpected ${getErrorMessageTypeNameForError(token)}.`;
+    string message = string `Syntax Error: Unexpected ${getErrorMessageTypeNameForError(token)}.`;
     Location l = token.location;
     return error InvalidTokenError(message, line = l.line, column = l.column);
 }
 
 isolated function getExpectedNameError(Token token) returns InvalidTokenError {
-    string message = string`Syntax Error: Expected Name, found ${getErrorMessageTypeNameForError(token)}.`;
+    string message = string `Syntax Error: Expected Name, found ${getErrorMessageTypeNameForError(token)}.`;
     Location l = token.location;
     return error InvalidTokenError(message, line = l.line, column = l.column);
 }
 
 isolated function getExpectedCharError(Token token, string char) returns InvalidTokenError {
-    string message = string`Syntax Error: Expected "${char}", found ${getErrorMessageTypeNameForError(token)}.`;
+    string message = string `Syntax Error: Expected "${char}", found ${getErrorMessageTypeNameForError(token)}.`;
     Location l = token.location;
     return error InvalidTokenError(message, line = l.line, column = l.column);
 }
 
 isolated function getDuplicateFieldError(Token token) returns InvalidTokenError {
     Scalar value = token.value;
-    string message = string`Syntax Error: Duplicate input object field "${value}", ` +
-    string`found ${getErrorMessageTypeNameForError(token)}.`;
+    string message = string `Syntax Error: Duplicate input object field "${value}", ` +
+    string `found ${getErrorMessageTypeNameForError(token)}.`;
     Location l = token.location;
     return error InvalidTokenError(message, line = l.line, column = l.column);
 }

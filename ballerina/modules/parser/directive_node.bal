@@ -23,7 +23,7 @@ public readonly class DirectiveNode {
     private DirectiveLocation directiveLocation;
 
     public isolated function init(string name, Location location, DirectiveLocation directiveLocation,
-                                  ArgumentNode[] argumentNodes = []) {
+            ArgumentNode[] argumentNodes = []) {
         self.name = name;
         self.location = location.cloneReadOnly();
         self.argumentNodes = argumentNodes.cloneReadOnly();

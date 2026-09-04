@@ -56,8 +56,8 @@ public type OAuth2IntrospectionConfig record {|
 # + fileUserStoreConfig - File user store configurations for Basic Auth authentication
 # + scopes - Scopes allowed for authorization
 public type FileUserStoreConfigWithScopes record {|
-   FileUserStoreConfig fileUserStoreConfig;
-   string|string[] scopes?;
+    FileUserStoreConfig fileUserStoreConfig;
+    string|string[] scopes?;
 |};
 
 # Represents the auth annotation for LDAP user store configurations with scopes.
@@ -65,8 +65,8 @@ public type FileUserStoreConfigWithScopes record {|
 # + ldapUserStoreConfig - LDAP user store configurations for Basic Auth authentication
 # + scopes - Scopes allowed for authorization
 public type LdapUserStoreConfigWithScopes record {|
-   LdapUserStoreConfig ldapUserStoreConfig;
-   string|string[] scopes?;
+    LdapUserStoreConfig ldapUserStoreConfig;
+    string|string[] scopes?;
 |};
 
 # Represents the auth annotation for JWT validator configurations with scopes.
@@ -74,8 +74,8 @@ public type LdapUserStoreConfigWithScopes record {|
 # + jwtValidatorConfig - JWT validator configurations for JWT authentication
 # + scopes - Scopes allowed for authorization
 public type JwtValidatorConfigWithScopes record {|
-   JwtValidatorConfig jwtValidatorConfig;
-   string|string[] scopes?;
+    JwtValidatorConfig jwtValidatorConfig;
+    string|string[] scopes?;
 |};
 
 # Represents the auth annotation for OAuth2 introspection server configurations with scopes.
@@ -83,19 +83,19 @@ public type JwtValidatorConfigWithScopes record {|
 # + oauth2IntrospectionConfig - OAuth2 introspection server configurations for OAuth2 authentication
 # + scopes - Scopes allowed for authorization
 public type OAuth2IntrospectionConfigWithScopes record {|
-   OAuth2IntrospectionConfig oauth2IntrospectionConfig;
-   string|string[] scopes?;
+    OAuth2IntrospectionConfig oauth2IntrospectionConfig;
+    string|string[] scopes?;
 |};
 
 # Defines the authentication configurations for the GraphQL listener.
 public type ListenerAuthConfig FileUserStoreConfigWithScopes|
-                               LdapUserStoreConfigWithScopes|
-                               JwtValidatorConfigWithScopes|
-                               OAuth2IntrospectionConfigWithScopes;
+                                LdapUserStoreConfigWithScopes|
+                                JwtValidatorConfigWithScopes|
+                                OAuth2IntrospectionConfigWithScopes;
 
 // Defines the listener authentication handlers.
 type ListenerAuthHandler http:ListenerFileUserStoreBasicAuthHandler|http:ListenerLdapUserStoreBasicAuthHandler|
-                         http:ListenerJwtAuthHandler|http:ListenerOAuth2Handler;
+                        http:ListenerJwtAuthHandler|http:ListenerOAuth2Handler;
 
 # Represents credentials for Basic Auth authentication.
 public type CredentialsConfig record {|
@@ -137,4 +137,4 @@ public type ClientAuthConfig CredentialsConfig|BearerTokenConfig|JwtIssuerConfig
 
 # Represents OAuth2 grant configurations for OAuth2 authentication.
 public type OAuth2GrantConfig OAuth2ClientCredentialsGrantConfig|OAuth2PasswordGrantConfig|
-                              OAuth2RefreshTokenGrantConfig|OAuth2JwtBearerGrantConfig;
+                            OAuth2RefreshTokenGrantConfig|OAuth2JwtBearerGrantConfig;

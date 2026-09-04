@@ -25,7 +25,7 @@ public readonly class FieldNode {
     private DirectiveNode[] directives;
 
     public isolated function init(string name, Location location, string alias, ArgumentNode[] arguments = [],
-                                  SelectionNode[] selections = [], DirectiveNode[] directives = []) {
+            SelectionNode[] selections = [], DirectiveNode[] directives = []) {
         self.name = name;
         self.alias = alias;
         self.location = location.cloneReadOnly();
@@ -63,7 +63,7 @@ public readonly class FieldNode {
     }
 
     public isolated function modifyWith(ArgumentNode[] arguments, SelectionNode[] selections,
-                                        DirectiveNode[] directives) returns FieldNode {
+            DirectiveNode[] directives) returns FieldNode {
         return new (self.name, self.location, self.alias, arguments, selections, directives);
     }
 

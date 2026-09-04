@@ -118,7 +118,7 @@ public class Lexer {
         }
         string message = "Syntax Error: Unterminated string.";
         return error UnterminatedStringError(message, line = self.currentLocation.line,
-                                             column = self.currentLocation.column);
+                                            column = self.currentLocation.column);
     }
 
     isolated function readBlockStringLiteral() returns Token|SyntaxError {
@@ -155,7 +155,7 @@ public class Lexer {
         if currentChar is () {
             string message = "Syntax Error: Unterminated string.";
             return error UnterminatedStringError(message, line = self.currentLocation.line,
-                                                 column = self.currentLocation.column);
+                                                column = self.currentLocation.column);
         }
         return getToken(self.getBlockStringValue(lines), T_STRING, location);
     }
@@ -261,7 +261,7 @@ public class Lexer {
             } else {
                 string message = string `Syntax Error: Invalid number, expected digit but got: "${value}".`;
                 return error InvalidTokenError(message, line = self.currentLocation.line,
-                                               column = self.currentLocation.column);
+                                                column = self.currentLocation.column);
             }
             _ = self.readNextChar();
             value = self.charReader.peek();
@@ -299,11 +299,11 @@ public class Lexer {
             } else if c is () {
                 string message = string `Syntax Error: Cannot parse the unexpected character "${EOF}".`;
                 return error InvalidTokenError(message, line = self.currentLocation.line,
-                                               column = self.currentLocation.column);
+                                                column = self.currentLocation.column);
             } else { // TODO: We don't need this else block. Added due to https://github.com/ballerina-platform/ballerina-lang/issues/39914
                 string message = string `Syntax Error: Cannot parse the unexpected character "${c}".`;
                 return error InvalidTokenError(message, line = self.currentLocation.line,
-                                               column = self.currentLocation.column);
+                                                column = self.currentLocation.column);
             }
         }
         return getToken(ELLIPSIS, T_ELLIPSIS, location);

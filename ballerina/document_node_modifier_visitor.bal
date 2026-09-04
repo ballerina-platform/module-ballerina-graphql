@@ -51,7 +51,7 @@ class DocumentNodeModifierVisitor {
             selections.push(modifiedSelectionNode);
         }
         parser:OperationNode modifiedOperationNode = operationNode.modifyWith(operationNode.getVaribleDefinitions(),
-                                                                              selections, directives);
+                                                                            selections, directives);
         self.addModifiedNode(operationNode, modifiedOperationNode);
     }
 
@@ -130,7 +130,8 @@ class DocumentNodeModifierVisitor {
         self.addModifiedNode(directiveNode, modifiedDirectiveNode);
     }
 
-    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {}
+    public isolated function visitVariable(parser:VariableNode variableNode, anydata data = ()) {
+    }
 
     public isolated function getDocumentNode() returns parser:DocumentNode {
         return <parser:DocumentNode>self.document;

@@ -14,8 +14,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/test;
 import graphql.parser;
+
+import ballerina/test;
 
 @test:Config {
     groups: ["inputs", "validation"],
