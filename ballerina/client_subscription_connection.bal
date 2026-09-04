@@ -134,6 +134,9 @@ isolated class SubscriptionConnection {
             ...config.websocketConfig,
             subProtocols: [GRAPHQL_TRANSPORT_WS]
         };
+        if wsClientConfig.readTimeout == -1d {
+            wsClientConfig.readTimeout = DEFAULT_IDLE_READ_TIMEOUT;
+        }
         self.storeWebSocketClientConfig(wsClientConfig);
     }
 
@@ -283,6 +286,10 @@ isolated class SubscriptionConnection {
         boolean ackReceived = false;
         while !ackReceived {
             json|websocket:Error message = wsClient->readMessage();
+            if message is websocket:ReadTimedOutError {
+                // Idle read timeout, not a connection failure: retry the read.
+                continue;
+            }
             if message is websocket:Error {
                 ackQueue.enqueue(error SubscriptionError(
                         string `Failed to establish the subscription connection: ${message.message()}`,
@@ -318,6 +325,10 @@ isolated class SubscriptionConnection {
         }
         while true {
             json|websocket:Error message = wsClient->readMessage();
+            if message is websocket:ReadTimedOutError {
+                // Idle read timeout, not a connection failure: retry the read.
+                continue;
+            }
             if message is websocket:Error {
                 if keepAliveMonitor is KeepAliveMonitor {
                     keepAliveMonitor.stop();

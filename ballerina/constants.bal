@@ -105,6 +105,11 @@ const int KEEPALIVE_MAX_MISSED_PROBES = 3;
 // torn down regardless, so close() must not block on (or fail because of) a missing echo.
 const decimal GRACEFUL_CLOSE_TIMEOUT = 5;
 
+// Default idle-read timeout applied when the user has not configured `websocketConfig.readTimeout`.
+// Bounds `readMessage()` so a connection that goes silent without a close frame is periodically
+// re-checked instead of blocking forever; a `ReadTimedOutError` is treated as a retry, not a failure.
+const decimal DEFAULT_IDLE_READ_TIMEOUT = 30;
+
 // Constants used in the executor visitor
 const OPERATION_TYPE = "operationType";
 const PATH = "path";
