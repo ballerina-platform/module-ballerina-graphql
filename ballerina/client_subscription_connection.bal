@@ -287,6 +287,14 @@ isolated class SubscriptionConnection {
         while !ackReceived {
             json|websocket:Error message = wsClient->readMessage();
             if message is websocket:ReadTimedOutError {
+                if self.isClosed() {
+                    // The client was closed while the handshake was still in flight; this raw
+                    // `wsClient` isn't reachable from `close()` yet (it's only stored on success),
+                    // so close it here rather than retrying forever.
+                    closeWebSocketClient(wsClient);
+                    ackQueue.enqueue(error SubscriptionError(CLIENT_ALREADY_CLOSED_MESSAGE, errors = ()));
+                    return;
+                }
                 // Idle read timeout, not a connection failure: retry the read.
                 continue;
             }
@@ -326,6 +334,13 @@ isolated class SubscriptionConnection {
         while true {
             json|websocket:Error message = wsClient->readMessage();
             if message is websocket:ReadTimedOutError {
+                if self.isClosed() || self.loadWsClient() !== wsClient {
+                    // The connection was closed (or already replaced by a reconnect) while this
+                    // read was blocked; stop retrying on the now-dead socket instead of looping
+                    // forever, since `close()`/reconnection don't reliably surface as a
+                    // `websocket:Error` on a concurrently-blocked `readMessage()`.
+                    return;
+                }
                 // Idle read timeout, not a connection failure: retry the read.
                 continue;
             }
