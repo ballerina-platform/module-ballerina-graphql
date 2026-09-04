@@ -252,6 +252,8 @@ ws://<host>:4000/graphql
 
 This can be accessed using a WebSocket client. When the returned stream has a new entry, it will be broadcast to the subscribers.
 
+The server transparently manages the `graphql-transport-ws` keep-alive: it periodically pings each subscribed client and closes a connection that stops responding. The keep-alive cadence is configurable through the `keepAlive` field of `@graphql:ServiceConfig`.
+
 ## Types
 
 The Ballerina GraphQL resolver (`resource`/`remote`) methods can return the following types:
@@ -840,6 +842,50 @@ type name {
 > **Note:** The field name and the type names are equal.
 
 Refer to the [Ballerina GraphQL specification](https://ballerina.io/spec/graphql) for more information.
+
+## Client
+
+The `graphql:Client` is used to consume GraphQL APIs. It provides a dedicated remote method per GraphQL operation type: `query()`, `mutate()`, and `subscribe()`.
+
+```ballerina
+graphql:Client graphqlClient = check new ("http://localhost:9090/graphql");
+```
+
+### Executing queries and mutations
+
+The `query()` and `mutate()` methods send a GraphQL document over HTTP and data-bind the response to the expected type.
+
+```ballerina
+type CountryResponse record {|
+    record {| record {| string name; |} country; |} data;
+|};
+
+CountryResponse response = check graphqlClient->query("{ country(code: \"LK\") { name } }");
+```
+
+### Subscriptions
+
+The `subscribe()` method opens a WebSocket connection using the `graphql-transport-ws` protocol and returns a stream of events, each data-bound to the expected type. Closing the stream unsubscribes from that operation, while the `close()` method of the client terminates the connection and every active subscription.
+
+```ballerina
+stream<CountryResponse, graphql:ClientError?> events =
+    check graphqlClient->subscribe("subscription { countryAdded { name } }");
+```
+
+The client transparently manages the `graphql-transport-ws` keep-alive: it responds to the server's `ping` messages and also periodically pings the server to detect a silently dropped connection. Automatic reconnection and the keep-alive cadence are configurable through the `subscription` field of the `graphql:ClientConfiguration`.
+
+### Client-side validation and errors
+
+Because each operation type has a dedicated method, the client validates that the operation in the document matches the invoked method. Executing a mismatched document (for example, passing a mutation document to `query()`) returns a `graphql:InvalidDocumentError` **without sending the request**.
+
+All client methods return a `graphql:ClientError` on failure. The notable subtypes are:
+
+- `graphql:RequestError` - a client-side or network-level failure, including `graphql:HttpError`.
+- `graphql:InvalidDocumentError` - the document is invalid or does not match the invoked method.
+- `graphql:PayloadBindingError` - the response could not be bound to the expected type. When the response carried `errors`, the partial `data` and `extensions` are preserved in the error detail.
+- `graphql:SubscriptionError` - a failure while establishing or running a subscription.
+
+For the complete client documentation, refer to the [Ballerina GraphQL specification](https://ballerina.io/spec/graphql).
 
 ## Issues and projects
 

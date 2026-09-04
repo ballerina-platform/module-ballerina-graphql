@@ -40,6 +40,9 @@ scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
+modules = [
+	{org = "ballerina", packageName = "constraint", moduleName = "constraint"}
+]
 
 [[package]]
 org = "ballerina"
@@ -108,19 +111,25 @@ modules = [
 
 [[package]]
 org = "ballerina"
-name = "graphql_client_test_suite"
+name = "graphql_subscription_test_suite"
 version = "1.18.0"
 dependencies = [
+	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "graphql"},
 	{org = "ballerina", name = "graphql_test_common"},
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "lang.runtime"},
 	{org = "ballerina", name = "test"},
-	{org = "ballerina", name = "time"},
 	{org = "ballerina", name = "websocket"}
 ]
 modules = [
-	{org = "ballerina", packageName = "graphql_client_test_suite", moduleName = "graphql_client_test_suite"}
+	{org = "ballerina", packageName = "graphql_subscription_test_suite", moduleName = "graphql_subscription_test_suite"},
+	{org = "ballerina", packageName = "graphql_subscription_test_suite", moduleName = "graphql_subscription_test_suite.five"},
+	{org = "ballerina", packageName = "graphql_subscription_test_suite", moduleName = "graphql_subscription_test_suite.four"},
+	{org = "ballerina", packageName = "graphql_subscription_test_suite", moduleName = "graphql_subscription_test_suite.one"},
+	{org = "ballerina", packageName = "graphql_subscription_test_suite", moduleName = "graphql_subscription_test_suite.six"},
+	{org = "ballerina", packageName = "graphql_subscription_test_suite", moduleName = "graphql_subscription_test_suite.three"},
+	{org = "ballerina", packageName = "graphql_subscription_test_suite", moduleName = "graphql_subscription_test_suite.two"}
 ]
 
 [[package]]
@@ -143,7 +152,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.16.7"
+version = "2.16.6"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "auth"},
@@ -390,9 +399,6 @@ version = "2.8.1"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
-]
-modules = [
-	{org = "ballerina", packageName = "time", moduleName = "time"}
 ]
 
 [[package]]

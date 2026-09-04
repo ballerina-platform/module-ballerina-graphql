@@ -26,13 +26,19 @@ isolated service class WsService {
     private final Context context;
     private final map<SubscriptionHandler> activeConnections = {};
     private boolean initiatedConnection = false;
-    private PingMessageJob? pingMessageHandler = ();
-    private PongMessageHandlerJob? pongMessageHandler = ();
+    private final readonly & ServerKeepAliveConfig keepAliveConfig;
+    private final MessageQueue keepAliveSignalQueue;
+    // Created once `onConnectionInit` starts the keep-alive loop (if enabled); `onPongMessage` and
+    // `onClose` reach it through `loadKeepAliveMonitor()` to report a pong or a stop.
+    private KeepAliveMonitor? keepAliveMonitor = ();
 
-    isolated function init(Engine engine, __Schema & readonly schema, Context context) {
+    isolated function init(Engine engine, __Schema & readonly schema, Context context,
+            readonly & ServerKeepAliveConfig keepAliveConfig) {
         self.engine = engine;
         self.schema = schema;
         self.context = context;
+        self.keepAliveConfig = keepAliveConfig;
+        self.keepAliveSignalQueue = new;
     }
 
     isolated remote function onIdleTimeout() returns ConnectionInitialisationTimeout? {
@@ -48,6 +54,9 @@ isolated service class WsService {
         dispatcherValue: "ping"
     }
     isolated remote function onPingMessage(Ping ping) returns Pong {
+        // A `ping` initiated by the client is answered with a `pong` (required by the protocol),
+        // but it is not itself a response to this server's own keep-alive probe, so it does not
+        // reset the missed-probe counter -- only an actual `pong` does (see `onPongMessage`).
         return {'type: WS_PONG};
     }
 
@@ -55,11 +64,10 @@ isolated service class WsService {
         dispatcherValue: "pong"
     }
     isolated remote function onPongMessage(Pong pong) {
-        lock {
-            PongMessageHandlerJob? handler = self.pongMessageHandler;
-            if handler !is () {
-                handler.setPongMessageReceived();
-            }
+        KeepAliveMonitor? monitor = self.loadKeepAliveMonitor();
+        if monitor is KeepAliveMonitor {
+            monitor.markPongReceived();
+            self.keepAliveSignalQueue.enqueue(());
         }
     }
 
@@ -80,8 +88,15 @@ isolated service class WsService {
             }
             self.initiatedConnection = true;
         }
-        self.startSendingPingMessages(caller);
-        self.schedulePongMessageHandler(caller);
+        if self.keepAliveConfig.enabled {
+            // `runKeepAliveLoop` (in `keep_alive.bal`) is shared with the client's keep-alive; only
+            // the `ServerKeepAlivePeer` adapter below is specific to this side.
+            KeepAliveMonitor monitor = new;
+            self.storeKeepAliveMonitor(monitor);
+            ServerKeepAlivePeer peer = new (caller);
+            _ = start runKeepAliveLoop(monitor, self.keepAliveSignalQueue, self.keepAliveConfig.pingInterval,
+                    self.keepAliveConfig.pongTimeout, peer);
+        }
         return {'type: WS_ACK};
     }
 
@@ -111,28 +126,33 @@ isolated service class WsService {
     }
 
     remote function onClose(websocket:Caller caller) {
-        self.unschedulePingPongHandlers();
-    }
-
-    private isolated function startSendingPingMessages(websocket:Caller caller) {
+        KeepAliveMonitor? monitor = self.loadKeepAliveMonitor();
+        if monitor is KeepAliveMonitor {
+            monitor.stop();
+            self.keepAliveSignalQueue.enqueue(());
+        }
+        // Without this, a subscription whose resolver is mid-call when the connection closes (e.g.
+        // blocked producing the next value) keeps calling that resolver forever: onComplete is the
+        // only other place a handler is marked unsubscribed, and it never fires for a connection that
+        // closes out from under an active subscription (idle timeout, keep-alive teardown, abrupt
+        // client disconnect).
         lock {
-            if self.pingMessageHandler !is () || !self.initiatedConnection {
-                return;
+            foreach SubscriptionHandler handler in self.activeConnections {
+                handler.setUnsubscribed();
             }
-            PingMessageJob job = new PingMessageJob(caller);
-            job.schedule();
-            self.pingMessageHandler = job;
+            self.activeConnections.removeAll();
         }
     }
 
-    private isolated function schedulePongMessageHandler(websocket:Caller caller) {
+    isolated function storeKeepAliveMonitor(KeepAliveMonitor monitor) {
         lock {
-            if !self.initiatedConnection || self.pongMessageHandler is PongMessageHandlerJob {
-                return;
-            }
-            PongMessageHandlerJob handler = new (caller);
-            handler.schedule();
-            self.pongMessageHandler = handler;
+            self.keepAliveMonitor = monitor;
+        }
+    }
+
+    isolated function loadKeepAliveMonitor() returns KeepAliveMonitor? {
+        lock {
+            return self.keepAliveMonitor;
         }
     }
 
@@ -150,23 +170,34 @@ isolated service class WsService {
         }
         return handler;
     }
+}
 
-    private isolated function unschedulePingPongHandlers() {
-        lock {
-            PingMessageJob? pingMessageHandler = self.pingMessageHandler;
-            PongMessageHandlerJob? pongMessageHandler = self.pongMessageHandler;
-            if pingMessageHandler is PingMessageJob {
-                error? err = pingMessageHandler.unschedule();
-                if err is error {
-                    logError(err.message(), err);
-                }
-            }
-            if pongMessageHandler is PongMessageHandlerJob {
-                error? err = pongMessageHandler.unschedule();
-                if err is error {
-                    logError(err.message(), err);
-                }
-            }
-        }
+// Adapts a WebSocket caller to `KeepAlivePeer` (`keep_alive.bal`) so the server's keep-alive loop
+// can share `runKeepAliveLoop` with the client's (`client_subscription_connection.bal`'s
+// `ClientKeepAlivePeer`).
+isolated class ServerKeepAlivePeer {
+    *KeepAlivePeer;
+
+    private final websocket:Caller caller;
+
+    isolated function init(websocket:Caller caller) {
+        self.caller = caller;
+    }
+
+    isolated function sendPing() returns boolean {
+        Ping pingMessage = {'type: WS_PING};
+        websocket:Error? result = writeMessage(self.caller, pingMessage);
+        return result is ();
+    }
+
+    isolated function onKeepAliveTimeout() {
+        ServerSubscriptionError err = error("Request timeout", code = 4408);
+        closeConnection(self.caller, err);
+    }
+
+    isolated function isExternallyStopped() returns boolean {
+        // WsService.onClose() calls stop() on this connection's one keep-alive monitor directly,
+        // so there is no additional stop condition to report here.
+        return false;
     }
 }

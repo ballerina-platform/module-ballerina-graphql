@@ -14,10 +14,29 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/graphql;
 import ballerina/graphql_test_common as common;
 import ballerina/test;
 import ballerina/websocket;
 
+const string SUBSCRIPTION_URL = "http://localhost:9091/subscriptions";
+const string REVIEWS_URL = "http://localhost:9092/reviews";
+
+type MessagesResponse record {|
+    record {| int messages; |} data;
+|};
+
+type LiveResponse record {|
+    record {| record {| record {| string id; |} product; int score; |} live; |} data;
+|};
+
+type AccountUpdatesResponse record {|
+    record {| record {| record {| string name; |} details; |} accountUpdates; |} data;
+|};
+
+// A raw `websocket:Client` smoke test: reusing a subscriber id triggers a `4409` connection
+// closure, a transport-level protocol edge the GraphQL client (which rejects duplicate ids
+// locally with a `SubscriptionError`) cannot exercise against the server.
 @test:Config {
     groups: ["subscriptions"]
 }
@@ -50,6 +69,8 @@ function testAlreadyExistingSubscriber() returns error? {
     test:assertEquals((<error>response).message(), expectedErrorMsg);
 }
 
+// A raw `websocket:Client` smoke test: the protocol-level ping/pong handshake is not surfaced
+// through the GraphQL client API.
 @test:Config {
     groups: ["subscriptions"]
 }
@@ -60,8 +81,12 @@ isolated function testOnPing() returns error? {
     check wsClient->writeMessage({'type: common:WS_PING});
     json response = check wsClient->readMessage();
     test:assertEquals(response.'type, common:WS_PONG);
+    check wsClient->close();
 }
 
+// A raw `websocket:Client` smoke test: the GraphQL client always negotiates the
+// `graphql-transport-ws` subprotocol, so a mismatched subprotocol handshake can only be
+// exercised directly.
 @test:Config {
     groups: ["subscriptions"]
 }
@@ -80,18 +105,23 @@ isolated function testInvalidSubProtocolInSubscriptions() returns error? {
 }
 isolated function testErrorsInStreams() returns error? {
     string document = "subscription { evenNumber }";
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient);
-    check common:sendSubscriptionMessage(wsClient, document);
-
-    json expectedMsgPayload = {data: {evenNumber: 2}};
-    check common:validateNextMessage(wsClient, expectedMsgPayload);
-    expectedMsgPayload = check common:getJsonContentFromFile("errors_in_streams");
-    check common:validateNextMessage(wsClient, expectedMsgPayload);
-    expectedMsgPayload = {data: {evenNumber: 6}};
-    check common:validateNextMessage(wsClient, expectedMsgPayload);
+    graphql:Client graphqlClient = check new (SUBSCRIPTION_URL);
+    // A mid-stream runtime error arrives as a `next` message carrying `{data: null, errors: [...]}`,
+    // disjoint from the regular `{data: {evenNumber: ...}}` events, so the stream is bound to the
+    // generic open record rather than a fixed shape.
+    stream<record {}, graphql:ClientError?> evenNumbers = check graphqlClient->subscribe(document);
+    record {}[] received = [];
+    check from record {} response in evenNumbers
+        do {
+            received.push(response);
+        };
+    json errorsInStream = check common:getJsonContentFromFile("errors_in_streams");
+    test:assertEquals(received, <json[]>[
+        {data: {evenNumber: 2}},
+        errorsInStream,
+        {data: {evenNumber: 6}}
+    ]);
+    check graphqlClient->close();
 }
 
 @test:Config {
@@ -99,26 +129,31 @@ isolated function testErrorsInStreams() returns error? {
 }
 isolated function testMultipleSubscriptionUsingSingleClient() returns error? {
     string document = string `subscription { messages }`;
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient);
+    graphql:Client graphqlClient = check new (SUBSCRIPTION_URL);
 
-    check common:sendSubscriptionMessage(wsClient, document, "1");
-    foreach int i in 1 ..< 6 {
-        json expectedMsgPayload = {data: {messages: i}};
-        check common:validateNextMessage(wsClient, expectedMsgPayload, id = "1");
-    }
-    check common:validateCompleteMessage(wsClient, id = "1");
+    stream<MessagesResponse, graphql:ClientError?> first = check graphqlClient->subscribe(document, id = "1");
+    int expected = 1;
+    check from MessagesResponse response in first
+        do {
+            test:assertEquals(response.data.messages, expected);
+            expected += 1;
+        };
+    test:assertEquals(expected, 6, "Expected 5 events from the first subscription");
 
-    check common:sendSubscriptionMessage(wsClient, document, "2");
-    foreach int i in 1 ..< 6 {
-        json expectedMsgPayload = {data: {messages: i}};
-        check common:validateNextMessage(wsClient, expectedMsgPayload, id = "2");
-    }
-    check common:validateCompleteMessage(wsClient, id = "2");
+    stream<MessagesResponse, graphql:ClientError?> second = check graphqlClient->subscribe(document, id = "2");
+    expected = 1;
+    check from MessagesResponse response in second
+        do {
+            test:assertEquals(response.data.messages, expected);
+            expected += 1;
+        };
+    test:assertEquals(expected, 6, "Expected 5 events from the second subscription");
+    check graphqlClient->close();
 }
 
+// A raw `websocket:Client` smoke test: sending a message that violates the
+// `graphql-transport-ws` format triggers a `1003` connection closure, an invalid-message-format
+// transport edge the GraphQL client cannot produce.
 @test:Config {
     groups: ["subscriptions"]
 }
@@ -140,14 +175,14 @@ isolated function testSubscriptionWithInvalidPayload() returns error? {
 }
 isolated function testResolverReturingStreamOfRecordsWithServiceObjects() returns error? {
     string document = "subscription { live { product { id } score } }";
-    string url = "ws://localhost:9092/reviews";
-    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient);
-    check common:sendSubscriptionMessage(wsClient, document);
-
-    json expectedPayload = {data: {live: {product: {id: "1"}, score: 20}}};
-    check common:validateNextMessage(wsClient, expectedPayload);
+    graphql:Client graphqlClient = check new (REVIEWS_URL);
+    stream<LiveResponse, graphql:ClientError?> live = check graphqlClient->subscribe(document);
+    record {|LiveResponse value;|}|graphql:ClientError? event = live.next();
+    test:assertTrue(event is record {|LiveResponse value;|}, "Expected an event from the live subscription");
+    if event is record {|LiveResponse value;|} {
+        test:assertEquals(event.value, <LiveResponse>{data: {live: {product: {id: "1"}, score: 20}}});
+    }
+    check graphqlClient->close();
 }
 
 @test:Config {
@@ -155,14 +190,16 @@ isolated function testResolverReturingStreamOfRecordsWithServiceObjects() return
 }
 isolated function testResolverReturingStreamOfRecordsWithMapOfServiceObjects() returns error? {
     string document = string `subscription { accountUpdates { details(key: "acc1") { name } } }`;
-    string url = "ws://localhost:9092/reviews";
-    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient);
-    check common:sendSubscriptionMessage(wsClient, document);
-
-    json expectedMsgPayload = {data: {accountUpdates: {details: {name: "James"}}}};
-    check common:validateNextMessage(wsClient, expectedMsgPayload);
-    expectedMsgPayload = {data: {accountUpdates: {details: {name: "James Deen"}}}};
-    check common:validateNextMessage(wsClient, expectedMsgPayload);
+    graphql:Client graphqlClient = check new (REVIEWS_URL);
+    stream<AccountUpdatesResponse, graphql:ClientError?> accountUpdates = check graphqlClient->subscribe(document);
+    AccountUpdatesResponse[] received = [];
+    check from AccountUpdatesResponse response in accountUpdates
+        do {
+            received.push(response);
+        };
+    test:assertEquals(received, <AccountUpdatesResponse[]>[
+        {data: {accountUpdates: {details: {name: "James"}}}},
+        {data: {accountUpdates: {details: {name: "James Deen"}}}}
+    ]);
+    check graphqlClient->close();
 }
