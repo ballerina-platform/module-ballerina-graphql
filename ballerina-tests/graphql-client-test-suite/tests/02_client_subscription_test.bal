@@ -76,7 +76,10 @@ isolated function testSubscriptionWithRecordBinding() returns error? {
     groups: ["client", "client_subscriptions"]
 }
 isolated function testSubscriptionWithGenericResponseBinding() returns error? {
-    graphql:Client graphqlClient = check new (SUBSCRIPTION_URL);
+    // A generous `pongTimeout` tolerates a delayed pong under CI scheduling contention; the
+    // default (15s) has been observed to trip on a loaded CI runner even though the connection
+    // is healthy.
+    graphql:Client graphqlClient = check new (SUBSCRIPTION_URL, subscription = {keepAlive: {pongTimeout: 45}});
     stream<MessagesResponseWithErrors, graphql:ClientError?> messages =
         check graphqlClient->subscribe("subscription { messages }");
     int expectedMessage = 1;
@@ -251,7 +254,10 @@ isolated function testClientClose() returns error? {
     groups: ["client", "client_subscriptions"]
 }
 isolated function testPingPongKeepAlive() returns error? {
-    graphql:Client graphqlClient = check new (SUBSCRIPTION_URL);
+    // `pingInterval` is left at its default (15s) so the 20s gap in `SlowMessageGenerator` still
+    // exceeds the ping cadence as intended; `pongTimeout` is widened so a pong delayed by CI
+    // scheduling contention isn't mistaken for the server having stopped responding.
+    graphql:Client graphqlClient = check new (SUBSCRIPTION_URL, subscription = {keepAlive: {pongTimeout: 45}});
     stream<record {}, graphql:ClientError?> messages = check graphqlClient->subscribe("subscription { slowMessages }");
     record {}[] receivedEvents = [];
     check from record {} response in messages

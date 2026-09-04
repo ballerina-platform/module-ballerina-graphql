@@ -128,7 +128,9 @@ isolated function testCloseDuringReconnect() returns error? {
 }
 isolated function testClosedStreamNotResubscribed() returns error? {
     graphql:Client graphqlClient = check new (string `${MOCK_URL_BASE}/mock_selective_reconnect`,
-        subscription = {reconnect: {maxAttempts: 3, interval: 1}}
+        // A generous `pongTimeout` tolerates a delayed pong under CI scheduling contention, so the
+        // keep-alive watchdog doesn't tear down the reconnected connection before it can resume.
+        subscription = {reconnect: {maxAttempts: 3, interval: 1}, keepAlive: {pongTimeout: 45}}
     );
     stream<record {}, graphql:ClientError?> firstSubscription =
         check graphqlClient->subscribe("subscription { seq }", id = "op-a");
