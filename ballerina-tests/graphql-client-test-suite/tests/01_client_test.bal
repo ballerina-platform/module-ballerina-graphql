@@ -217,14 +217,8 @@ isolated function testClientExecuteWithTypeWithPartialDataRequest() returns erro
     string document = string `query { specialHolidays }`;
 
     graphql:Client graphqlClient = check new (url);
-    json|graphql:ClientError payload = graphqlClient->executeWithType(document);
-    test:assertTrue(payload is graphql:ServerError);
-    graphql:ServerError err = <graphql:ServerError>payload;
-    json actualPayload = err.detail().toJson();
+    json actualPayload = check graphqlClient->executeWithType(document);
     json expectedPayload = {
-        data: {
-            specialHolidays: ["TUESDAY", null, "THURSDAY"]
-        },
         errors: [
             {
                 message: "Holiday!",
@@ -237,9 +231,11 @@ isolated function testClientExecuteWithTypeWithPartialDataRequest() returns erro
                 path: ["specialHolidays", 1]
             }
         ],
-        extensions: null
+        data: {
+            specialHolidays: ["TUESDAY", null, "THURSDAY"]
+        }
     };
-    common:assertJsonValuesWithOrder(actualPayload, expectedPayload);
+    common:assertJsonValuesWithOrder(actualPayload.toJson(), expectedPayload);
 }
 
 @test:Config {
