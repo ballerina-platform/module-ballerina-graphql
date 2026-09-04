@@ -120,7 +120,6 @@ scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "file"},
 	{org = "ballerina", name = "graphql"},
-	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "test"},
 	{org = "ballerina", name = "websocket"}
@@ -132,7 +131,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.16.7"
+version = "2.15.8"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -376,7 +375,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "websocket"
-version = "2.15.5"
+version = "2.15.6"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "constraint"},

@@ -113,7 +113,6 @@ version = "1.18.0"
 dependencies = [
 	{org = "ballerina", name = "graphql"},
 	{org = "ballerina", name = "graphql_test_common"},
-	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "test"}
 ]
 modules = [
@@ -128,7 +127,6 @@ scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "file"},
 	{org = "ballerina", name = "graphql"},
-	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "test"},
 	{org = "ballerina", name = "websocket"}
@@ -140,7 +138,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.16.7"
+version = "2.15.8"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "auth"},
@@ -165,10 +163,6 @@ dependencies = [
 	{org = "ballerina", name = "observe"},
 	{org = "ballerina", name = "time"},
 	{org = "ballerina", name = "url"}
-]
-modules = [
-	{org = "ballerina", packageName = "http", moduleName = "http"},
-	{org = "ballerina", packageName = "http", moduleName = "http.httpscerr"}
 ]
 
 [[package]]
@@ -410,7 +404,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "websocket"
-version = "2.15.5"
+version = "2.15.6"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "auth"},
