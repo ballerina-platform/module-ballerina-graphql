@@ -233,7 +233,10 @@ isolated service class MockDropWsService {
             string id = getMockMessageId(message);
             check caller->writeMessage({'type: common:WS_NEXT, id: id, payload: {data: {seq: self.connectionNumber}}});
             if self.connectionNumber == 1 {
-                check caller->close(MOCK_ABNORMAL_CLOSURE_STATUS_CODE, "Connection dropped", timeout = 1);
+                // The drop is intentionally abnormal, so the echo is not expected within the
+                // short timeout; ignore the error rather than propagating it as onMessage's result.
+                websocket:Error? closeResult = caller->close(MOCK_ABNORMAL_CLOSURE_STATUS_CODE,
+                        "Connection dropped", timeout = 1);
             } else {
                 check caller->writeMessage({'type: common:WS_COMPLETE, id: id});
             }
@@ -289,7 +292,9 @@ isolated service class MockReconnectWsService {
         if self.connectionNumber == 1 {
             check caller->writeMessage({'type: common:WS_NEXT, id: id, payload: {data: {seq: 1}}});
             if subscriptionCount == 2 {
-                check caller->close(MOCK_ABNORMAL_CLOSURE_STATUS_CODE, "Connection dropped", timeout = 1);
+                // The drop is intentionally abnormal; ignore the close-frame echo error, as above.
+                websocket:Error? closeResult = caller->close(MOCK_ABNORMAL_CLOSURE_STATUS_CODE,
+                        "Connection dropped", timeout = 1);
             }
         } else {
             lock {
@@ -326,13 +331,13 @@ isolated service class MockCloseReconnectWsService {
             check caller->writeMessage({'type: common:WS_ACK});
         } else if messageType == common:WS_SUBSCRIBE {
             // Signal the drop only after the close has been initiated, so the test does not race
-            // the server-side closure and trigger a close-frame code collision.
-            websocket:Error? closeResult = caller->close(MOCK_ABNORMAL_CLOSURE_STATUS_CODE, "Connection dropped",
-                    timeout = 1);
+            // the server-side closure and trigger a close-frame code collision. The drop is
+            // intentionally abnormal, so the echo error is ignored rather than propagated.
+            websocket:Error? closeResult = caller->close(MOCK_ABNORMAL_CLOSURE_STATUS_CODE,
+                    "Connection dropped", timeout = 1);
             lock {
                 mockCloseReconnectDropped = true;
             }
-            return closeResult;
         }
     }
 }
@@ -387,7 +392,9 @@ isolated service class MockSelectiveReconnectWsService {
             }
         } else if messageType == common:WS_COMPLETE {
             if self.connectionNumber == 1 {
-                check caller->close(MOCK_ABNORMAL_CLOSURE_STATUS_CODE, "Connection dropped", timeout = 1);
+                // The drop is intentionally abnormal; ignore the close-frame echo error, as above.
+                websocket:Error? closeResult = caller->close(MOCK_ABNORMAL_CLOSURE_STATUS_CODE,
+                        "Connection dropped", timeout = 1);
             }
         }
     }
@@ -422,7 +429,9 @@ isolated service class MockExhaustionWsService {
         } else if messageType == common:WS_INIT {
             check caller->writeMessage({'type: common:WS_ACK});
         } else if messageType == common:WS_SUBSCRIBE {
-            return caller->close(MOCK_ABNORMAL_CLOSURE_STATUS_CODE, "Connection dropped", timeout = 1);
+            // The drop is intentionally abnormal; ignore the close-frame echo error, as above.
+            websocket:Error? closeResult = caller->close(MOCK_ABNORMAL_CLOSURE_STATUS_CODE,
+                    "Connection dropped", timeout = 1);
         }
     }
 }
@@ -500,7 +509,9 @@ isolated service class MockKeepAliveRecoverWsService {
             if self.connectionNumber > 1 {
                 check caller->writeMessage({'type: common:WS_COMPLETE, id: id});
             } else {
-                check caller->close(MOCK_ABNORMAL_CLOSURE_STATUS_CODE, "Connection dropped", timeout = 1);
+                // The drop is intentionally abnormal; ignore the close-frame echo error, as above.
+                websocket:Error? closeResult = caller->close(MOCK_ABNORMAL_CLOSURE_STATUS_CODE,
+                        "Connection dropped", timeout = 1);
             }
         } else if messageType == common:WS_PING && self.connectionNumber > 1 {
             check caller->writeMessage({'type: common:WS_PONG});
