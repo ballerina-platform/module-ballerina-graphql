@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Changed
+- [[#9132] Updated Keywords and Reformat README for Connector Store Discoverability](https://github.com/ballerina-platform/ballerina-library/issues/9132)
+
 ### Added
 
 - [[BEP-1460] Add GraphQL Client Subscription Support with the `subscribe()` Method](https://github.com/ballerina-platform/ballerina-spec/issues/1460)
