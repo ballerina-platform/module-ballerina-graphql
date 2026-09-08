@@ -6,7 +6,6 @@ This module provides APIs for connecting to and interacting with GraphQL endpoin
 
 - GraphQL Listener and Service for handling queries, mutations, and subscriptions
 - GraphQL Client for executing queries and mutations
-- Client-side validation and hierarchical resource path support
 
 ## Listener
 
