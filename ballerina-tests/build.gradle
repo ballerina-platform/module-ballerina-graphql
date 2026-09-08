@@ -67,12 +67,13 @@ task updateTomlFiles {
             newBallerinaToml = newBallerinaToml.replace("@package.name@", testPackage.replaceAll("-", "_"))
             ballerinaTomlFile.text = newBallerinaToml
         }
+
+        def ballerinaTomlFile =  new File("${project.projectDir}/${testCommonPackage}/Ballerina.toml")
+        def newBallerinaToml = testCommonTomlFilePlaceHolder.text.replace("@project.version@", project.version)
+        newBallerinaToml = newBallerinaToml.replace("@toml.version@", tomlVersion)
+        newBallerinaToml = newBallerinaToml.replace("@package.name@", testCommonPackage.replaceAll("-", "_"))
+        ballerinaTomlFile.text = newBallerinaToml
     }
-    def ballerinaTomlFile =  new File("${project.projectDir}/${testCommonPackage}/Ballerina.toml")
-    def newBallerinaToml = testCommonTomlFilePlaceHolder.text.replace("@project.version@", project.version)
-    newBallerinaToml = newBallerinaToml.replace("@toml.version@", tomlVersion)
-    newBallerinaToml = newBallerinaToml.replace("@package.name@", testCommonPackage.replaceAll("-", "_"))
-    ballerinaTomlFile.text = newBallerinaToml
 }
 
 task commitTomlFiles {
