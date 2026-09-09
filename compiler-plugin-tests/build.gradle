@@ -36,6 +36,15 @@ dependencies {
     testImplementation group: 'org.ballerinalang', name: 'ballerina-parser', version: "${ballerinaLangVersion}"
     testImplementation group: 'org.testng', name: 'testng', version: "${testngVersion}"
     testImplementation "org.eclipse.lsp4j:org.eclipse.lsp4j:${eclipseLsp4jVersion}"
+
+    // Temporary workaround: the pinned `http` compiler-plugin nightly (stdlibHttpVersion in
+    // gradle.properties) fails with a ClassNotFoundException for these transitive dependencies
+    // when analyzing an http:Service. The proper fix belongs in the http module's own packaging;
+    // remove once a fixed http build is pinned.
+    testImplementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    testImplementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
+    testImplementation "io.swagger.core.v3:swagger-core:${swaggerVersion}"
+    testImplementation "io.swagger.core.v3:swagger-models:${swaggerVersion}"
 }
 
 tasks.withType(Checkstyle) {

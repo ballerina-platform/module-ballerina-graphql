@@ -111,6 +111,13 @@ isolated function getDocumentCacheConfig(GraphqlServiceConfig? serviceConfig) re
     return;
 }
 
+isolated function getKeepAliveConfig(GraphqlServiceConfig? serviceConfig) returns readonly & ServerKeepAliveConfig {
+    if serviceConfig is GraphqlServiceConfig {
+        return serviceConfig.keepAlive.cloneReadOnly();
+    }
+    return {};
+}
+
 isolated function getResourceAnnotation(service object {} serviceObject, parser:RootOperationType operationType,
         string[] path, string methodName) returns GraphqlResourceConfig? = @java:Method {
     'class: "io.ballerina.stdlib.graphql.runtime.engine.Engine"

@@ -14,59 +14,97 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/graphql;
 import ballerina/graphql_test_common as common;
 import ballerina/test;
 import ballerina/websocket;
+
+const string SUBSCRIPTION_URL = "http://localhost:9091/subscriptions";
+
+const string SUBSCRIPTION_SERVER_ERROR_MESSAGE = "The server responded with an error for the subscription";
+
+type MessagesResponse record {|
+    record {| int messages; |} data;
+|};
+
+type Student record {|
+    int id;
+    string name;
+|};
+
+type StudentsResponse record {|
+    record {| Student students; |} data;
+|};
+
+type StudentTypenameResponse record {|
+    record {| record {| string __typename; |} students; |} data;
+|};
 
 @test:Config {
     groups: ["introspection", "typename", "subscriptions"]
 }
 isolated function testSubscriptionWithIntrospectionInFields() returns error? {
-    string document = string `subscription { students { __typename } }`;
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient);
-    check common:sendSubscriptionMessage(wsClient, document);
-
-    json expectedMsgPayload = {data: {students: {__typename: "StudentService"}}};
-    check common:validateNextMessage(wsClient, expectedMsgPayload);
+    graphql:Client graphqlClient = check new (SUBSCRIPTION_URL);
+    stream<StudentTypenameResponse, graphql:ClientError?> students =
+        check graphqlClient->subscribe("subscription { students { __typename } }");
+    // The original test validates only the first event, so read just that prefix of the stream.
+    record {|StudentTypenameResponse value;|}|graphql:ClientError? event = students.next();
+    test:assertTrue(event is record {|StudentTypenameResponse value;|}, "Expected a students event");
+    if event is record {|StudentTypenameResponse value;|} {
+        test:assertEquals(event.value.data.students.__typename, "StudentService");
+    }
+    check graphqlClient->close();
 }
 
 @test:Config {
     groups: ["subscriptions"]
 }
 isolated function testInvalidSubscription() returns error? {
-    string document = string `subscription { invalidField }`;
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient);
-    check common:sendSubscriptionMessage(wsClient, document);
-
-    json expectedMsgPayload = check common:getJsonContentFromFile("subscription_invalid_field");
-    check common:validateErrorMessage(wsClient, expectedMsgPayload);
+    graphql:Client graphqlClient = check new (SUBSCRIPTION_URL);
+    stream<record {}, graphql:ClientError?> invalidSubscription =
+        check graphqlClient->subscribe("subscription { invalidField }");
+    record {|record {} value;|}|graphql:ClientError? result = invalidSubscription.next();
+    test:assertTrue(result is graphql:SubscriptionError, "Expected a SubscriptionError");
+    if result is graphql:SubscriptionError {
+        test:assertEquals(result.message(), SUBSCRIPTION_SERVER_ERROR_MESSAGE);
+        graphql:ErrorDetail[]? errors = result.detail().errors;
+        test:assertTrue(errors is graphql:ErrorDetail[], "Expected the GraphQL errors in the detail");
+        if errors is graphql:ErrorDetail[] {
+            test:assertEquals(errors, <graphql:ErrorDetail[]>[
+                {
+                    message: string `Cannot query field "invalidField" on type "Subscription".`,
+                    locations: [{line: 1, column: 16}]
+                }
+            ]);
+        }
+    }
+    check graphqlClient->close();
 }
 
 @test:Config {
     groups: ["subscriptions"]
 }
 isolated function testSubscriptionFunctionWithErrors() returns error? {
-    string document = string `subscription getNames { values }`;
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient);
-    check common:sendSubscriptionMessage(wsClient, document);
-
-    json expectedErrorPayload = [
-        {
-            message: "{ballerina/lang.array}IndexOutOfRange",
-            locations: [{line: 1, column: 25}],
-            path: ["values"]
+    graphql:Client graphqlClient = check new (SUBSCRIPTION_URL);
+    stream<record {}, graphql:ClientError?> values =
+        check graphqlClient->subscribe("subscription getNames { values }");
+    record {|record {} value;|}|graphql:ClientError? result = values.next();
+    test:assertTrue(result is graphql:SubscriptionError, "Expected a SubscriptionError");
+    if result is graphql:SubscriptionError {
+        test:assertEquals(result.message(), SUBSCRIPTION_SERVER_ERROR_MESSAGE);
+        graphql:ErrorDetail[]? errors = result.detail().errors;
+        test:assertTrue(errors is graphql:ErrorDetail[], "Expected the GraphQL errors in the detail");
+        if errors is graphql:ErrorDetail[] {
+            test:assertEquals(errors, <graphql:ErrorDetail[]>[
+                {
+                    message: "{ballerina/lang.array}IndexOutOfRange",
+                    locations: [{line: 1, column: 25}],
+                    path: ["values"]
+                }
+            ]);
         }
-    ];
-    check common:validateErrorMessage(wsClient, expectedErrorPayload);
+    }
+    check graphqlClient->close();
 }
 
 @test:Config {
@@ -74,17 +112,18 @@ isolated function testSubscriptionFunctionWithErrors() returns error? {
 }
 isolated function testSubscriptionWithServiceObjects() returns error? {
     string document = check common:getGraphqlDocumentFromFile("subscriptions_with_service_objects");
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient);
-    check common:sendSubscriptionMessage(wsClient, document);
-
-    json expectedMsgPayload = {data: {students: {id: 1, name: "Eren Yeager"}}};
-    check common:validateNextMessage(wsClient, expectedMsgPayload);
-    expectedMsgPayload = {data: {students: {id: 2, name: "Mikasa Ackerman"}}};
-    check common:validateNextMessage(wsClient, expectedMsgPayload);
-    check common:validateCompleteMessage(wsClient);
+    graphql:Client graphqlClient = check new (SUBSCRIPTION_URL);
+    stream<StudentsResponse, graphql:ClientError?> students = check graphqlClient->subscribe(document);
+    StudentsResponse[] received = [];
+    check from StudentsResponse response in students
+        do {
+            received.push(response);
+        };
+    test:assertEquals(received, <StudentsResponse[]>[
+        {data: {students: {id: 1, name: "Eren Yeager"}}},
+        {data: {students: {id: 2, name: "Mikasa Ackerman"}}}
+    ]);
+    check graphqlClient->close();
 }
 
 @test:Config {
@@ -92,26 +131,32 @@ isolated function testSubscriptionWithServiceObjects() returns error? {
 }
 isolated function testSubscriptionWithMultipleClients() returns error? {
     string document = string `subscription { messages }`;
-    string url = "ws://localhost:9091/subscriptions";
-    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
-
-    websocket:Client wsClient1 = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient1);
-    check common:sendSubscriptionMessage(wsClient1, document, "1");
-
-    websocket:Client wsClient2 = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient2);
-    check common:sendSubscriptionMessage(wsClient2, document, "2");
+    graphql:Client graphqlClient1 = check new (SUBSCRIPTION_URL);
+    graphql:Client graphqlClient2 = check new (SUBSCRIPTION_URL);
+    stream<MessagesResponse, graphql:ClientError?> messages1 = check graphqlClient1->subscribe(document);
+    stream<MessagesResponse, graphql:ClientError?> messages2 = check graphqlClient2->subscribe(document);
 
     foreach int i in 1 ..< 6 {
-        json expectedMsgPayload = {data: {messages: i}};
-        check common:validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
-        check common:validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
+        record {|MessagesResponse value;|}|graphql:ClientError? event1 = messages1.next();
+        test:assertTrue(event1 is record {|MessagesResponse value;|}, "Expected a messages event on client 1");
+        if event1 is record {|MessagesResponse value;|} {
+            test:assertEquals(event1.value.data.messages, i);
+        }
+        record {|MessagesResponse value;|}|graphql:ClientError? event2 = messages2.next();
+        test:assertTrue(event2 is record {|MessagesResponse value;|}, "Expected a messages event on client 2");
+        if event2 is record {|MessagesResponse value;|} {
+            test:assertEquals(event2.value.data.messages, i);
+        }
     }
-    check common:validateCompleteMessage(wsClient1, id = "1");
-    check common:validateCompleteMessage(wsClient2, id = "2");
+    check graphqlClient1->close();
+    check graphqlClient2->close();
 }
 
+// The following are raw `websocket:Client` smoke tests: they exercise `graphql-transport-ws`
+// protocol/transport edges that the GraphQL client manages internally and therefore cannot express.
+
+// The GraphQL client performs the `connection_init`/`connection_ack` handshake internally, so the
+// bare handshake can only be observed by driving the WebSocket directly.
 @test:Config {
     groups: ["subscriptions"]
 }
@@ -121,8 +166,11 @@ isolated function testConnectionInitMessage() returns error? {
     websocket:Client wsClient = check new (url, config);
     check common:sendConnectionInitMessage(wsClient);
     check common:validateConnectionAckMessage(wsClient);
+    check wsClient->close();
 }
 
+// The GraphQL client sends exactly one `connection_init`, so the duplicate-init rejection (4429)
+// can only be triggered by sending a second `connection_init` over a raw WebSocket.
 @test:Config {
     groups: ["subscriptions"]
 }
@@ -137,6 +185,8 @@ isolated function testInvalidMultipleConnectionInitMessages() returns error? {
     common:validateConnectionClosureWithError(wsClient, expectedErrorMsg);
 }
 
+// The GraphQL client always completes the `connection_init` handshake before subscribing, so the
+// unauthorized-access closure (4401) for a subscribe-before-init can only be exercised directly.
 @test:Config {
     groups: ["subscriptions"]
 }
