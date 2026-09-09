@@ -2,7 +2,7 @@
 
 This module provides APIs for connecting to and interacting with GraphQL endpoints, using HTTP as the underlying protocol. GraphQL lets clients define the structure of the data they need, avoiding over-fetching and reducing the number of requests to the server.
 
-## Key Features
+### Key Features
 
 - GraphQL Listener and Service for handling queries, mutations, and subscriptions
 - GraphQL Client for executing queries and mutations
