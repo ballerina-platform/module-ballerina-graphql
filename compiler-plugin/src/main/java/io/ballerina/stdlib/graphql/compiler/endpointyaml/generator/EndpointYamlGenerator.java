@@ -16,12 +16,8 @@
  * under the License.
  */
 
-
 package io.ballerina.stdlib.graphql.compiler.endpointyaml.generator;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.api.symbols.ModuleSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
@@ -42,22 +38,13 @@ import io.ballerina.compiler.syntax.tree.SeparatedNodeList;
 import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.compiler.syntax.tree.SyntaxTree;
-import io.ballerina.projects.Package;
-import io.ballerina.projects.Project;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.tools.diagnostics.DiagnosticFactory;
 import io.ballerina.tools.diagnostics.DiagnosticInfo;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
-
-import static io.ballerina.stdlib.graphql.compiler.endpointyaml.generator.FileNameGeneratorUtil.resolveContractFileName;
 
 
 public class EndpointYamlGenerator {
@@ -68,10 +55,7 @@ public class EndpointYamlGenerator {
     private int port;
     final PackageMemberVisitor packageMemberVisitor;
 
-    private static final String ARTIFACT_DIR = "artifact";
     private static final String GRAPHQL = "GraphQL";
-    private static final String YAML_EXTENSION = ".yaml";
-    private static final String ENDPOINT_SUFFIX = "_endpoint";
     private static final String LISTEN_TO = "listenTo";
     private static final String EMPTY_STR = "";
     private static final int PORT_PARAMETER_INDEX = 0;
@@ -104,10 +88,11 @@ public class EndpointYamlGenerator {
             return Optional.empty();
         }
         ListenerInfo listenerInfo = listenerInfoOpt.get();
-        port = resolvePort(listenerInfo.argList());
+        ParenthesizedArgList effectiveArgList = resolveEffectiveArgList(listenerInfo.argList(), moduleName);
+        port = resolvePort(effectiveArgList);
         String basePath = buildBasePath();
 
-        return Optional.of(new Endpoint(port, basePath, GRAPHQL, this.schemaFileName));
+        return Optional.of(new Endpoint(basePath, port, basePath, GRAPHQL, this.schemaFileName));
     }
 
     private void ensureModuleVisited(String moduleName) {
@@ -206,6 +191,44 @@ public class EndpointYamlGenerator {
         };
     }
 
+    /**
+     * A listener passed as the first argument to a {@code new} expression (e.g.
+     * {@code new graphql:Listener(httpListener)}) is not itself the port value; it is a reference to another
+     * listener whose own arguments (or nested wrapped listener) carry the port. This walks through any number of
+     * such wrapping layers, e.g. a module-level listener declaration or a nested {@code new} expression, until it
+     * finds the argument list that actually carries the port.
+     */
+    private ParenthesizedArgList resolveEffectiveArgList(ParenthesizedArgList argList, String moduleName) {
+        SeparatedNodeList<FunctionArgumentNode> arguments = argList.arguments();
+        if (!(arguments.get(0) instanceof PositionalArgumentNode positionalArg)) {
+            return argList;
+        }
+        ExpressionNode expr = unwrapCheckExpression(positionalArg.expression());
+
+        Optional<ParenthesizedArgList> wrappedArgList;
+        if (expr instanceof ExplicitNewExpressionNode explicit) {
+            wrappedArgList = Optional.ofNullable(explicit.parenthesizedArgList());
+        } else if (expr instanceof ImplicitNewExpressionNode implicit) {
+            wrappedArgList = implicit.parenthesizedArgList();
+        } else if (isNameReference(expr)) {
+            wrappedArgList = resolveWrappedListenerArgList(expr, moduleName);
+        } else {
+            wrappedArgList = Optional.empty();
+        }
+
+        return wrappedArgList.map(inner -> resolveEffectiveArgList(inner, moduleName)).orElse(argList);
+    }
+
+    private Optional<ParenthesizedArgList> resolveWrappedListenerArgList(ExpressionNode expr, String moduleName) {
+        String listenerModuleName = getModuleName(context.semanticModel(), expr);
+        if (listenerModuleName.isEmpty()) {
+            listenerModuleName = moduleName;
+        }
+        String listenerName = extractVariableName(expr);
+        return packageMemberVisitor.getListenerDeclaration(listenerModuleName, listenerName)
+                .flatMap(this::extractArgListFromListenerDecl);
+    }
+
     private int resolvePort(ParenthesizedArgList argListOpt) {
         SeparatedNodeList<FunctionArgumentNode> arguments = argListOpt.arguments();
         resolvePortFromArgs(arguments);
@@ -257,44 +280,6 @@ public class EndpointYamlGenerator {
             serviceBasePath = "/";
         }
         return serviceBasePath;
-    }
-
-    public void writeEndpointYaml() throws IOException {
-        Optional<Endpoint> ep = getEndpoint();
-        if (ep.isEmpty()) {
-            return;
-        }
-        Path outPath = resolveOutputPath();
-        String fileName = buildEndpointFileName(outPath);
-        Path path = outPath.resolve(ARTIFACT_DIR).resolve(fileName + YAML_EXTENSION);
-        writeYaml(path, new EndpointWrapper(ep.get()));
-    }
-
-    private Path resolveOutputPath() throws IOException {
-        Package currentPackage = this.context.currentPackage();
-        Project project = currentPackage.project();
-        Path outPath = project.targetDir();
-        Files.createDirectories(Paths.get(String.valueOf(outPath), ARTIFACT_DIR));
-        return outPath;
-    }
-
-    private String buildEndpointFileName(Path outPath) {
-        String base = this.schemaFileName.split("\\.")[0] + ENDPOINT_SUFFIX;
-        return resolveContractFileName(outPath.resolve(ARTIFACT_DIR), base, context);
-    }
-
-    private void writeYaml(Path path, EndpointWrapper wrapper) throws IOException {
-        YAMLFactory yamlFactory = YAMLFactory.builder()
-                .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER)
-                .build();
-        ObjectMapper mapper = new ObjectMapper(yamlFactory);
-        mapper.findAndRegisterModules();
-
-        try (Writer writer = Files.newBufferedWriter(path)) {
-            mapper.writeValue(writer, wrapper);
-        } catch (IOException e) {
-            throw new IOException("Failed to write to: " + path, e);
-        }
     }
 
     private Optional<String> getPortValue(ExpressionNode expression, SemanticModel semanticModel,

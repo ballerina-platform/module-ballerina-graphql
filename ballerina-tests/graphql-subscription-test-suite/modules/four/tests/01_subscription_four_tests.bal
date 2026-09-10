@@ -52,6 +52,7 @@ isolated function testSubscriptionMultiplexing() returns error? {
         json expectedPayload = {'type: common:WS_NEXT, id: subscriptionId, payload: payload};
         test:assertEquals(actualPayload, expectedPayload);
     }
+    check wsClient->close();
 }
 
 @test:Config {
@@ -66,6 +67,7 @@ isolated function testInvalidWebSocketRequestWithEmptyQuery() returns error? {
     check common:sendSubscriptionMessage(wsClient, document);
     json expectedMsgPayload = {errors: [{message: "An empty query is found"}]};
     check common:validateErrorMessage(wsClient, expectedMsgPayload);
+    check wsClient->close();
 }
 
 @test:Config {

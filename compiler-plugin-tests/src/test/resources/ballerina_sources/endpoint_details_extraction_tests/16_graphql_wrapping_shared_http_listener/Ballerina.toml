@@ -1,0 +1,4 @@
+[package]
+org = "graphql_test"
+name = "graphql_wrapping_shared_http_listener"
+version = "0.1.0"

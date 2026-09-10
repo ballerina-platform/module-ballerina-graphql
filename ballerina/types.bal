@@ -111,7 +111,8 @@ public type GenericResponse record {|
    record {| anydata...; |}|map<json?> data?;
 |};
 
-# Represents the target type binding record with data, extensions and errors of a GraphQL response for `execute` method.
+# Represents the target type binding record with data, extensions and errors of a GraphQL response for the
+# `query`, `mutate`, and `subscribe` methods.
 #
 # + errors - The errors occurred (if present) while processing the GraphQL request.
 public type GenericResponseWithErrors record {|

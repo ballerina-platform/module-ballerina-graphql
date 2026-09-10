@@ -113,7 +113,9 @@ public enum CompilationDiagnostic {
                                                                      DiagnosticSeverity.WARNING),
     UNABLE_TO_VALIDATE_DEFAULT_VALUES_OF_INPUT_OBJECT_AT_COMPILE_TIME(DiagnosticMessage.WARNING_210,
                                                                       DiagnosticCode.WARNING_210,
-                                                                      DiagnosticSeverity.WARNING);
+                                                                      DiagnosticSeverity.WARNING),
+    UNSUPPORTED_ENDPOINT_METADATA(DiagnosticMessage.WARNING_211, DiagnosticCode.WARNING_211,
+                                   DiagnosticSeverity.WARNING);
 
     private final String diagnostic;
     private final String diagnosticCode;

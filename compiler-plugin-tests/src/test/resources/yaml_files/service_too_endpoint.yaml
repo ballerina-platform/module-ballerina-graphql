@@ -1,5 +1,0 @@
-endpoint:
-  port: 9093
-  basePath: "/too"
-  type: "GraphQL"
-  schemaPath: "service_too.graphql"

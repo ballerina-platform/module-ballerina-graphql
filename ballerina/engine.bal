@@ -314,28 +314,7 @@ isolated class Engine {
 
     isolated function getOperation(parser:DocumentNode document, string? operationName)
     returns ErrorDetail|parser:OperationNode {
-        if operationName == () {
-            if document.getOperations().length() == 1 {
-                return document.getOperations()[0];
-            } else {
-                string message = string `Must provide operation name if query contains multiple operations.`;
-                return {
-                    message: message,
-                    locations: []
-                };
-            }
-        } else {
-            foreach parser:OperationNode operationNode in document.getOperations() {
-                if operationName == operationNode.getName() {
-                    return operationNode;
-                }
-            }
-            string message = string `Unknown operation named "${operationName}".`;
-            return {
-                message: message,
-                locations: []
-            };
-        }
+        return selectOperation(document, operationName);
     }
 
     isolated function resolve(Context context, Field 'field, boolean executePrefetchMethod = true) returns anydata {
