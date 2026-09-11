@@ -102,7 +102,7 @@ subprojects {
     }
 }
 
-task build {
+tasks.named('build') {
     dependsOn(':graphql-commons:build')
     dependsOn(':graphql-compiler-plugin:build')
     dependsOn(':graphql-native:build')
