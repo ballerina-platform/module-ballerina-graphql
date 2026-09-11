@@ -46,3 +46,5 @@ artifacts.add('default', layout.buildDirectory.file("checkstyle.xml")) {
 artifacts.add('default', layout.buildDirectory.file("suppressions.xml")) {
     builtBy('downloadCheckstyleRuleFiles')
 }
+
+test.mustRunAfter(downloadCheckstyleRuleFiles)
