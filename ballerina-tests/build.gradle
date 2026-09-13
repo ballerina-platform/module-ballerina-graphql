@@ -16,6 +16,13 @@
  */
 
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.process.ExecOperations
+
+import javax.inject.Inject
+
+abstract class BallerinaExecHelper {
+    @Inject abstract ExecOperations getExecOperations()
+}
 
 plugins {
     id 'groovy'
@@ -77,13 +84,14 @@ task updateTomlFiles {
 }
 
 task commitTomlFiles {
+    def execHelper = project.objects.newInstance(BallerinaExecHelper)
     doLast {
         def files = "${project.projectDir}/${testCommonPackage}/Ballerina.toml ${project.projectDir}/${testCommonPackage}/Dependencies.toml "
         testSuites.each{ testPackage ->
             files += "${project.projectDir}/${testPackage}/Ballerina.toml ${project.projectDir}/${testPackage}/Dependencies.toml "
         }
 
-        project.exec {
+        execHelper.execOperations.exec {
             ignoreExitValue true
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
                 commandLine 'cmd', '/c', "git commit -m \"[Automated] Update the native jar versions\" ${files}"
@@ -132,11 +140,12 @@ task initializeVariables {
 }
 
 task publishTestCommonPackageToLocal {
+    def execHelper = project.objects.newInstance(BallerinaExecHelper)
     dependsOn(":${packageName}-${packageOrg}:build")
     dependsOn(updateTomlFiles)
     doLast {
         if (!skipTests) {
-            exec {
+            execHelper.execOperations.exec {
                 workingDir "${project.projectDir}/${testCommonPackage}"
                 if (Os.isFamily(Os.FAMILY_WINDOWS)) {
                     commandLine 'cmd', '/c', "${distributionBinPath}/bal.bat pack && exit  %%ERRORLEVEL%%"
@@ -144,7 +153,7 @@ task publishTestCommonPackageToLocal {
                     commandLine 'sh', '-c', "${distributionBinPath}/bal pack"
                 }
             }
-            exec {
+            execHelper.execOperations.exec {
                 workingDir "${project.projectDir}/${testCommonPackage}"
                 if (Os.isFamily(Os.FAMILY_WINDOWS)) {
                     commandLine 'cmd', '/c', "${distributionBinPath}/bal.bat push --repository=local" +
@@ -158,6 +167,7 @@ task publishTestCommonPackageToLocal {
 }
 
 task ballerinaTest {
+    def execHelper = project.objects.newInstance(BallerinaExecHelper)
     dependsOn(publishTestCommonPackageToLocal)
     dependsOn(":${packageName}-${packageOrg}:build")
     dependsOn(updateTomlFiles)
@@ -179,7 +189,7 @@ task ballerinaTest {
                         "${disableGroups},client_subscriptions" : "--disable-groups client_subscriptions"
             }
             if (!skipTests) {
-                exec {
+                execHelper.execOperations.exec {
                     workingDir "${project.projectDir}/${testPackage}"
                     environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
                     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
