@@ -79,7 +79,7 @@ public class ServiceArtifactsExtractionTest {
     private static final String GQL_SUFFIX = ".graphql";
 
     @Test
-    public void testServiceArtifactsGenerationForSingleService() throws Exception {
+    public void testServiceArtifactsGenerationForSingleService() throws IOException {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(SCHEMA_VALIDATOR_DIR)
                 .resolve("01_graphql_service");
         try {
@@ -102,7 +102,7 @@ public class ServiceArtifactsExtractionTest {
 
 
     @Test
-    public void testServiceArtifactsGenerationForMultipleServices() throws Exception {
+    public void testServiceArtifactsGenerationForMultipleServices() throws IOException {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(GENERATOR_TESTS_DIR)
                 .resolve("22_graphql_service_with_http_service");
         try {
@@ -144,7 +144,7 @@ public class ServiceArtifactsExtractionTest {
     }
 
     @Test
-    public void testServiceArtifactsGenerationForGqlWithHttp() throws Exception {
+    public void testServiceArtifactsGenerationForGqlWithHttp() throws IOException {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(GENERATOR_TESTS_DIR)
                 .resolve("22_graphql_service_with_http_service");
         try {
@@ -163,7 +163,7 @@ public class ServiceArtifactsExtractionTest {
     }
 
     @Test
-    public void testServiceArtifactsGenerationWithInvalidSchema() throws Exception {
+    public void testServiceArtifactsGenerationWithInvalidSchema() throws IOException {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(VALIDATOR_TESTS_DIR)
                 .resolve("60_invalid_use_of_reserved_federation_type_names");
         try {
@@ -179,7 +179,7 @@ public class ServiceArtifactsExtractionTest {
     }
 
     @Test
-    public void testServiceArtifactsGenerationWithDynamicallyAttachedListeners() throws Exception {
+    public void testServiceArtifactsGenerationWithDynamicallyAttachedListeners() throws IOException {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(VALIDATOR_TESTS_DIR)
                 .resolve("23_dynamically_attaching_service");
         try {
@@ -194,7 +194,7 @@ public class ServiceArtifactsExtractionTest {
     }
 
     @Test
-    public void testServiceArtifactsWithDuplicateServicePaths() throws Exception {
+    public void testServiceArtifactsWithDuplicateServicePaths() throws IOException {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_TESTS_DIR)
                 .resolve("04_service_with_duplicate_paths");
         try {
