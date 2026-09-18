@@ -29,7 +29,6 @@ import io.ballerina.projects.DiagnosticResult;
 import io.ballerina.projects.Document;
 import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.JBallerinaBackend;
-import io.ballerina.projects.JvmTarget;
 import io.ballerina.projects.Package;
 import io.ballerina.projects.PackageCompilation;
 import io.ballerina.projects.ProjectEnvironmentBuilder;
@@ -79,7 +78,7 @@ public class ServiceArtifactsExtractionTest {
     private static final String GQL_SUFFIX = ".graphql";
 
     @Test
-    public void testServiceArtifactsGenerationForSingleService() throws Exception {
+    public void testServiceArtifactsGenerationForSingleService() throws IOException {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(SCHEMA_VALIDATOR_DIR)
                 .resolve("01_graphql_service");
         try {
@@ -102,7 +101,7 @@ public class ServiceArtifactsExtractionTest {
 
 
     @Test
-    public void testServiceArtifactsGenerationForMultipleServices() throws Exception {
+    public void testServiceArtifactsGenerationForMultipleServices() throws IOException {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(GENERATOR_TESTS_DIR)
                 .resolve("22_graphql_service_with_http_service");
         try {
@@ -144,7 +143,7 @@ public class ServiceArtifactsExtractionTest {
     }
 
     @Test
-    public void testServiceArtifactsGenerationForGqlWithHttp() throws Exception {
+    public void testServiceArtifactsGenerationForGqlWithHttp() throws IOException {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(GENERATOR_TESTS_DIR)
                 .resolve("22_graphql_service_with_http_service");
         try {
@@ -163,7 +162,7 @@ public class ServiceArtifactsExtractionTest {
     }
 
     @Test
-    public void testServiceArtifactsGenerationWithInvalidSchema() throws Exception {
+    public void testServiceArtifactsGenerationWithInvalidSchema() throws IOException {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(VALIDATOR_TESTS_DIR)
                 .resolve("60_invalid_use_of_reserved_federation_type_names");
         try {
@@ -179,7 +178,7 @@ public class ServiceArtifactsExtractionTest {
     }
 
     @Test
-    public void testServiceArtifactsGenerationWithDynamicallyAttachedListeners() throws Exception {
+    public void testServiceArtifactsGenerationWithDynamicallyAttachedListeners() throws IOException {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(VALIDATOR_TESTS_DIR)
                 .resolve("23_dynamically_attaching_service");
         try {
@@ -194,7 +193,7 @@ public class ServiceArtifactsExtractionTest {
     }
 
     @Test
-    public void testServiceArtifactsWithDuplicateServicePaths() throws Exception {
+    public void testServiceArtifactsWithDuplicateServicePaths() throws IOException {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_TESTS_DIR)
                 .resolve("04_service_with_duplicate_paths");
         try {
@@ -482,7 +481,7 @@ public class ServiceArtifactsExtractionTest {
         DiagnosticResult diagnosticResult = project.currentPackage().runCodeGenAndModifyPlugins();
         if (diagnosticResult.errorCount() == 0) {
             PackageCompilation compilation = project.currentPackage().getCompilation();
-            JBallerinaBackend jBallerinaBackend = JBallerinaBackend.from(compilation, JvmTarget.JAVA_21);
+            JBallerinaBackend jBallerinaBackend = JBallerinaBackend.from(compilation, TestUtils.getJvmTarget());
             Path executablePath = project.targetDir().resolve("bin").resolve("output.jar");
             Files.createDirectories(Objects.requireNonNull(executablePath.getParent()));
             jBallerinaBackend.emit(JBallerinaBackend.OutputType.EXEC, executablePath);
