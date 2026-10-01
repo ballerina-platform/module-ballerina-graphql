@@ -219,3 +219,90 @@ function dataProviderServerCacheWithListInput() returns map<[string, string[], j
     };
     return dataSet;
 }
+
+const string ALIAS_URL = "http://localhost:9090/server_cache_alias";
+
+isolated function executeAliasQuery(string document, string scope) returns json|error {
+    return common:getJsonPayloadFromService(ALIAS_URL, document, headers = {"scope": scope});
+}
+
+isolated function assertNotLeaked(json payload, string secret) {
+    test:assertFalse(payload.toJsonString().includes(secret), string `"${secret}" must not be served to this caller`);
+}
+
+@test:Config {
+    groups: ["server_cache"]
+}
+isolated function testServerSideCacheKeyIgnoresAlias() returns error? {
+    json warm = check executeAliasQuery("{ secret }", "admin");
+    common:assertJsonValuesWithOrder(warm, {data: {secret: "secret-value"}});
+    json forbidden = check executeAliasQuery("{ secret }", "user");
+    assertNotLeaked(forbidden, "secret-value");
+    json aliased = check executeAliasQuery("{ secret: motto }", "user");
+    common:assertJsonValuesWithOrder(aliased, {data: {secret: "motto-v1"}});
+    json anonymous = check executeAliasQuery("{ secret: motto }", "none");
+    common:assertJsonValuesWithOrder(anonymous, {data: {secret: "motto-v1"}});
+}
+
+@test:Config {
+    groups: ["server_cache"]
+}
+isolated function testServerSideCacheAliasSubstitutionReverse() returns error? {
+    json low = check executeAliasQuery("{ rev: motto }", "user");
+    common:assertJsonValuesWithOrder(low, {data: {rev: "motto-v1"}});
+    json admin = check executeAliasQuery("{ rev: secret }", "admin");
+    common:assertJsonValuesWithOrder(admin, {data: {rev: "secret-value"}});
+}
+
+@test:Config {
+    groups: ["server_cache"]
+}
+isolated function testServerSideCacheSubfieldKeyIgnoresAlias() returns error? {
+    json warm = check executeAliasQuery("{ profile { note } }", "admin");
+    common:assertJsonValuesWithOrder(warm, {data: {profile: {note: "secret-note"}}});
+    json forbidden = check executeAliasQuery("{ profile { note } }", "user");
+    assertNotLeaked(forbidden, "secret-note");
+    json aliased = check executeAliasQuery("{ profile { note: name } }", "user");
+    common:assertJsonValuesWithOrder(aliased, {data: {profile: {note: "public-name"}}});
+    json aliasedParent = check executeAliasQuery("{ other: profile { note: name } }", "none");
+    common:assertJsonValuesWithOrder(aliasedParent, {data: {other: {note: "public-name"}}});
+}
+
+@test:Config {
+    groups: ["server_cache"]
+}
+isolated function testServerSideCacheSubfieldWithAliasedParent() returns error? {
+    json warm = check executeAliasQuery("{ p1: profile { note } }", "admin");
+    common:assertJsonValuesWithOrder(warm, {data: {p1: {note: "secret-note"}}});
+    json forbidden = check executeAliasQuery("{ p1: profile { note } }", "user");
+    assertNotLeaked(forbidden, "secret-note");
+    json aliased = check executeAliasQuery("{ p1: profile { note: name } }", "user");
+    common:assertJsonValuesWithOrder(aliased, {data: {p1: {note: "public-name"}}});
+    json plain = check executeAliasQuery("{ profile { name } }", "user");
+    common:assertJsonValuesWithOrder(plain, {data: {profile: {name: "public-name"}}});
+}
+
+@test:Config {
+    groups: ["server_cache"],
+    dependsOn: [testServerSideCacheKeyIgnoresAlias, testServerSideCacheAliasSubstitutionReverse]
+}
+isolated function testServerSideCacheInvalidationWithAlias() returns error? {
+    json cached = check executeAliasQuery("{ renamed: motto }", "user");
+    common:assertJsonValuesWithOrder(cached, {data: {renamed: "motto-v1"}});
+    json mutation = check executeAliasQuery("mutation { updateMotto(motto: \"motto-v2\") }", "user");
+    common:assertJsonValuesWithOrder(mutation, {data: {updateMotto: "motto-v2"}});
+    json after = check executeAliasQuery("{ renamed: motto }", "user");
+    common:assertJsonValuesWithOrder(after, {data: {renamed: "motto-v2"}});
+}
+
+@test:Config {
+    groups: ["server_cache"]
+}
+isolated function testServerSideCacheSubfieldInvalidationWithAlias() returns error? {
+    json cached = check executeAliasQuery("{ inv: profile { label: title } }", "user");
+    common:assertJsonValuesWithOrder(cached, {data: {inv: {label: "title-v1"}}});
+    json mutation = check executeAliasQuery("mutation { updateTitle(title: \"title-v2\") }", "user");
+    common:assertJsonValuesWithOrder(mutation, {data: {updateTitle: "title-v2"}});
+    json after = check executeAliasQuery("{ inv: profile { label: title } }", "user");
+    common:assertJsonValuesWithOrder(after, {data: {inv: {label: "title-v2"}}});
+}

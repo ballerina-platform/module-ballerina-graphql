@@ -340,7 +340,7 @@ isolated class Engine {
         (readonly & Interceptor)? interceptor = 'field.getNextInterceptor(self);
         __Type fieldType = 'field.getFieldType();
         ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone(),
-            'field.getCacheConfig(), 'field.getParentArgHashes()
+            'field.getCacheConfig(), 'field.getParentArgHashes(), 'field.getCachePath().clone()
         );
         do {
             if interceptor is readonly & Interceptor {
@@ -457,8 +457,9 @@ isolated class Engine {
         readonly & (string|int)[] path = [...'field.getPath(), fieldNode.getName()];
         __Type parentType = 'field.getFieldType();
         __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
+        readonly & (string|int)[] cachePath = [...'field.getCachePath(), fieldNode.getName()];
         Field selectionField = new (fieldNode, fieldType, parentType, 'field.getServiceObject(), path = path,
-            resourcePath = resourcePath
+            resourcePath = resourcePath, cachePath = cachePath
         );
         anydata fieldValue = self.resolve(context, selectionField);
         result[fieldNode.getAlias()] = fieldValue is ErrorDetail ? () : fieldValue;
