@@ -680,7 +680,23 @@ readonly service class AdminGuard {
 
 isolated string cachedProfileTitle = "title-v1";
 
+isolated service class CachedFriend {
+    private final int n;
+
+    isolated function init(int n) {
+        self.n = n;
+    }
+
+    isolated resource function get name() returns string {
+        return string `friend-${self.n}`;
+    }
+}
+
 isolated service class CachedProfile {
+    isolated resource function get friend(int n) returns CachedFriend {
+        return new (n);
+    }
+
     isolated resource function get title() returns string {
         lock {
             return cachedProfileTitle;
@@ -707,7 +723,7 @@ isolated service class CachedProfile {
     contextInit:
     isolated function(http:RequestContext requestContext, http:Request request) returns graphql:Context|error {
         graphql:Context context = new;
-        context.set("scope", request.getHeaderNames().indexOf("scope") is int ? check request.getHeader("scope") : "none");
+        context.set("scope", request.hasHeader("scope") ? check request.getHeader("scope") : "none");
         return context;
     }
 }

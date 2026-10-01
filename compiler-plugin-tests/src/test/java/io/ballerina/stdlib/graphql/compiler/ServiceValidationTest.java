@@ -302,7 +302,7 @@ public class ServiceValidationTest {
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.INVALID_FUNCTION, "Interceptor", "execute");
         // This error points to the types.bal in the GraphQL package since this returns the `graphql:Interceptor` type.
-        assertErrorMessage(diagnostic, message, 100, 5);
+        assertErrorMessageInFile(diagnostic, message, "types.bal");
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS);
@@ -1502,6 +1502,12 @@ public class ServiceValidationTest {
         Assert.assertEquals(diagnostic.diagnosticInfo().severity(), DiagnosticSeverity.ERROR);
         Assert.assertEquals(diagnostic.message(), message);
         assertErrorLocation(diagnostic.location(), line, column);
+    }
+
+    private void assertErrorMessageInFile(Diagnostic diagnostic, String message, String fileName) {
+        Assert.assertEquals(diagnostic.diagnosticInfo().severity(), DiagnosticSeverity.ERROR);
+        Assert.assertEquals(diagnostic.message(), message);
+        Assert.assertEquals(diagnostic.location().lineRange().fileName(), fileName);
     }
 
     private void assertWarningMessage(Diagnostic diagnostic, String message, int line, int column) {

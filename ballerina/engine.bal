@@ -339,8 +339,11 @@ isolated class Engine {
 
         (readonly & Interceptor)? interceptor = 'field.getNextInterceptor(self);
         __Type fieldType = 'field.getFieldType();
+        readonly & string[] childArgHashes = 'field.isCacheEnabled() ?
+            [...'field.getParentArgHashes(), generateArgHash('field.getInternalNode().getArguments())] :
+            'field.getParentArgHashes();
         ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone(),
-            'field.getCacheConfig(), 'field.getParentArgHashes(), 'field.getCachePath().clone()
+            'field.getCacheConfig(), childArgHashes, 'field.getCachePath().clone()
         );
         do {
             if interceptor is readonly & Interceptor {

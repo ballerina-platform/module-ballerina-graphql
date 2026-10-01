@@ -152,6 +152,7 @@ public class Field {
 
     isolated function getFieldObjects(parser:SelectionNode selectionNode, __Type 'type) returns Field[] {
         string[] currentPath = self.path.'map((item) => item is int ? "@" : item);
+        string[] currentCachePath = self.cachePath.'map((item) => item is int ? "@" : item);
         string[] unwrappedPath = getUnwrappedPath('type);
         __Type parentType = getOfType('type);
 
@@ -170,7 +171,8 @@ public class Field {
                                 ...unwrappedPath,
                                 'field.name
                             ], self.operationType.clone(), self.resourcePath.clone(),
-                            cacheConfig = self.cacheConfig, parentArgHashes = self.parentArgHashes
+                            cacheConfig = self.cacheConfig, parentArgHashes = self.parentArgHashes,
+                            cachePath = [...currentCachePath, ...unwrappedPath, 'field.name].cloneReadOnly()
                         ));
                         break;
                     }

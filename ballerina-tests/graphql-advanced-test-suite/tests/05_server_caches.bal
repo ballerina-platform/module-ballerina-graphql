@@ -306,3 +306,15 @@ isolated function testServerSideCacheSubfieldInvalidationWithAlias() returns err
     json after = check executeAliasQuery("{ inv: profile { label: title } }", "user");
     common:assertJsonValuesWithOrder(after, {data: {inv: {label: "title-v2"}}});
 }
+
+@test:Config {
+    groups: ["server_cache"]
+}
+isolated function testServerSideCacheWithAncestorArguments() returns error? {
+    json siblings = check executeAliasQuery("{ profile { a: friend(n: 1) { name } b: friend(n: 2) { name } } }", "user");
+    common:assertJsonValuesWithOrder(siblings, {data: {profile: {a: {name: "friend-1"}, b: {name: "friend-2"}}}});
+    json first = check executeAliasQuery("{ profile { friend(n: 3) { name } } }", "user");
+    common:assertJsonValuesWithOrder(first, {data: {profile: {friend: {name: "friend-3"}}}});
+    json second = check executeAliasQuery("{ profile { friend(n: 4) { name } } }", "user");
+    common:assertJsonValuesWithOrder(second, {data: {profile: {friend: {name: "friend-4"}}}});
+}
