@@ -339,7 +339,7 @@ isolated class Engine {
 
         (readonly & Interceptor)? interceptor = 'field.getNextInterceptor(self);
         __Type fieldType = 'field.getFieldType();
-        readonly & string[] childArgHashes = 'field.isCacheEnabled() ?
+        readonly & string[] childArgHashes = (self.cache is cache:Cache) ?
             [...'field.getParentArgHashes(), generateArgHash('field.getInternalNode().getArguments())] :
             'field.getParentArgHashes();
         ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone(),

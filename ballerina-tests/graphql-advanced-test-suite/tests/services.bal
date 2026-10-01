@@ -692,7 +692,34 @@ isolated service class CachedFriend {
     }
 }
 
+isolated service class FieldCachedFriend {
+    private final int n;
+
+    isolated function init(int n) {
+        self.n = n;
+    }
+
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            enabled: true,
+            maxAge: 60
+        }
+    }
+    isolated resource function get name() returns string {
+        return string `friend-${self.n}`;
+    }
+}
+
 isolated service class CachedProfile {
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            enabled: false
+        }
+    }
+    isolated resource function get uncachedFriend(int n) returns FieldCachedFriend {
+        return new (n);
+    }
+
     isolated resource function get friend(int n) returns CachedFriend {
         return new (n);
     }

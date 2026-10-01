@@ -318,3 +318,13 @@ isolated function testServerSideCacheWithAncestorArguments() returns error? {
     json second = check executeAliasQuery("{ profile { friend(n: 4) { name } } }", "user");
     common:assertJsonValuesWithOrder(second, {data: {profile: {friend: {name: "friend-4"}}}});
 }
+
+@test:Config {
+    groups: ["server_cache"]
+}
+isolated function testServerSideCacheWithUncachedAncestorArguments() returns error? {
+    json first = check executeAliasQuery("{ profile { a: uncachedFriend(n: 1) { name } } }", "user");
+    common:assertJsonValuesWithOrder(first, {data: {profile: {a: {name: "friend-1"}}}});
+    json second = check executeAliasQuery("{ profile { b: uncachedFriend(n: 2) { name } } }", "user");
+    common:assertJsonValuesWithOrder(second, {data: {profile: {b: {name: "friend-2"}}}});
+}
