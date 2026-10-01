@@ -56,6 +56,21 @@ function testCacheConfigInferring() returns error? {
 }
 
 @test:Config {
+    groups: ["server_cache"]
+}
+function testSubfieldCacheKeysIgnoreAliases() returns error? {
+    parser:FieldNode[] fields = check getFieldNodesFromDocumentFile("cache_utils");
+    Field 'field = getField(fields[0], Person, PersonQuery, ["aliasedPerson"], {maxAge: 10}, ["person"]);
+    Field[] subfields = <Field[]>'field.getSubfields();
+    string[] expectedCacheKey = ["person.name.11FxOYiYfpMxmANj4kGJzg==", "person.address.nj4v+q6cUjv3W/MbZdNQXg=="];
+    test:assertEquals(subfields.length(), expectedCacheKey.length());
+    foreach int i in 0 ..< subfields.length() {
+        test:assertEquals(subfields[i].getCacheKey(), expectedCacheKey[i]);
+        test:assertEquals(subfields[i].getPath()[0], "aliasedPerson");
+    }
+}
+
+@test:Config {
     groups: ["document_cache"],
     dataProvider: dataProviderDocumentCacheUtils
 }

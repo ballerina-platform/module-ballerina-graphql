@@ -88,12 +88,13 @@ isolated function isValidReturnType(__Type 'type, anydata value) returns boolean
 isolated function getFieldObject(parser:FieldNode fieldNode, parser:RootOperationType operationType, __Schema schema,
         Engine engine, any|error fieldValue = ()) returns Field {
     readonly & (string|int)[] path = [fieldNode.getAlias()];
+    readonly & (string|int)[] cachePath = [fieldNode.getName()];
     string operationTypeName = getOperationTypeNameFromOperationType(operationType);
     __Type parentType = <__Type>getTypeFromTypeArray(schema.types, operationTypeName);
     __Type fieldType = getFieldTypeFromParentType(parentType, schema.types, fieldNode);
     string parentArgHashes = generateArgHash(fieldNode.getArguments());
     return new (fieldNode, fieldType, parentType, engine.getService(), path, operationType, fieldValue = fieldValue,
-        cacheConfig = engine.getCacheConfig(), parentArgHashes = [parentArgHashes]
+        cacheConfig = engine.getCacheConfig(), parentArgHashes = [parentArgHashes], cachePath = cachePath
     );
 }
 

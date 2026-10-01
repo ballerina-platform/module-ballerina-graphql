@@ -300,9 +300,8 @@ public class ServiceValidationTest {
         assertErrorMessage(diagnostic, message, 75, 5);
 
         diagnostic = diagnosticIterator.next();
-        message = getErrorMessage(CompilationDiagnostic.INVALID_FUNCTION, "Interceptor", "execute");
-        // This error points to the types.bal in the GraphQL package since this returns the `graphql:Interceptor` type.
-        assertErrorMessage(diagnostic, message, 100, 5);
+        message = getErrorMessage(CompilationDiagnostic.INVALID_FUNCTION, "RemoteMethodInterface", "execute");
+        assertErrorMessage(diagnostic, message, 139, 30);
 
         diagnostic = diagnosticIterator.next();
         message = getErrorMessage(CompilationDiagnostic.MISSING_RESOURCE_FUNCTIONS);
