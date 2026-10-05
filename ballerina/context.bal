@@ -96,7 +96,7 @@ public isolated class Context {
 
     # Remove cache entries related to the given path.
     #
-    # + path - The path corresponding to the cache entries to be removed (Ex: "person.address.city")
+    # + path - The path (field names, not aliases) corresponding to the cache entries to be removed (Ex: "person.address.city")
     # + return - The error if the cache invalidateion fails or nil otherwise
     public isolated function invalidate(string path) returns error? {
         Engine? engine = self.getEngine();
