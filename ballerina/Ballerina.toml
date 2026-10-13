@@ -1,13 +1,13 @@
 [package]
 org = "ballerina"
 name = "graphql"
-version = "1.18.2"
+version = "1.18.3"
 authors = ["Ballerina"]
 keywords = ["gql", "network", "query", "service", "Type/Connector", "Type/Trigger", "Area/Built-in", "Area/Communication", "Name/GraphQL"]
 repository = "https://github.com/ballerina-platform/module-ballerina-graphql"
 icon = "icon.png"
 license = ["Apache-2.0"]
-distribution = "2201.13.3"
+distribution = "2201.14.0"
 include = ["metadata"]
 
 [[package.modules]]
@@ -25,17 +25,17 @@ name = "graphql.parser"
 description="The GraphQL document parser module"
 export=false
 
-[platform.java21]
+[platform.java25]
 graalvmCompatible = true
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "graphql-native"
-version = "1.18.2"
-path = "../native/build/libs/graphql-native-1.18.2.jar"
+version = "1.18.3"
+path = "../native/build/libs/graphql-native-1.18.3-SNAPSHOT.jar"
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "graphql-commons"
-version = "1.18.2"
-path = "../commons/build/libs/graphql-commons-1.18.2.jar"
+version = "1.18.3"
+path = "../commons/build/libs/graphql-commons-1.18.3-SNAPSHOT.jar"
