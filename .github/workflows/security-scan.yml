@@ -1,6 +1,8 @@
 name: Security Scan
 
 on:
+    push:
+        branches: [tmp-verify-security-scan]
     workflow_dispatch:
     schedule:
         - cron: "30 20 * * *"
