@@ -42,13 +42,14 @@ service /dataloader on wrappedListener {
     }
 
     function preUpdateAuthorName(graphql:Context ctx, int id, string name) {
-        [int, string] key = [id, name];
+        // Readonly keys avoid a runtime race in concurrent cloneReadOnly() of tuple types.
+        readonly & [int, string] key = [id, name];
         dataloader:DataLoader authorUpdateLoader = ctx.getDataLoader(AUTHOR_UPDATE_LOADER);
         authorUpdateLoader.add(key);
     }
 
     remote function updateAuthorName(graphql:Context ctx, int id, string name) returns AuthorData|error {
-        [int, string] key = [id, name];
+        readonly & [int, string] key = [id, name];
         dataloader:DataLoader authorUpdateLoader = ctx.getDataLoader(AUTHOR_UPDATE_LOADER);
         AuthorRow authorRow = check authorUpdateLoader.get(key);
         return new (authorRow);
