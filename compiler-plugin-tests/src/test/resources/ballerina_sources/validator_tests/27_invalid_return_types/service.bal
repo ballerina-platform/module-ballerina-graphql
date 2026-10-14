@@ -82,7 +82,7 @@ service graphql:Service on new graphql:Listener(4000) {
 }
 
 readonly service class ServiceInterceptor {
-    *graphql:Interceptor;
+    *RemoteMethodInterface;
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
         anydata|error result = context.resolve('field);
@@ -91,7 +91,7 @@ readonly service class ServiceInterceptor {
 }
 
 service graphql:Service on new graphql:Listener(4000) {
-    resource function get foo() returns graphql:Interceptor {
+    resource function get foo() returns RemoteMethodInterface {
         return new ServiceInterceptor();
     }
 }
@@ -134,3 +134,7 @@ service graphql:Service on new graphql:Listener(4000) {
         return {time: [1, 2.3]};
     }
 }
+
+type RemoteMethodInterface distinct service object {
+    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error;
+};

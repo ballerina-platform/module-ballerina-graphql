@@ -21,7 +21,6 @@ package io.ballerina.stdlib.graphql.compiler;
 import io.ballerina.projects.BuildOptions;
 import io.ballerina.projects.DiagnosticResult;
 import io.ballerina.projects.JBallerinaBackend;
-import io.ballerina.projects.JvmTarget;
 import io.ballerina.projects.PackageCompilation;
 import io.ballerina.projects.ProjectEnvironmentBuilder;
 import io.ballerina.projects.directory.BuildProject;
@@ -316,7 +315,7 @@ public class EndpointDetailsExtractorTest {
         DiagnosticResult diagnosticResult = project.currentPackage().runCodeGenAndModifyPlugins();
         if (diagnosticResult.errorCount() == 0) {
             PackageCompilation compilation = project.currentPackage().getCompilation();
-            JBallerinaBackend jBallerinaBackend = JBallerinaBackend.from(compilation, JvmTarget.JAVA_21);
+            JBallerinaBackend jBallerinaBackend = JBallerinaBackend.from(compilation, TestUtils.getJvmTarget());
             Path executablePath = project.targetDir().resolve("bin").resolve("output.jar");
             Files.createDirectories(Objects.requireNonNull(executablePath.getParent()));
             jBallerinaBackend.emit(JBallerinaBackend.OutputType.EXEC, executablePath);

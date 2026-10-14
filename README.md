@@ -9,11 +9,7 @@
 
 ## Overview
 
-This library provides APIs for connecting and interacting with GraphQL endpoints.
-
-GraphQL is an open-source data query and manipulation language for APIs. GraphQL allows clients to define the structure of the data required and the same structure of the data is returned from the server, preventing the returning of excessively large amounts of data or reducing the number of requests sent to the server.
-
-The Ballerina GraphQL implementation is using HTTP as the underlying protocol.
+This module provides APIs for connecting to and interacting with GraphQL endpoints, using HTTP as the underlying protocol. GraphQL lets clients define the structure of the data they need, avoiding over-fetching and reducing the number of requests to the server.
 
 ## Listener
 
@@ -896,7 +892,7 @@ This repository only contains the source code for the module.
 
 ### Prerequisites
 
-1. Download and install Java SE Development Kit (JDK) version 21 (from one of the following locations).
+1. Download and install Java SE Development Kit (JDK) version 25 (from one of the following locations).
 
    * [Oracle](https://www.oracle.com/java/technologies/downloads/)
    * [OpenJDK](https://adoptium.net/)

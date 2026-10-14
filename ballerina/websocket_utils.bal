@@ -125,7 +125,8 @@ isolated function validateSubscriptionPayload(Subscribe data, Engine engine) ret
 isolated function getSubscriptionResponse(Engine engine, __Schema schema, Context context,
         Field 'field, parser:OperationNode operationNode)
 returns stream<any, error?>|json {
-    ResponseGenerator responseGenerator = new (engine, context, 'field.getFieldType(), 'field.getPath().clone());
+    ResponseGenerator responseGenerator = new (engine, context, 'field.getFieldType(), 'field.getPath().clone(),
+            cachePath = 'field.getCachePath().clone());
     any|error result = engine.executeSubscriptionResource(context, engine.getService(), 'field, responseGenerator, engine.getValidation());
     if result is stream<any, error?> {
         return result;

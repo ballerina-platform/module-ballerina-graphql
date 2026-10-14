@@ -65,7 +65,7 @@ spotbugsTest {
     def SpotBugsEffort = classLoader.findLoadedClass("com.github.spotbugs.snom.Effort")
     effort = SpotBugsEffort.MAX
     reportLevel = SpotBugsConfidence.LOW
-    reportsDir = file("$project.buildDir/reports/spotbugs")
+    reportsDir = layout.buildDirectory.dir("reports/spotbugs")
     reports {
         html.enabled true
         text.enabled = true
@@ -95,7 +95,7 @@ compileJava {
 
 jacoco {
     toolVersion = "${jacocoVersion}"
-    reportsDirectory = file("$buildDir/reports/jacoco")
+    reportsDirectory = layout.buildDirectory.dir("reports/jacoco")
 }
 
 jacocoTestReport {
