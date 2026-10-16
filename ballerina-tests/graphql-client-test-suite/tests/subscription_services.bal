@@ -37,7 +37,7 @@ isolated function initClientSubscriptionContext(http:RequestContext requestConte
 // A dedicated listener is used for the subscription services: a `graphql:Listener` initializes
 // its underlying HTTP listener upon the first service attachment, and subscriptions require
 // HTTP/1.1, while the shared listener is initialized with the default HTTP/2.
-listener graphql:Listener clientSubscriptionListener = new (9094);
+listener graphql:Listener clientSubscriptionListener = new (9097);
 
 @graphql:ServiceConfig {
     contextInit: initClientSubscriptionContext

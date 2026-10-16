@@ -21,7 +21,7 @@ import ballerina/websocket;
 const string MOCK_AUTH_TOKEN = "token-xyz";
 const int MOCK_ABNORMAL_CLOSURE_STATUS_CODE = 4500;
 
-listener websocket:Listener mockSubscriptionListener = new (9092);
+listener websocket:Listener mockSubscriptionListener = new (9096);
 
 isolated json recordedPongPayload = ();
 isolated int mockDropConnectionCount = 0;
