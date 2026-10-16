@@ -19,8 +19,8 @@ import ballerina/lang.runtime;
 import ballerina/test;
 import ballerina/time;
 
-const string SUBSCRIPTION_URL = "http://localhost:9094/client_subscriptions";
-const string MOCK_URL_BASE = "http://localhost:9092";
+const string SUBSCRIPTION_URL = "http://localhost:9097/client_subscriptions";
+const string MOCK_URL_BASE = "http://localhost:9096";
 
 const string CLIENT_ALREADY_CLOSED_MESSAGE = "The GraphQL client is already closed";
 const string HANDSHAKE_TIMED_OUT_MESSAGE = "GraphQL subscription handshake timed out while waiting for the connection_ack message";

@@ -42,13 +42,14 @@ service /dataloader on wrappedListener {
     }
 
     function preUpdateAuthorName(graphql:Context ctx, int id, string name) {
-        [int, string] key = [id, name];
+        // Readonly keys avoid https://github.com/ballerina-platform/ballerina-lang/issues/44806
+        readonly & [int, string] key = [id, name];
         dataloader:DataLoader authorUpdateLoader = ctx.getDataLoader(AUTHOR_UPDATE_LOADER);
         authorUpdateLoader.add(key);
     }
 
     remote function updateAuthorName(graphql:Context ctx, int id, string name) returns AuthorData|error {
-        [int, string] key = [id, name];
+        readonly & [int, string] key = [id, name];
         dataloader:DataLoader authorUpdateLoader = ctx.getDataLoader(AUTHOR_UPDATE_LOADER);
         AuthorRow authorRow = check authorUpdateLoader.get(key);
         return new (authorRow);
