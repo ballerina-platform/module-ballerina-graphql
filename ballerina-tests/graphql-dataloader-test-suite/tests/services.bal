@@ -42,7 +42,7 @@ service /dataloader on wrappedListener {
     }
 
     function preUpdateAuthorName(graphql:Context ctx, int id, string name) {
-        // Readonly keys avoid a runtime race in concurrent cloneReadOnly() of tuple types.
+        // Readonly keys avoid https://github.com/ballerina-platform/ballerina-lang/issues/44806
         readonly & [int, string] key = [id, name];
         dataloader:DataLoader authorUpdateLoader = ctx.getDataLoader(AUTHOR_UPDATE_LOADER);
         authorUpdateLoader.add(key);
