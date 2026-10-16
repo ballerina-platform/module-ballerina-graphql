@@ -22,6 +22,27 @@ import ballerina/http;
 // Error messages
 const UNABLE_TO_PERFORM_DATA_BINDING = "Unable to perform data binding";
 
+// Selects the operation to execute from a parsed document: the one matching `operationName`, or,
+// when no name is given, the sole operation in the document. Shared by `Engine.getOperation` (the
+// server-side execution path) and the GraphQL client (`validateOperationKind`), so both surfaces
+// agree on the same selection rules and error messages.
+isolated function selectOperation(parser:DocumentNode document, string? operationName)
+        returns parser:OperationNode|ErrorDetail {
+    parser:OperationNode[] operations = document.getOperations();
+    if operationName is string {
+        foreach parser:OperationNode operation in operations {
+            if operation.getName() == operationName {
+                return operation;
+            }
+        }
+        return {message: string `Unknown operation named "${operationName}".`, locations: []};
+    }
+    if operations.length() == 1 {
+        return operations[0];
+    }
+    return {message: MULTIPLE_OPERATIONS_MESSAGE, locations: []};
+}
+
 isolated function getFieldNotFoundErrorMessageFromType(string fieldName, __Type rootType) returns string {
     string typeName = getTypeNameFromType(rootType);
     if rootType.kind == UNION {
@@ -435,29 +456,30 @@ isolated function performDataBinding(typedesc<GenericResponse|record{}|json> tar
     return error RequestError("GraphQL Client Error, Invalid binding type.");
 }
 
-isolated function performDataBindingWithErrors(typedesc<GenericResponseWithErrors|record{}|json> targetType,
+isolated function performDataBindingWithErrors(typedesc<GenericResponseWithErrors|record{}> targetType,
                                                json graphqlResponse)
-                                               returns GenericResponseWithErrors|record{}|json|PayloadBindingError {
+                                               returns GenericResponseWithErrors|record{}|PayloadBindingError {
     do {
-        if targetType is typedesc<GenericResponseWithErrors> {
-            GenericResponseWithErrors response = check graphqlResponse.cloneWithType(targetType);
-            return response;
-        } else if targetType is typedesc<record{}> {
-            record{} response = check graphqlResponse.cloneWithType(targetType);
-            return response;
-        } else if targetType is typedesc<json> {
-            json response = check graphqlResponse.cloneWithType(targetType);
-            return response;
-        }
+        return check graphqlResponse.cloneWithType(targetType);
     } on fail error e {
-        map<json>|error responseMap = graphqlResponse.ensureType();
-        if responseMap is error || !responseMap.hasKey("errors") {
-            return error PayloadBindingError(UNABLE_TO_PERFORM_DATA_BINDING, e, errors = ());
-        }
-        ErrorDetail[] errorDetails = checkpanic responseMap.get("errors").cloneWithType();
-        return error PayloadBindingError(UNABLE_TO_PERFORM_DATA_BINDING, e, errors = errorDetails);
+        return getPayloadBindingError(graphqlResponse, e);
     }
-    return error PayloadBindingError(string `${UNABLE_TO_PERFORM_DATA_BINDING}, Invalid binding type.`, errors = ());
+}
+
+isolated function getPayloadBindingError(json graphqlResponse, error e) returns PayloadBindingError {
+    map<json>|error responseMap = graphqlResponse.ensureType();
+    if responseMap is error || !responseMap.hasKey("errors") {
+        return error PayloadBindingError(UNABLE_TO_PERFORM_DATA_BINDING, e, errors = ());
+    }
+    ErrorDetail[]|error errorDetails = responseMap.get("errors").cloneWithType();
+    if errorDetails is error {
+        return error PayloadBindingError(UNABLE_TO_PERFORM_DATA_BINDING, e, errors = ());
+    }
+    json? data = responseMap.hasKey("data") ? responseMap.get("data") : ();
+    json extensionsField = responseMap.hasKey("extensions") ? responseMap.get("extensions") : ();
+    map<json>? extensions = extensionsField is map<json> ? extensionsField : ();
+    return error PayloadBindingError(UNABLE_TO_PERFORM_DATA_BINDING, e,
+            data = data, errors = errorDetails, extensions = extensions);
 }
 
 isolated function getFieldTypeFromParentType(__Type parentType, __Type[] typeArray, parser:FieldNode fieldNode) returns __Type {

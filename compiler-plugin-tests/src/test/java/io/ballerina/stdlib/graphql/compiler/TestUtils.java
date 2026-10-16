@@ -16,19 +16,26 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.graphql.compiler.endpointyaml.generator;
+package io.ballerina.stdlib.graphql.compiler;
 
-import java.util.Objects;
+import io.ballerina.projects.JvmTarget;
 
-public class EndpointWrapper {
-    private final Endpoint endpoint;
-    private static final String ENDPOINT_NOT_NULL_MSG = "endpoint must not be null";
+import java.util.Arrays;
 
-    public EndpointWrapper(Endpoint endpoint) {
-        this.endpoint = Objects.requireNonNull(endpoint, ENDPOINT_NOT_NULL_MSG);
+/**
+ * Shared helpers for compiler plugin tests.
+ */
+final class TestUtils {
+
+    private TestUtils() {
     }
 
-    public Endpoint getEndpoint() {
-        return endpoint;
+    static JvmTarget getJvmTarget() {
+        String runtimeCode = "java" + Runtime.version().feature();
+        return Arrays.stream(JvmTarget.values())
+                .filter(target -> target.code().equals(runtimeCode))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException(
+                        "cannot find a compatible JvmTarget for the runtime version: " + runtimeCode));
     }
 }

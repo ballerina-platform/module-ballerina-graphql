@@ -314,28 +314,7 @@ isolated class Engine {
 
     isolated function getOperation(parser:DocumentNode document, string? operationName)
     returns ErrorDetail|parser:OperationNode {
-        if operationName == () {
-            if document.getOperations().length() == 1 {
-                return document.getOperations()[0];
-            } else {
-                string message = string `Must provide operation name if query contains multiple operations.`;
-                return {
-                    message: message,
-                    locations: []
-                };
-            }
-        } else {
-            foreach parser:OperationNode operationNode in document.getOperations() {
-                if operationName == operationNode.getName() {
-                    return operationNode;
-                }
-            }
-            string message = string `Unknown operation named "${operationName}".`;
-            return {
-                message: message,
-                locations: []
-            };
-        }
+        return selectOperation(document, operationName);
     }
 
     isolated function resolve(Context context, Field 'field, boolean executePrefetchMethod = true) returns anydata {
@@ -360,8 +339,11 @@ isolated class Engine {
 
         (readonly & Interceptor)? interceptor = 'field.getNextInterceptor(self);
         __Type fieldType = 'field.getFieldType();
+        readonly & string[] childArgHashes = (self.cache is cache:Cache) ?
+            [...'field.getParentArgHashes(), generateArgHash('field.getInternalNode().getArguments())] :
+            'field.getParentArgHashes();
         ResponseGenerator responseGenerator = new (self, context, fieldType, 'field.getPath().clone(),
-            'field.getCacheConfig(), 'field.getParentArgHashes()
+            'field.getCacheConfig(), childArgHashes, 'field.getCachePath().clone()
         );
         do {
             if interceptor is readonly & Interceptor {
@@ -478,8 +460,9 @@ isolated class Engine {
         readonly & (string|int)[] path = [...'field.getPath(), fieldNode.getName()];
         __Type parentType = 'field.getFieldType();
         __Type fieldType = getFieldTypeFromParentType(parentType, self.schema.types, fieldNode);
+        readonly & (string|int)[] cachePath = [...'field.getCachePath(), fieldNode.getName()];
         Field selectionField = new (fieldNode, fieldType, parentType, 'field.getServiceObject(), path = path,
-            resourcePath = resourcePath
+            resourcePath = resourcePath, cachePath = cachePath
         );
         anydata fieldValue = self.resolve(context, selectionField);
         result[fieldNode.getAlias()] = fieldValue is ErrorDetail ? () : fieldValue;

@@ -67,6 +67,10 @@ public type Graphiql record {|
 
 # Represent the cache configurations of GraphQL server.
 #
+# **Note:** The cache is shared by all the clients, and cached values are returned without executing the resolver.
+# Hence, cached fields must not return caller-dependent data or rely on authorization checks inside the resolver.
+# Use interceptors to guard such fields instead.
+#
 # + enabled - State of the caching
 # + maxAge - TTL of the cache in seconds
 # + maxSize - Maximum number of cache entries
@@ -111,7 +115,8 @@ public type GenericResponse record {|
    record {| anydata...; |}|map<json?> data?;
 |};
 
-# Represents the target type binding record with data, extensions and errors of a GraphQL response for `execute` method.
+# Represents the target type binding record with data, extensions and errors of a GraphQL response for the
+# `query`, `mutate`, and `subscribe` methods.
 #
 # + errors - The errors occurred (if present) while processing the GraphQL request.
 public type GenericResponseWithErrors record {|

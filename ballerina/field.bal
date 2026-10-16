@@ -25,6 +25,7 @@ public class Field {
     private final __Type fieldType;
     private final __Type parentType;
     private final readonly & (string|int)[] path;
+    private final readonly & (string|int)[] cachePath;
     private string[] resourcePath;
     private readonly & Interceptor[] fieldInterceptors;
     private final ServerCacheConfig? cacheConfig;
@@ -39,12 +40,13 @@ public class Field {
             service object {}? serviceObject = (), readonly & (string|int)[] path = [],
             parser:RootOperationType operationType = parser:OPERATION_QUERY, string[] resourcePath = [],
             any|error fieldValue = (), ServerCacheConfig? cacheConfig = (), readonly & string[] parentArgHashes = [],
-            boolean isAlreadyCached = false) {
+            boolean isAlreadyCached = false, (readonly & (string|int)[])? cachePath = ()) {
         self.internalNode = internalNode;
         self.serviceObject = serviceObject;
         self.fieldType = fieldType;
         self.parentType = parentType;
         self.path = path;
+        self.cachePath = cachePath ?: path;
         self.operationType = operationType;
         self.resourcePath = resourcePath;
         self.fieldValue = fieldValue;
@@ -150,6 +152,7 @@ public class Field {
 
     isolated function getFieldObjects(parser:SelectionNode selectionNode, __Type 'type) returns Field[] {
         string[] currentPath = self.path.'map((item) => item is int ? "@" : item);
+        string[] currentCachePath = self.cachePath.'map((item) => item is int ? "@" : item);
         string[] unwrappedPath = getUnwrappedPath('type);
         __Type parentType = getOfType('type);
 
@@ -168,7 +171,8 @@ public class Field {
                                 ...unwrappedPath,
                                 'field.name
                             ], self.operationType.clone(), self.resourcePath.clone(),
-                            cacheConfig = self.cacheConfig, parentArgHashes = self.parentArgHashes
+                            cacheConfig = self.cacheConfig, parentArgHashes = self.parentArgHashes,
+                            cachePath = [...currentCachePath, ...unwrappedPath, 'field.name].cloneReadOnly()
                         ));
                         break;
                     }
@@ -213,6 +217,10 @@ public class Field {
         return self.generateCacheKey();
     }
 
+    isolated function getCachePath() returns readonly & (string|int)[] {
+        return self.cachePath;
+    }
+
     isolated function getCacheMaxAge() returns decimal {
         return self.cacheMaxAge;
     }
@@ -227,7 +235,7 @@ public class Field {
             requestedNullableFields = self.getRequestedNullableFields();
         }
         string resourcePath = "";
-        foreach string|int path in self.path {
+        foreach string|int path in self.cachePath {
             resourcePath += string `${path}.`;
         }
         string hash = generateArgHash(self.internalNode.getArguments(), self.parentArgHashes, requestedNullableFields);

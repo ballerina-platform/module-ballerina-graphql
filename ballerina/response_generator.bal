@@ -22,6 +22,7 @@ isolated class ResponseGenerator {
     private final Engine engine;
     private final Context context;
     private final readonly & (string|int)[] path;
+    private final readonly & (string|int)[] cachePath;
     private final readonly & __Type fieldType;
     private final readonly & ServerCacheConfig? cacheConfig;
     private final readonly & string[] parentArgHashes;
@@ -29,10 +30,12 @@ isolated class ResponseGenerator {
     private final string functionNameGetFragmentFromService = "";
 
     isolated function init(Engine engine, Context context, __Type fieldType, readonly & (string|int)[] path = [],
-            ServerCacheConfig? cacheConfig = (), readonly & string[] parentArgHashes = []) {
+            ServerCacheConfig? cacheConfig = (), readonly & string[] parentArgHashes = [],
+            (readonly & (string|int)[])? cachePath = ()) {
         self.engine = engine;
         self.context = context;
         self.path = path;
+        self.cachePath = cachePath ?: path;
         self.fieldType = fieldType.cloneReadOnly();
         self.cacheConfig = cacheConfig;
         self.parentArgHashes = parentArgHashes;
@@ -83,8 +86,10 @@ isolated class ResponseGenerator {
             readonly & (string|int)[] clonedPath = [...self.path, ...path, fieldNode.getAlias()];
             __Type parentType = self.fieldType;
             __Type fieldType = getFieldTypeFromParentType(parentType, self.engine.getSchema().types, fieldNode);
+            readonly & (string|int)[] clonedCachePath = [...self.cachePath, ...path, fieldNode.getName()];
             Field 'field = new (fieldNode, fieldType, parentType, parentValue, clonedPath,
-                cacheConfig = self.cacheConfig, parentArgHashes = self.parentArgHashes
+                cacheConfig = self.cacheConfig, parentArgHashes = self.parentArgHashes,
+                cachePath = clonedCachePath
             );
             return self.engine.resolve(self.context, 'field);
         }
@@ -170,9 +175,10 @@ returns anydata {
         __Type fieldType = getFieldTypeFromParentType(parentType, self.engine.getSchema().types, fieldNode);
         boolean isAlreadyCached = isRecordWithNoOptionalFields(parentValue);
         readonly & (string|int)[] clonedPath = [...self.path, ...path, fieldNode.getAlias()];
+        readonly & (string|int)[] clonedCachePath = [...self.cachePath, ...path, fieldNode.getName()];
         Field 'field = new (fieldNode, fieldType, parentType, path = clonedPath, fieldValue = fieldValue,
             cacheConfig = self.cacheConfig, parentArgHashes = self.parentArgHashes,
-            isAlreadyCached = isAlreadyCached
+            isAlreadyCached = isAlreadyCached, cachePath = clonedCachePath
         );
         return self.engine.resolve(self.context, 'field);
     }

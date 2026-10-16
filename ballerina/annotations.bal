@@ -43,6 +43,8 @@ public type GraphqlServiceConfig record {|
     QueryComplexityConfig queryComplexityConfig?;
     # The document cache configurations for the service
     DocumentCacheConfig documentCacheConfig?;
+    # The server-side keep-alive configurations for GraphQL subscriptions
+    ServerKeepAliveConfig keepAlive = {};
 |};
 
 # The annotation to configure a GraphQL service.

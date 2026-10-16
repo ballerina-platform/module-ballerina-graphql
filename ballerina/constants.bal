@@ -72,9 +72,43 @@ const WS_COMPLETE = "complete";
 const GRAPHQL_TRANSPORT_WS = "graphql-transport-ws";
 const WS_SUB_PROTOCOL = "Sec-WebSocket-Protocol";
 
-configurable decimal MESSAGE_SCHEDULE_INITIAL_DELAY = 5;
-const decimal PING_MESSAGE_SCHEDULE_INTERVAL = 15;
-const decimal PONG_MESSAGE_HANDLER_SCHEDULE_INTERVAL = 15;
+// Fields of the graphql-transport-ws protocol messages
+const WS_MESSAGE_TYPE_FIELD = "type";
+const WS_MESSAGE_ID_FIELD = "id";
+const WS_MESSAGE_PAYLOAD_FIELD = "payload";
+
+// URL schemes used to resolve the WebSocket URL of the GraphQL client
+const HTTP_SCHEME_PREFIX = "http://";
+const HTTPS_SCHEME_PREFIX = "https://";
+const WS_SCHEME_PREFIX = "ws://";
+const WSS_SCHEME_PREFIX = "wss://";
+const SCHEME_SEPARATOR = "://";
+
+// Error messages used in the GraphQL client
+const INVALID_DOCUMENT_MESSAGE = "Invalid GraphQL document provided";
+const MULTIPLE_OPERATIONS_MESSAGE = "Must provide operation name if query contains multiple operations.";
+const INVALID_RECONNECT_CONFIG_MESSAGE = "Invalid reconnect configuration";
+const INVALID_KEEPALIVE_CONFIG_MESSAGE = "Invalid keep-alive configuration";
+const CLIENT_ALREADY_CLOSED_MESSAGE = "The GraphQL client is already closed";
+const HANDSHAKE_TIMED_OUT_MESSAGE = "GraphQL subscription handshake timed out while waiting for the connection_ack message";
+const CONNECTION_DROPPED_MESSAGE = "The GraphQL subscription connection was closed abnormally";
+const RECONNECTION_EXHAUSTED_MESSAGE = "The GraphQL subscription connection was lost and could not be re-established";
+const SUBSCRIPTION_SERVER_ERROR_MESSAGE = "The server responded with an error for the subscription";
+const INVALID_SUBSCRIPTION_MESSAGE = "Invalid message received for the subscription";
+const KEEPALIVE_TIMEOUT_MESSAGE = "The GraphQL subscription server stopped responding to the keep-alive ping messages";
+
+// Consecutive silent keep-alive cycles before a connection is treated as dead.
+const int KEEPALIVE_MAX_MISSED_PROBES = 3;
+
+// The time to wait for the peer's close-frame echo when closing the subscription connection.
+// Kept short and best-effort: the background reader may consume the echo, and the connection is
+// torn down regardless, so close() must not block on (or fail because of) a missing echo.
+const decimal GRACEFUL_CLOSE_TIMEOUT = 5;
+
+// Default idle-read timeout applied when the user has not configured `websocketConfig.readTimeout`.
+// Bounds `readMessage()` so a connection that goes silent without a close frame is periodically
+// re-checked instead of blocking forever; a `ReadTimedOutError` is treated as a retry, not a failure.
+const decimal DEFAULT_IDLE_READ_TIMEOUT = 30;
 
 // Constants used in the executor visitor
 const OPERATION_TYPE = "operationType";

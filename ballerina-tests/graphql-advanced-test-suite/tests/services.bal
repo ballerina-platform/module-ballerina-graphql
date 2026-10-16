@@ -662,3 +662,131 @@ service /complexity on graphqlListener {
         }
     }
 }
+
+@graphql:InterceptorConfig {
+    global: false
+}
+readonly service class AdminGuard {
+    *graphql:Interceptor;
+
+    isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
+        var scope = context.get("scope");
+        if scope is string && scope == "admin" {
+            return context.resolve('field);
+        }
+        return error(string `forbidden: ${'field.getName()} requires admin`);
+    }
+}
+
+isolated string cachedProfileTitle = "title-v1";
+
+isolated service class CachedFriend {
+    private final int n;
+
+    isolated function init(int n) {
+        self.n = n;
+    }
+
+    isolated resource function get name() returns string {
+        return string `friend-${self.n}`;
+    }
+}
+
+isolated service class FieldCachedFriend {
+    private final int n;
+
+    isolated function init(int n) {
+        self.n = n;
+    }
+
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            enabled: true,
+            maxAge: 60
+        }
+    }
+    isolated resource function get name() returns string {
+        return string `friend-${self.n}`;
+    }
+}
+
+isolated service class CachedProfile {
+    @graphql:ResourceConfig {
+        cacheConfig: {
+            enabled: false
+        }
+    }
+    isolated resource function get uncachedFriend(int n) returns FieldCachedFriend {
+        return new (n);
+    }
+
+    isolated resource function get friend(int n) returns CachedFriend {
+        return new (n);
+    }
+
+    isolated resource function get title() returns string {
+        lock {
+            return cachedProfileTitle;
+        }
+    }
+
+    isolated resource function get name() returns string {
+        return "public-name";
+    }
+
+    @graphql:ResourceConfig {
+        interceptors: [new AdminGuard()]
+    }
+    isolated resource function get note() returns string {
+        return "secret-note";
+    }
+}
+
+@graphql:ServiceConfig {
+    cacheConfig: {
+        enabled: true,
+        maxAge: 60
+    },
+    contextInit:
+    isolated function(http:RequestContext requestContext, http:Request request) returns graphql:Context|error {
+        graphql:Context context = new;
+        context.set("scope", request.hasHeader("scope") ? check request.getHeader("scope") : "none");
+        return context;
+    }
+}
+service /server_cache_alias on graphqlListener {
+    private string motto = "motto-v1";
+
+    @graphql:ResourceConfig {
+        interceptors: [new AdminGuard()]
+    }
+    isolated resource function get secret() returns string {
+        return "secret-value";
+    }
+
+    isolated resource function get motto() returns string {
+        lock {
+            return self.motto;
+        }
+    }
+
+    isolated resource function get profile() returns CachedProfile {
+        return new;
+    }
+
+    isolated remote function updateMotto(graphql:Context context, string motto) returns string|error {
+        lock {
+            self.motto = motto;
+        }
+        check context.invalidate("motto");
+        return motto;
+    }
+
+    isolated remote function updateTitle(graphql:Context context, string title) returns string|error {
+        lock {
+            cachedProfileTitle = title;
+        }
+        check context.invalidate("profile.title");
+        return title;
+    }
+}

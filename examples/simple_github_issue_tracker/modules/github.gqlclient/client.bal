@@ -30,7 +30,7 @@ public isolated client class GraphqlClient {
     remote isolated function getBranches(int perPageCount, string repositoryName, string username, string? lastPageCursor = ()) returns GetBranchesResponse|graphql:ClientError {
         string query = string `query getBranches($username:String!,$repositoryName:String!,$perPageCount:Int!,$lastPageCursor:String) {repository(owner:$username,name:$repositoryName) {refs(first:$perPageCount,after:$lastPageCursor,refPrefix:"refs/heads/") {nodes {name id prefix}}}}`;
         map<anydata> variables = {"lastPageCursor": lastPageCursor, "perPageCount": perPageCount, "repositoryName": repositoryName, "username": username};
-        json graphqlResponse = check self.graphqlClient->executeWithType(query, variables);
-        return <GetBranchesResponse> check performDataBinding(graphqlResponse, GetBranchesResponse);
+        record {} graphqlResponse = check self.graphqlClient->query(query, variables);
+        return <GetBranchesResponse> check performDataBinding(graphqlResponse.toJson(), GetBranchesResponse);
     }
 }

@@ -28,6 +28,7 @@ import io.ballerina.projects.BuildOptions;
 import io.ballerina.projects.DiagnosticResult;
 import io.ballerina.projects.Document;
 import io.ballerina.projects.DocumentId;
+import io.ballerina.projects.JBallerinaBackend;
 import io.ballerina.projects.Package;
 import io.ballerina.projects.PackageCompilation;
 import io.ballerina.projects.ProjectEnvironmentBuilder;
@@ -51,6 +52,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -72,11 +74,11 @@ public class ServiceArtifactsExtractionTest {
     private static final String ARTIFACT_DIR = "artifact";
     private static final String TARGET_DIR = "target";
 
-    private static final String ENDPOINT_SUFFIX = "_endpoint.yaml";
+    private static final String ENDPOINTS_FILE_NAME = "endpoints.yaml";
     private static final String GQL_SUFFIX = ".graphql";
 
     @Test
-    public void testServiceArtifactsGenerationForSingleService() throws Exception {
+    public void testServiceArtifactsGenerationForSingleService() throws IOException {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(SCHEMA_VALIDATOR_DIR)
                 .resolve("01_graphql_service");
         try {
@@ -85,12 +87,12 @@ public class ServiceArtifactsExtractionTest {
                     "Expected no compilation/plugin errors");
 
             Path artifactDir = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR);
-            Path endpointYaml = artifactDir.resolve("service_graphql2_endpoint.yaml");
-            Path expectedEndpointYaml = YAML_FILES_DIRECTORY.resolve("service_graphql2_endpoint.yaml");
+            Path endpointsYaml = artifactDir.resolve(ENDPOINTS_FILE_NAME);
+            Path expectedEndpointsYaml = YAML_FILES_DIRECTORY.resolve("endpoints_single_service.yaml");
 
             Assert.assertTrue(Files.exists(artifactDir), "Artifact directory should exist");
-            Assert.assertTrue(Files.exists(endpointYaml), "Endpoint YAML file should be generated");
-            verifyYamlContent(endpointYaml, expectedEndpointYaml);
+            Assert.assertTrue(Files.exists(endpointsYaml), "Consolidated endpoints YAML should be generated");
+            verifyYamlContent(endpointsYaml, expectedEndpointsYaml);
 
         } finally {
             deleteDirectories(projectDirPath);
@@ -99,7 +101,7 @@ public class ServiceArtifactsExtractionTest {
 
 
     @Test
-    public void testServiceArtifactsGenerationForMultipleServices() throws Exception {
+    public void testServiceArtifactsGenerationForMultipleServices() throws IOException {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(GENERATOR_TESTS_DIR)
                 .resolve("22_graphql_service_with_http_service");
         try {
@@ -110,15 +112,12 @@ public class ServiceArtifactsExtractionTest {
             Path artifactDir = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR);
             Assert.assertTrue(Files.exists(artifactDir), "Artifact directory should exist");
 
-            Path endpointYaml1 = artifactDir.resolve("service_endpoint.yaml");
-            Path endpointYaml2 = artifactDir.resolve("service_too_endpoint.yaml");
-            Path expectedDir = YAML_FILES_DIRECTORY;
+            Path endpointsYaml = artifactDir.resolve(ENDPOINTS_FILE_NAME);
+            Assert.assertTrue(Files.exists(endpointsYaml), "Consolidated endpoints YAML should be generated");
 
-            Assert.assertTrue(Files.exists(endpointYaml1), "Endpoint YAML file should be generated");
-            Assert.assertTrue(Files.exists(endpointYaml2), "Endpoint YAML file should be generated");
-
-            verifyYamlContent(endpointYaml1, expectedDir.resolve("service_endpoint.yaml"));
-            verifyYamlContent(endpointYaml2, expectedDir.resolve("service_too_endpoint.yaml"));
+            String content = Files.readString(endpointsYaml);
+            Assert.assertTrue(content.contains("port: 9091"), "Expected port 9091 for the first service");
+            Assert.assertTrue(content.contains("port: 9093"), "Expected port 9093 for the second service");
 
             long schemaCount = countFilesWithSuffix(artifactDir, GQL_SUFFIX);
             Assert.assertTrue(schemaCount > 1, "Expected schema artifacts for " +
@@ -144,7 +143,7 @@ public class ServiceArtifactsExtractionTest {
     }
 
     @Test
-    public void testServiceArtifactsGenerationForGqlWithHttp() throws Exception {
+    public void testServiceArtifactsGenerationForGqlWithHttp() throws IOException {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(GENERATOR_TESTS_DIR)
                 .resolve("22_graphql_service_with_http_service");
         try {
@@ -153,9 +152,9 @@ public class ServiceArtifactsExtractionTest {
                     "Expected no compilation/plugin errors");
             Path artifactDir = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR);
             Assert.assertTrue(Files.exists(artifactDir), "Artifact directory should exist");
-            long endpointYamlCount = countFilesWithSuffix(artifactDir, ENDPOINT_SUFFIX);
+            long endpointCount = countEndpointEntries(artifactDir.resolve(ENDPOINTS_FILE_NAME));
             long schemaCount = countFilesWithSuffix(artifactDir, GQL_SUFFIX);
-            Assert.assertTrue(endpointYamlCount >= 2);
+            Assert.assertTrue(endpointCount >= 2);
             Assert.assertEquals(schemaCount, 2);
         } finally {
             deleteDirectories(projectDirPath);
@@ -163,7 +162,7 @@ public class ServiceArtifactsExtractionTest {
     }
 
     @Test
-    public void testServiceArtifactsGenerationWithInvalidSchema() throws Exception {
+    public void testServiceArtifactsGenerationWithInvalidSchema() throws IOException {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(VALIDATOR_TESTS_DIR)
                 .resolve("60_invalid_use_of_reserved_federation_type_names");
         try {
@@ -179,7 +178,7 @@ public class ServiceArtifactsExtractionTest {
     }
 
     @Test
-    public void testServiceArtifactsGenerationWithDynamicallyAttachedListeners() throws Exception {
+    public void testServiceArtifactsGenerationWithDynamicallyAttachedListeners() throws IOException {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(VALIDATOR_TESTS_DIR)
                 .resolve("23_dynamically_attaching_service");
         try {
@@ -194,7 +193,7 @@ public class ServiceArtifactsExtractionTest {
     }
 
     @Test
-    public void testServiceArtifactsWithDuplicateServicePaths() throws Exception {
+    public void testServiceArtifactsWithDuplicateServicePaths() throws IOException {
         Path projectDirPath = RESOURCE_DIRECTORY.resolve(ENDPOINT_DETAILS_TESTS_DIR)
                 .resolve("04_service_with_duplicate_paths");
         try {
@@ -203,7 +202,7 @@ public class ServiceArtifactsExtractionTest {
 
             Path artifactDir = projectDirPath.resolve(TARGET_DIR).resolve(ARTIFACT_DIR);
             Assert.assertTrue(Files.exists(artifactDir), "Artifact directory should exist");
-            Assert.assertTrue(countFilesWithSuffix(artifactDir, ENDPOINT_SUFFIX) >= 2);
+            Assert.assertTrue(countEndpointEntries(artifactDir.resolve(ENDPOINTS_FILE_NAME)) >= 2);
             Assert.assertTrue(countFilesWithSuffix(artifactDir, GQL_SUFFIX) >= 2);
         } finally {
             deleteDirectories(projectDirPath);
@@ -474,15 +473,31 @@ public class ServiceArtifactsExtractionTest {
                 expectedEndpointContent.replaceAll("\\s+", ""));
     }
 
-    private static DiagnosticResult getDiagnosticResults(Path projectDirPath, boolean isExportEndpoints) {
+    private static DiagnosticResult getDiagnosticResults(Path projectDirPath, boolean isExportEndpoints)
+            throws IOException {
+        System.setProperty("ballerina.home", DISTRIBUTION_PATH.toString());
         BuildOptions buildOptions = BuildOptions.builder().setExportEndpoints(isExportEndpoints).build();
         BuildProject project = load(getEnvironmentBuilder(), projectDirPath, buildOptions);
-        return project.currentPackage().runCodeGenAndModifyPlugins();
+        DiagnosticResult diagnosticResult = project.currentPackage().runCodeGenAndModifyPlugins();
+        if (diagnosticResult.errorCount() == 0) {
+            PackageCompilation compilation = project.currentPackage().getCompilation();
+            JBallerinaBackend jBallerinaBackend = JBallerinaBackend.from(compilation, TestUtils.getJvmTarget());
+            Path executablePath = project.targetDir().resolve("bin").resolve("output.jar");
+            Files.createDirectories(Objects.requireNonNull(executablePath.getParent()));
+            jBallerinaBackend.emit(JBallerinaBackend.OutputType.EXEC, executablePath);
+        }
+        return diagnosticResult;
     }
 
     private static ProjectEnvironmentBuilder getEnvironmentBuilder() {
         Environment environment = EnvironmentBuilder.getBuilder().setBallerinaHome(DISTRIBUTION_PATH).build();
         return ProjectEnvironmentBuilder.getBuilder(environment);
+    }
+
+    private static long countEndpointEntries(Path endpointsYaml) throws IOException {
+        try (Stream<String> lines = Files.lines(endpointsYaml)) {
+            return lines.filter(line -> line.trim().startsWith("- name:")).count();
+        }
     }
 
     private static long countFilesWithSuffix(Path directory, String suffix) throws IOException {

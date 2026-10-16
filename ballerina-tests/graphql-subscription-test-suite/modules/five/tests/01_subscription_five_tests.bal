@@ -15,10 +15,12 @@
 // under the License.
 
 import ballerina/graphql;
-import ballerina/graphql_test_common as common;
 import ballerina/http;
 import ballerina/test;
-import ballerina/websocket;
+
+type MessagesResponse record {|
+    record {| int messages; |} data;
+|};
 
 @test:Config {
     groups: ["listener", "subscriptions"]
@@ -38,19 +40,25 @@ function testAttachServiceWithSubscriptionToHttp2BasedListener() returns error? 
 }
 function testAttachServiceWithSubscriptionToHttp1BasedListener() returns error? {
     string document = string `subscription { messages }`;
-    string url = "ws://localhost:9091/service_with_http1";
-    websocket:ClientConfiguration config = {subProtocols: [common:GRAPHQL_TRANSPORT_WS]};
-    websocket:Client wsClient1 = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient1);
-    check common:sendSubscriptionMessage(wsClient1, document, "1");
+    string url = "http://localhost:9091/service_with_http1";
 
-    websocket:Client wsClient2 = check new (url, config);
-    check common:initiateGraphqlWsConnection(wsClient2);
-    check common:sendSubscriptionMessage(wsClient2, document, "2");
+    graphql:Client graphqlClient1 = check new (url);
+    stream<MessagesResponse, graphql:ClientError?> messages1 = check graphqlClient1->subscribe(document);
+    graphql:Client graphqlClient2 = check new (url);
+    stream<MessagesResponse, graphql:ClientError?> messages2 = check graphqlClient2->subscribe(document);
 
     foreach int i in 1 ..< 4 {
-        json expectedMsgPayload = {data: {messages: i}};
-        check common:validateNextMessage(wsClient1, expectedMsgPayload, id = "1");
-        check common:validateNextMessage(wsClient2, expectedMsgPayload, id = "2");
+        record {|MessagesResponse value;|}|graphql:ClientError? event1 = messages1.next();
+        test:assertTrue(event1 is record {|MessagesResponse value;|}, "Expected a messages event from the first client");
+        if event1 is record {|MessagesResponse value;|} {
+            test:assertEquals(event1.value.data.messages, i);
+        }
+        record {|MessagesResponse value;|}|graphql:ClientError? event2 = messages2.next();
+        test:assertTrue(event2 is record {|MessagesResponse value;|}, "Expected a messages event from the second client");
+        if event2 is record {|MessagesResponse value;|} {
+            test:assertEquals(event2.value.data.messages, i);
+        }
     }
+    check graphqlClient1->close();
+    check graphqlClient2->close();
 }
