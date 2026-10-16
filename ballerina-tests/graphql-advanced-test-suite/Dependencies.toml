@@ -73,7 +73,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "graphql"
-version = "1.19.0"
+version = "1.19.1"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -105,7 +105,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql_advanced_test_suite"
-version = "1.19.0"
+version = "1.19.1"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "graphql"},
@@ -123,7 +123,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql_test_common"
-version = "1.19.0"
+version = "1.19.1"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "file"},
@@ -370,7 +370,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "time"
-version = "2.8.3"
+version = "2.8.4"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -378,7 +378,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "url"
-version = "2.6.4"
+version = "2.6.5"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -397,7 +397,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "websocket"
-version = "2.16.0"
+version = "2.16.1"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "constraint"},
