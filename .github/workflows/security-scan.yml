@@ -1,6 +1,8 @@
 name: Security Scan
 
 on:
+  push:
+    branches: [security-scan-rollout]  # TEMP verify trigger
     workflow_dispatch:
     schedule:
         - cron: "30 20 * * *"
