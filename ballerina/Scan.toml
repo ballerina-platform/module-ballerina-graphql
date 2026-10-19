@@ -1,0 +1,6 @@
+# ballerina:13 matches public constants AUTH_SCHEME_BASIC = "Basic" / AUTH_SCHEME_BEARER = "Bearer", which are HTTP
+# authorization scheme names, not credentials. ballerina:14 matches variables/fields named auth*/token* (authHandlers,
+# authn, authConfigurations, Token lexer/parser values, the public `auth = ()` field, UNAUTHORIZED). No secret literal
+# is embedded; renaming would break the public API.
+[rule]
+exclude = ["ballerina:13", "ballerina:14"]
