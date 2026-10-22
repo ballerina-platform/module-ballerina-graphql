@@ -2,5 +2,8 @@
 # authorization scheme names, not credentials. ballerina:14 matches variables/fields named auth*/token* (authHandlers,
 # authn, authConfigurations, Token lexer/parser values, the public `auth = ()` field, UNAUTHORIZED). No secret literal
 # is embedded; renaming would break the public API.
+# TODO: replace this rule exclusion with a targeted scan suppression (with a reason) once `bal scan` supports it
+# (planned for v0.13.0), and fix the false positives on the scan tool side: a secret-named identifier should only be
+# reported when it is assigned a fixed value.
 [rule]
 exclude = ["ballerina:13", "ballerina:14"]
