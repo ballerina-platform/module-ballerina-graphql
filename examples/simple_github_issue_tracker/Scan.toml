@@ -1,5 +1,8 @@
 # ballerina:13 matches the generated github.gqlclient ProxyConfig field `string password = ""` (an empty placeholder
 # meaning 'no proxy password', mirroring http:ProxyConfig, not a credential). ballerina:14 matches `auth`/`authToken`
 # usages; authToken is `configurable string authToken = ?` (no fixed value) and the client modules just forward config.auth.
+# TODO: replace this rule exclusion with a targeted scan suppression (with a reason) once `bal scan` supports it
+# (planned for v0.13.0), and fix the false positives on the scan tool side: a secret-named identifier should only be
+# reported when it is assigned a fixed value.
 [rule]
 exclude = ["ballerina:13", "ballerina:14"]
