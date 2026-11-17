@@ -53,7 +53,7 @@
                         shouldRetry: () => true
                     });
 
-                    return async (graphQLParams) => {
+                    return async (graphQLParams, options) => {
                         const isSubscription = graphQLParams.query.trim().startsWith("subscription");
                         if (isSubscription) {
                             return {
@@ -72,19 +72,21 @@
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
-                                "Accept": "application/json"
+                                "Accept": "application/json",
+                                ...options?.headers
                             },
                             body: JSON.stringify(graphQLParams)
                         }).then(response => response.json());
                     };
                 }
 
-                return async (graphQLParams) => {
+                return async (graphQLParams, options) => {
                     return fetch(HTTP_ENDPOINT, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
-                            "Accept": "application/json"
+                            "Accept": "application/json",
+                            ...options?.headers
                         },
                         body: JSON.stringify(graphQLParams)
                     }).then(response => response.json());
