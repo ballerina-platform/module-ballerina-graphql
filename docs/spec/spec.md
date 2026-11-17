@@ -3,7 +3,7 @@
 _Authors_: [@aashikam](https://github.com/aashikam) [@DimuthuMadushan](https://github.com/DimuthuMadushan) [@MohamedSabthar](https://github.com/MohamedSabthar) [@Nuvindu](https://github.com/Nuvindu) [@ThisaruGuruge](https://github.com/ThisaruGuruge) \
 _Reviewers_: [@DimuthuMadushan](https://github.com/DimuthuMadushan) [@ldclakmal](https://github.com/ldclakmal) [@MohamedSabthar](https://github.com/MohamedSabthar) [@shafreenAnfar](https://github.com/shafreenAnfar) [@ThisaruGuruge](https://github.com/ThisaruGuruge) \
 _Created_: 2022/01/06 \
-_Updated_: 2025/04/07 \
+_Updated_: 2026/11/17 \
 _Edition_: Swan Lake \
 _GraphQL Specification_: [October 2021](https://spec.graphql.org/October2021/)
 
@@ -91,7 +91,8 @@ The conforming implementation of the specification is released and included in t
     * 6.2 [Service Error Handling](#62-service-error-handling)
         * 6.2.1 [Returning Errors](#621-returning-errors)
         * 6.2.2 [Returning Errors and Nil Values](#622-returning-errors-and-nil-values)
-        * 6.2.3 [The `graphql:__addError` Function](#623-the-graphql__adderror-function)
+        * 6.2.3 [Returning Errors with Extensions](#623-returning-errors-with-extensions)
+        * 6.2.4 [The `graphql:__addError` Function](#624-the-graphql__adderror-function)
     * 6.3 [Client Error Handling](#63-client-error-handling)
         * 6.3.1 [Request Error](#631-request-error)
             * 6.3.1.1 [HTTP Error](#6311-http-error)
@@ -1495,9 +1496,9 @@ A GraphQL service can return errors so that the client can handle them. The Ball
 
 A Ballerina `resource` or `remote` method representing a GraphQL object field can return an error. When an error is returned, it will be added to the `errors` field in the GraphQL response. The shape of the error object is described in the [Error Detail Record](#61-error-detail-record) section.
 
-When an error is returned from a GraphQL resolver, the error message is added as the message of the error, and the location of the document that caused the error will be added to the `locations` field. The path of the error (from the root of the document) will be added as the path in the error response. Currently, the Ballerina GraphQL service __will not add__ any metadata in the `extensions` field.
+When an error is returned from a GraphQL resolver, the error message is added as the message of the error, and the location of the document that caused the error will be added to the `locations` field. The path of the error (from the root of the document) will be added as the path in the error response. The `extensions` field is added only when the error carries extensions, as described in the [Returning Errors with Extensions](#623-returning-errors-with-extensions) section.
 
-If a resolver execution results in an error, the stacktrace of the error will be logged to the `stderr` of the server.
+If a resolver execution results in an error without extensions, the stacktrace of the error will be logged to the `stderr` of the server.
 
 ###### Example: Returning Errors
 
@@ -1622,7 +1623,62 @@ Similarly, the `age` field of the `Profile` object can return an `error` too. Bu
 }
 ```
 
-#### 6.2.3 The `graphql:__addError` Function
+#### 6.2.3 Returning Errors with Extensions
+
+An error whose detail has an `extensions` field of type `map<anydata>` is sent to the client with that value as the `extensions` of the error in the GraphQL response. This applies to errors returned from `resource` and `remote` methods, [interceptors](#103-interceptors), and the [context initializer function](#713-context-initializer-function).
+
+The `graphql:ServiceError` type is provided for this purpose. Its detail record, `graphql:ServiceErrorDetail`, has a mandatory `extensions` field.
+
+```ballerina
+public type ServiceErrorDetail record {|
+    map<anydata> extensions;
+|};
+
+public type ServiceError distinct (Error & error<ServiceErrorDetail>);
+```
+
+An error with extensions is considered handled by the service. Therefore, it is logged at the `DEBUG` level without the stacktrace, instead of the `ERROR` level.
+
+###### Example: Returning Errors with Extensions
+
+```ballerina
+service on new graphql:Listener(9090) {
+    resource function get book(int id) returns Book|graphql:ServiceError {
+        Book? book = books[id];
+        if book is () {
+            return error graphql:ServiceError("Book not found", extensions = {code: "NOT_FOUND"});
+        }
+        return book;
+    }
+}
+```
+
+The result of the document `{ book(id: 7) { title } }` is the following.
+
+```json
+{
+    "errors": [
+        {
+            "message": "Book not found",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 3
+                }
+            ],
+            "path": [
+                "book"
+            ],
+            "extensions": {
+                "code": "NOT_FOUND"
+            }
+        }
+    ],
+    "data": null
+}
+```
+
+#### 6.2.4 The `graphql:__addError` Function
 
 The `graphql:__addError` function can be used to add a custom error to the response. This function accepts two parameters.
 
@@ -1845,7 +1901,7 @@ The `auth` field is used to provide configurations related to authentication and
 
 The `contextInit` field is used to provide a method to initialize the [`graphql:Context` object](#101-context-object). It is called per each request to create a `graphql:Context` object.
 
-The context initializer function can return an error if the validation is failed. In such cases, the request will not proceed, and an error will be returned immediately.
+The context initializer function can return an error if the validation is failed. In such cases, the request will not proceed, and an error will be returned immediately. The response status code is `400` for a `graphql:AuthnError` or a `graphql:AuthzError`, and `500` otherwise. If the error carries extensions, they are added to the error in the response as described in the [Returning Errors with Extensions](#623-returning-errors-with-extensions) section.
 
 Following is the function template for the `contextInit` function.
 
@@ -4394,7 +4450,7 @@ The GraphQL tracing feature provides detailed information about the execution of
 
 #### 10.8.3 Logging
 
-A Ballerina GraphQL service will log the errors that occurred during the execution of the GraphQL request. The errors will be logged at the `ERROR` level. The error message and the stack trace will be printed in the log, in the `ballerina/log` module log format.
+A Ballerina GraphQL service will log the errors that occurred during the execution of the GraphQL request. The errors will be logged at the `ERROR` level, except the errors with extensions, which are logged at the `DEBUG` level. The error message and the stack trace will be printed in the log, in the `ballerina/log` module log format.
 
 ### 10.9 Document Validation
 
