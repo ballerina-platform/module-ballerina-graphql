@@ -1514,7 +1514,8 @@ service /nullable_types on basicListener {
 
 service /error_extensions on basicListener {
     isolated resource function get book(int id) returns string|graphql:ServiceError {
-        return error graphql:ServiceError(string `Book ${id} not found`, extensions = {code: "NOT_FOUND", id});
+        string message = string `Book ${id} not found`;
+        return error graphql:ServiceError(message, message = message, extensions = {code: "NOT_FOUND", id});
     }
 
     isolated resource function get author() returns string|error {
@@ -1530,6 +1531,7 @@ service /error_extensions on basicListener {
     }
 
     isolated remote function addBook(string title) returns string|graphql:ServiceError {
-        return error graphql:ServiceError("Book already exists", extensions = {code: "CONFLICT", title});
+        string message = "Book already exists";
+        return error graphql:ServiceError(message, message = message, extensions = {code: "CONFLICT", title});
     }
 }

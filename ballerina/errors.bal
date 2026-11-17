@@ -23,15 +23,8 @@ public type AuthnError distinct Error;
 # Represents the authorization error type.
 public type AuthzError distinct Error;
 
-# Represents the detail of a `graphql:ServiceError`.
-#
-# + extensions - Entries added to the `extensions` of the error in the GraphQL response
-public type ServiceErrorDetail record {|
-    map<anydata> extensions;
-|};
-
-# Represents an error returned from a GraphQL service, sent to the client with its `extensions`.
-public type ServiceError distinct (Error & error<ServiceErrorDetail>);
+# Represents an error returned from a GraphQL service, sent to the client with the `extensions` of its detail.
+public type ServiceError distinct (Error & error<ErrorDetail>);
 
 // GraphQL client related errors representation
 

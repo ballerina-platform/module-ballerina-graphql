@@ -481,7 +481,8 @@ readonly service class ErrorInterceptorWithExtensions {
 
     isolated remote function execute(graphql:Context context, graphql:Field 'field) returns anydata|error {
         if 'field.getName() == "secret" {
-            return error graphql:ServiceError("This field is not accessible!", extensions = {code: "FORBIDDEN"});
+            string message = "This field is not accessible!";
+            return error graphql:ServiceError(message, message = message, extensions = {code: "FORBIDDEN"});
         }
         return context.resolve('field);
     }

@@ -798,7 +798,8 @@ service /server_cache_alias on graphqlListener {
         if failure == "authn" {
             return error graphql:AuthnError("Invalid token", extensions = {code: "UNAUTHENTICATED"});
         } else if failure == "service" {
-            return error graphql:ServiceError("Tenant is suspended", extensions = {code: "TENANT_SUSPENDED"});
+            string message = "Tenant is suspended";
+            return error graphql:ServiceError(message, message = message, extensions = {code: "TENANT_SUSPENDED"});
         }
         return error("Context initialization failed");
     }

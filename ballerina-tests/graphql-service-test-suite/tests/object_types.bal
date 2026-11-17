@@ -327,6 +327,7 @@ public isolated service class BankAccount {
     }
 
     isolated resource function get balance() returns decimal?|graphql:ServiceError {
-        return error graphql:ServiceError("Balance is not available", extensions = {code: "UNAVAILABLE", retryable: true});
+        string message = "Balance is not available";
+        return error graphql:ServiceError(message, message = message, extensions = {code: "UNAVAILABLE", retryable: true});
     }
 }

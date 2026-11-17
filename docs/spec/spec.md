@@ -1627,14 +1627,10 @@ Similarly, the `age` field of the `Profile` object can return an `error` too. Bu
 
 An error whose detail has an `extensions` field of type `map<anydata>` is sent to the client with that value as the `extensions` of the error in the GraphQL response. This applies to errors returned from `resource` and `remote` methods, [interceptors](#103-interceptors), and the [context initializer function](#713-context-initializer-function).
 
-The `graphql:ServiceError` type is provided for this purpose. Its detail record, `graphql:ServiceErrorDetail`, has a mandatory `extensions` field.
+The `graphql:ServiceError` type is provided for this purpose. Its detail is a [`graphql:ErrorDetail`](#61-error-detail-record), so it holds the `message` and the `extensions` of the error, and the same string can be passed as the error's message and as the `message` of the detail. The `locations` and `path` of the error in the response are those of the field, and the ones in the detail are not used.
 
 ```ballerina
-public type ServiceErrorDetail record {|
-    map<anydata> extensions;
-|};
-
-public type ServiceError distinct (Error & error<ServiceErrorDetail>);
+public type ServiceError distinct (Error & error<ErrorDetail>);
 ```
 
 An error with extensions is considered handled by the service. Therefore, it is logged at the `DEBUG` level without the stacktrace, instead of the `ERROR` level.
@@ -1646,7 +1642,8 @@ service on new graphql:Listener(9090) {
     resource function get book(int id) returns Book|graphql:ServiceError {
         Book? book = books[id];
         if book is () {
-            return error graphql:ServiceError("Book not found", extensions = {code: "NOT_FOUND"});
+            string message = "Book not found";
+            return error graphql:ServiceError(message, message = message, extensions = {code: "NOT_FOUND"});
         }
         return book;
     }
