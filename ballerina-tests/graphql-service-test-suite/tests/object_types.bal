@@ -314,3 +314,19 @@ distinct service class NestedField {
             ],
             @graphql:ID string[] j = ["id1"]) returns string? => ();
 }
+
+public isolated service class BankAccount {
+    private final int id;
+
+    isolated function init(int id) {
+        self.id = id;
+    }
+
+    isolated resource function get id() returns int {
+        return self.id;
+    }
+
+    isolated resource function get balance() returns decimal?|graphql:ServiceError {
+        return error graphql:ServiceError("Balance is not available", extensions = {code: "UNAVAILABLE", retryable: true});
+    }
+}
