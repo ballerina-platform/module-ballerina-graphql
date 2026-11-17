@@ -96,12 +96,21 @@ isolated class ResponseGenerator {
     }
 
     isolated function addError(error err, parser:FieldNode fieldNode, (string|int)[] path = []) returns ErrorDetail {
-        log:printError(err.message(), stackTrace = err.stackTrace());
+        map<anydata>? extensions = getErrorExtensions(err);
+        if extensions is () {
+            log:printError(err.message(), stackTrace = err.stackTrace());
+        } else {
+            // An error with extensions is a deliberate, client-facing error, so it is not logged as a failure.
+            log:printDebug(err.message(), extensions = extensions.toJsonString());
+        }
         ErrorDetail errorDetail = {
             message: err.message(),
             locations: [fieldNode.getLocation()],
             path: path.length() == 0 ? self.path.clone() : [...self.path, ...path]
         };
+        if extensions is map<anydata> {
+            errorDetail.extensions = extensions;
+        }
         self.context.addError(errorDetail);
         return errorDetail;
     }

@@ -40,6 +40,21 @@ isolated function getErrorDetailFromError(parser:Error err) returns ErrorDetail 
     };
 }
 
+isolated function getErrorExtensions(error err) returns map<anydata>? {
+    // Read from the detail rather than matching `ServiceError` so that any error type can carry extensions.
+    var extensions = err.detail()["extensions"];
+    return extensions is map<anydata> ? extensions : ();
+}
+
+isolated function toErrorDetail(error err) returns ErrorDetail {
+    ErrorDetail errorDetail = {message: err.message()};
+    map<anydata>? extensions = getErrorExtensions(err);
+    if extensions is map<anydata> {
+        errorDetail.extensions = extensions;
+    }
+    return errorDetail;
+}
+
 isolated function validateInterceptorReturnValue(__Type 'type, any|error value, string interceptorName)
     returns anydata|error {
     if value is error|ErrorDetail {
