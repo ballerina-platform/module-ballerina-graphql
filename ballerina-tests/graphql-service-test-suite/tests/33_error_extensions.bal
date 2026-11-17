@@ -41,7 +41,28 @@ isolated function testServiceErrorWithExtensions() returns error? {
 @test:Config {
     groups: ["error_extensions"]
 }
-isolated function testErrorWithExtensionsInDetail() returns error? {
+isolated function testErrorWithErrorDetail() returns error? {
+    string url = "http://localhost:9091/error_extensions";
+    string document = "{ editor }";
+    json actualPayload = check common:getJsonPayloadFromService(url, document);
+    json expectedPayload = {
+        errors: [
+            {
+                message: "Editor lookup failed",
+                locations: [{line: 1, column: 3}],
+                path: ["editor"],
+                extensions: {code: "NOT_FOUND"}
+            }
+        ],
+        data: null
+    };
+    common:assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["error_extensions"]
+}
+isolated function testErrorWithExtensionsOutsideErrorDetail() returns error? {
     string url = "http://localhost:9091/error_extensions";
     string document = "{ author }";
     json actualPayload = check common:getJsonPayloadFromService(url, document);
@@ -50,8 +71,7 @@ isolated function testErrorWithExtensionsInDetail() returns error? {
             {
                 message: "Author not found",
                 locations: [{line: 1, column: 3}],
-                path: ["author"],
-                extensions: {code: "NOT_FOUND"}
+                path: ["author"]
             }
         ],
         data: null

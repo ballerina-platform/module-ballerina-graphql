@@ -796,7 +796,8 @@ service /server_cache_alias on graphqlListener {
     isolated function(http:RequestContext requestContext, http:Request request) returns graphql:Context|error {
         string failure = check request.getHeader("failure");
         if failure == "authn" {
-            return error graphql:AuthnError("Invalid token", extensions = {code: "UNAUTHENTICATED"});
+            string message = "Invalid token";
+            return error graphql:AuthnError(message, message = message, extensions = {code: "UNAUTHENTICATED"});
         } else if failure == "service" {
             string message = "Tenant is suspended";
             return error graphql:ServiceError(message, message = message, extensions = {code: "TENANT_SUSPENDED"});

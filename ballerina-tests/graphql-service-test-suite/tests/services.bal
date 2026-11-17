@@ -1522,6 +1522,10 @@ service /error_extensions on basicListener {
         return error("Author not found", extensions = {code: "NOT_FOUND"});
     }
 
+    isolated resource function get editor() returns string|error {
+        return error("Editor lookup failed", message = "Editor not found", extensions = {code: "NOT_FOUND"});
+    }
+
     isolated resource function get account(int id) returns BankAccount {
         return new (id);
     }

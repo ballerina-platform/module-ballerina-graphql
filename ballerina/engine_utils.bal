@@ -40,17 +40,15 @@ isolated function getErrorDetailFromError(parser:Error err) returns ErrorDetail 
     };
 }
 
-isolated function getErrorExtensions(error err) returns map<anydata>? {
-    // Read from the detail rather than matching `ServiceError` so that any error type can carry extensions.
-    var extensions = err.detail()["extensions"];
-    return extensions is map<anydata> ? extensions : ();
-}
-
 isolated function toErrorDetail(error err) returns ErrorDetail {
     ErrorDetail errorDetail = {message: err.message()};
-    map<anydata>? extensions = getErrorExtensions(err);
-    if extensions is map<anydata> {
-        errorDetail.extensions = extensions;
+    // An error whose detail is a `graphql:ErrorDetail`, such as a `graphql:ServiceError`, also gives its extensions.
+    map<anydata|readonly> detail = err.detail();
+    if detail is ErrorDetail {
+        map<anydata>? extensions = detail?.extensions;
+        if extensions is map<anydata> {
+            errorDetail.extensions = extensions;
+        }
     }
     return errorDetail;
 }
