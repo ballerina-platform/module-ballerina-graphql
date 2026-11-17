@@ -1625,7 +1625,7 @@ Similarly, the `age` field of the `Profile` object can return an `error` too. Bu
 
 #### 6.2.3 Returning Errors with Extensions
 
-An error whose detail is a [`graphql:ErrorDetail`](#61-error-detail-record) is sent to the client with the `extensions` of its detail. The message of the error in the response is the error's message. This applies to errors returned from `resource` and `remote` methods, [interceptors](#103-interceptors), and the [context initializer function](#713-context-initializer-function). The `locations` and `path` of the error in the response are those of the field, and the `message`, `locations` and `path` in the detail are not used. Any other error is sent as before, even when its detail has an `extensions` field.
+An error whose detail is a [`graphql:ErrorDetail`](#61-error-detail-record) is sent to the client with the `extensions` of its detail. The message of the error in the response is the error's message. This applies to errors returned from `resource` and `remote` methods, [interceptors](#103-interceptors), and, for HTTP requests, the [context initializer function](#713-context-initializer-function). For a WebSocket upgrade, an error returned from the context initializer function is sent with its message and status code only, without extensions. The `locations` and `path` of an error returned from a `resource` or `remote` method or an interceptor are those of the field; an error returned from the context initializer function has none. The `message`, `locations` and `path` in the detail are not used. Any other error is sent as before, even when its detail has an `extensions` field.
 
 The `graphql:ServiceError` type is provided for this purpose. Its detail is a `graphql:ErrorDetail`, so the same string can be passed as the error's message and as the `message` of the detail.
 
@@ -1635,7 +1635,7 @@ public type ServiceError distinct (Error & error<ErrorDetail>);
 
 Other error types work the same way when their detail is a `graphql:ErrorDetail`. For example, a `graphql:AuthnError` returned from the context initializer function with `message` and `extensions` in its detail is answered with `400` and those extensions.
 
-An error sent with extensions is considered handled by the service. Therefore, it is logged at the `DEBUG` level without the stacktrace, instead of the `ERROR` level.
+An error with extensions that is reported for a field is considered handled by the service. Therefore, it is logged at the `DEBUG` level without the stacktrace, instead of the `ERROR` level.
 
 ###### Example: Returning Errors with Extensions
 
@@ -1900,7 +1900,7 @@ The `auth` field is used to provide configurations related to authentication and
 
 The `contextInit` field is used to provide a method to initialize the [`graphql:Context` object](#101-context-object). It is called per each request to create a `graphql:Context` object.
 
-The context initializer function can return an error if the validation is failed. In such cases, the request will not proceed, and an error will be returned immediately. The response status code is `400` for a `graphql:AuthnError` or a `graphql:AuthzError`, and `500` otherwise. If the detail of the error is a `graphql:ErrorDetail`, its extensions are added to the error in the response as described in the [Returning Errors with Extensions](#623-returning-errors-with-extensions) section.
+The context initializer function can return an error if the validation is failed. In such cases, the request will not proceed, and an error will be returned immediately. The response status code is `400` for a `graphql:AuthnError` or a `graphql:AuthzError`, and `500` otherwise. For HTTP requests, if the detail of the error is a `graphql:ErrorDetail`, its extensions are added to the error in the response as described in the [Returning Errors with Extensions](#623-returning-errors-with-extensions) section. For a WebSocket upgrade, the error carries only the message and the status code.
 
 Following is the function template for the `contextInit` function.
 
@@ -4449,7 +4449,7 @@ The GraphQL tracing feature provides detailed information about the execution of
 
 #### 10.8.3 Logging
 
-A Ballerina GraphQL service will log the errors that occurred during the execution of the GraphQL request. The errors will be logged at the `ERROR` level, except the errors sent with extensions, which are logged at the `DEBUG` level. The error message and the stack trace will be printed in the log, in the `ballerina/log` module log format.
+A Ballerina GraphQL service will log the errors that occurred during the execution of the GraphQL request. The errors will be logged at the `ERROR` level, except the errors sent with extensions, which are logged at the `DEBUG` level. The error message will be printed in the log, in the `ballerina/log` module log format, along with the stack trace for the errors without extensions.
 
 ### 10.9 Document Validation
 
