@@ -151,7 +151,23 @@ isolated function testIntVariablesInInputObjectDecimalAndFloatFields() returns e
     json actualPayload = check common:getJsonPayloadFromService(url, document, variables);
     json expectedPayload = {
         data: {
-            measurement: "{\"amount\":5.0,\"tolerance\":1.0,\"ratio\":2.0}"
+            measurement: "{\"amount\":5,\"tolerance\":1,\"ratio\":2.0}"
+        }
+    };
+    common:assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+@test:Config {
+    groups: ["inputs", "input_coerce", "decimal"]
+}
+isolated function testIntVariablesForNullableDecimalAndFloatArguments() returns error? {
+    string document = "query($amount: Decimal, $ratio: Float) { nullableMeasurement(amount: $amount, ratio: $ratio) }";
+    json variables = {amount: 5, ratio: 2};
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check common:getJsonPayloadFromService(url, document, variables);
+    json expectedPayload = {
+        data: {
+            nullableMeasurement: "{\"amount\":5,\"ratio\":2.0}"
         }
     };
     common:assertJsonValuesWithOrder(actualPayload, expectedPayload);

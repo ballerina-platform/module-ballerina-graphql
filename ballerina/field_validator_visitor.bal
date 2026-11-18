@@ -470,7 +470,7 @@ class FieldValidatorVisitor {
             Scalar value = <Scalar>modifiedArgNode.getVariableValue();
             value = self.coerceValue(value, expectedTypeName, getTypeNameFromScalarValue(value),
                                      modifiedArgNode.getValueLocation());
-            self.modifyArgumentNode(argumentNode, value = value);
+            self.modifyArgumentNode(argumentNode, variableValue = value);
             if value is decimal|float {
                 self.modifyArgumentNode(argumentNode, kind = parser:T_FLOAT);
             }

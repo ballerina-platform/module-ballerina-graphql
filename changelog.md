@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 ### Fixed
-- [[#9770] Coerce Integer Variables for Nullable `Decimal` and `Float` Input Object Fields](https://github.com/ballerina-platform/ballerina-library/issues/9770)
+- [[#9770] Coerce Integer Variables for Nullable `Decimal` and `Float` Inputs](https://github.com/ballerina-platform/ballerina-library/issues/9770)
 
 ## [1.19.1] - 2026-10-16
 
