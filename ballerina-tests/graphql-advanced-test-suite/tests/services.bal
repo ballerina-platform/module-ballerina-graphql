@@ -790,3 +790,23 @@ service /server_cache_alias on graphqlListener {
         return title;
     }
 }
+
+@graphql:ServiceConfig {
+    contextInit:
+    isolated function(http:RequestContext requestContext, http:Request request) returns graphql:Context|error {
+        string failure = check request.getHeader("failure");
+        if failure == "authn" {
+            string message = "Invalid token";
+            return error graphql:AuthnError(message, message = message, extensions = {code: "UNAUTHENTICATED"});
+        } else if failure == "service" {
+            string message = "Tenant is suspended";
+            return error graphql:ServiceError(message, message = message, extensions = {code: "TENANT_SUSPENDED"});
+        }
+        return error("Context initialization failed");
+    }
+}
+service /context_init_errors on graphqlListener {
+    isolated resource function get greeting() returns string {
+        return "Hello";
+    }
+}

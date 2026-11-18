@@ -294,3 +294,27 @@ isolated function testContextWithAdditionalParametersInNestedObjectWithInvalidSc
     };
     common:assertJsonValuesWithOrder(actualPayload, expectedPayload);
 }
+
+@test:Config {
+    groups: ["context", "error_extensions"],
+    dataProvider: dataProviderContextInitErrors
+}
+isolated function testContextInitErrors(string failure, int expectedStatusCode, json expectedPayload)
+returns error? {
+    http:Client httpClient = check new ("http://localhost:9090/context_init_errors", httpVersion = "1.1");
+    http:Request request = new;
+    request.setHeader("failure", failure);
+    request.setPayload({query: "{ greeting }"});
+    http:Response response = check httpClient->post("/", request);
+    test:assertEquals(response.statusCode, expectedStatusCode);
+    json actualPayload = check response.getJsonPayload();
+    common:assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}
+
+function dataProviderContextInitErrors() returns [string, int, json][] {
+    return [
+        ["authn", 400, {errors: [{message: "Invalid token", extensions: {code: "UNAUTHENTICATED"}}]}],
+        ["service", 500, {errors: [{message: "Tenant is suspended", extensions: {code: "TENANT_SUSPENDED"}}]}],
+        ["plain", 500, {errors: [{message: "Context initialization failed"}]}]
+    ];
+}

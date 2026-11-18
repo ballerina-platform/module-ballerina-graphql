@@ -1,0 +1,16 @@
+{
+  "errors": [
+    {
+      "message": "This field is not accessible!",
+      "locations": [{ "line": 4, "column": 5 }],
+      "path": ["profile", "secret"],
+      "extensions": { "code": "FORBIDDEN" }
+    }
+  ],
+  "data": {
+    "profile": {
+      "name": "Walter White",
+      "secret": null
+    }
+  }
+}
