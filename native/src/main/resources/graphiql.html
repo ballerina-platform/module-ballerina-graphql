@@ -43,6 +43,16 @@
             const HTTP_ENDPOINT = "${url}";
             const WS_ENDPOINT = "${subscriptionUrl}";
 
+            function buildHeaders(callerHeaders) {
+                // Headers.set() is case-insensitive, so a caller's "content-type" replaces the default instead of being appended to it.
+                const headers = new Headers({
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                });
+                Object.entries(callerHeaders || {}).forEach(([name, value]) => headers.set(name, value));
+                return headers;
+            }
+
             function createFetcher() {
                 let wsClient;
 
@@ -53,7 +63,7 @@
                         shouldRetry: () => true
                     });
 
-                    return async (graphQLParams) => {
+                    return async (graphQLParams, options) => {
                         const isSubscription = graphQLParams.query.trim().startsWith("subscription");
                         if (isSubscription) {
                             return {
@@ -70,22 +80,16 @@
 
                         return fetch(HTTP_ENDPOINT, {
                             method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "Accept": "application/json"
-                            },
+                            headers: buildHeaders(options?.headers),
                             body: JSON.stringify(graphQLParams)
                         }).then(response => response.json());
                     };
                 }
 
-                return async (graphQLParams) => {
+                return async (graphQLParams, options) => {
                     return fetch(HTTP_ENDPOINT, {
                         method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Accept": "application/json"
-                        },
+                        headers: buildHeaders(options?.headers),
                         body: JSON.stringify(graphQLParams)
                     }).then(response => response.json());
                 };
