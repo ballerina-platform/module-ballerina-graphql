@@ -303,6 +303,15 @@ service /intercept_errors1 on basicListener {
 }
 
 @graphql:ServiceConfig {
+    interceptors: new ErrorInterceptorWithExtensions()
+}
+service /intercept_errors_with_extensions on basicListener {
+    isolated resource function get profile() returns Profile {
+        return new;
+    }
+}
+
+@graphql:ServiceConfig {
     interceptors: [new ErrorInterceptor1()]
 }
 service /intercept_errors2 on basicListener {

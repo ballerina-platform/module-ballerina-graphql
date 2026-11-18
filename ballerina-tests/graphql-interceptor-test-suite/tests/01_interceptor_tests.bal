@@ -55,6 +55,7 @@ function dataProviderInterceptors() returns string[][] {
     string url24 = "http://localhost:9090/intercept_service_obj_array1";
     string url25 = "http://localhost:9090/intercept_service_obj_array2";
     string url26 = "http://localhost:9090/intercept_unions";
+    string url27 = "http://localhost:9090/intercept_errors_with_extensions";
 
     return [
         [url1, "interceptors_with_service_object"],
@@ -86,6 +87,7 @@ function dataProviderInterceptors() returns string[][] {
         [url25, "interceptors_with_destructive_modification2"],
         [url26, "interceptors_with_union"],
         [url14, "execute_same_interceptor_multiple_times"],
-        [url17, "resource_interceptors"]
+        [url17, "resource_interceptors"],
+        [url27, "interceptors_returning_error_with_extensions"]
     ];
 }

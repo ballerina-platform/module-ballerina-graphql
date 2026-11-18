@@ -169,3 +169,13 @@ public distinct isolated service class CustomerAddress {
         return self.city;
     }
 }
+
+isolated service class Profile {
+    isolated resource function get name() returns string {
+        return "Walter White";
+    }
+
+    isolated resource function get secret() returns string? {
+        return "Heisenberg";
+    }
+}
