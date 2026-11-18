@@ -355,7 +355,7 @@ isolated function getHttpService(Engine gqlEngine, GraphqlServiceConfig? service
                 http:Request request) returns Context|http:Response {
             Context|error context = self.contextInit(requestContext, request);
             if context is error {
-                json payload = {errors: [{message: context.message()}]};
+                json payload = {errors: [toErrorDetail(context).toJson()]};
                 http:Response response = new;
                 if context is AuthnError || context is AuthzError {
                     response.statusCode = http:STATUS_BAD_REQUEST;

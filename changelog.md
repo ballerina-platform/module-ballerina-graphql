@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+- [[#4430] Add Support for Returning GraphQL Error `extensions` from a GraphQL Service](https://github.com/ballerina-platform/ballerina-library/issues/4430)
+
 ### Fixed
 - [[#9770] Coerce Integer Variables for Nullable `Decimal` and `Float` Inputs](https://github.com/ballerina-platform/ballerina-library/issues/9770)
 - [[#9748] Send the Headers of the GraphiQL Client's Headers Tab with Its Requests](https://github.com/ballerina-platform/ballerina-library/issues/9748)

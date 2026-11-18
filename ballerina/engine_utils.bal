@@ -40,6 +40,19 @@ isolated function getErrorDetailFromError(parser:Error err) returns ErrorDetail 
     };
 }
 
+isolated function toErrorDetail(error err) returns ErrorDetail {
+    ErrorDetail errorDetail = {message: err.message()};
+    // An error whose detail is a `graphql:ErrorDetail`, such as a `graphql:ServiceError`, also gives its extensions.
+    map<anydata|readonly> detail = err.detail();
+    if detail is ErrorDetail {
+        map<anydata>? extensions = detail?.extensions;
+        if extensions is map<anydata> {
+            errorDetail.extensions = extensions;
+        }
+    }
+    return errorDetail;
+}
+
 isolated function validateInterceptorReturnValue(__Type 'type, any|error value, string interceptorName)
     returns anydata|error {
     if value is error|ErrorDetail {

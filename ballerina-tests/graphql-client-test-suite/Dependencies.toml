@@ -35,7 +35,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "constraint"
-version = "1.7.2"
+version = "1.7.3"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
@@ -54,7 +54,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "data.jsondata"
-version = "1.1.6"
+version = "1.1.7"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
@@ -76,7 +76,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "graphql"
-version = "1.19.1"
+version = "1.20.0"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "auth"},
@@ -109,7 +109,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql_client_test_suite"
-version = "1.19.1"
+version = "1.20.0"
 dependencies = [
 	{org = "ballerina", name = "graphql"},
 	{org = "ballerina", name = "graphql_test_common"},
@@ -126,7 +126,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql_test_common"
-version = "1.19.1"
+version = "1.20.0"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "file"},
@@ -143,7 +143,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.18.0"
+version = "2.18.2"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "auth"},
@@ -361,7 +361,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "task"
-version = "2.11.3"
+version = "2.11.4"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
