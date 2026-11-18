@@ -577,7 +577,7 @@ public class ServiceValidationTest {
     public void testInvalidListenerInitParameters() {
         String packagePath = "38_invalid_listener_init_parameters";
         DiagnosticResult diagnosticResult = getDiagnosticResult(packagePath);
-        Assert.assertEquals(diagnosticResult.errorCount(), 4);
+        Assert.assertEquals(diagnosticResult.errorCount(), 5);
         Iterator<Diagnostic> diagnosticIterator = diagnosticResult.errors().iterator();
 
         Diagnostic diagnostic = diagnosticIterator.next();
@@ -591,6 +591,9 @@ public class ServiceValidationTest {
 
         diagnostic = diagnosticIterator.next();
         assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 27, 66);
+
+        diagnostic = diagnosticIterator.next();
+        assertError(diagnostic, CompilationDiagnostic.INVALID_LISTENER_INIT, 28, 43);
     }
 
     @Test(groups = "invalid")

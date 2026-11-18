@@ -19,8 +19,10 @@
 package io.ballerina.stdlib.graphql.compiler.service.validator;
 
 import io.ballerina.compiler.api.symbols.Symbol;
+import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
+import io.ballerina.compiler.api.symbols.VariableSymbol;
 import io.ballerina.compiler.syntax.tree.ExplicitNewExpressionNode;
 import io.ballerina.compiler.syntax.tree.ExpressionNode;
 import io.ballerina.compiler.syntax.tree.FunctionArgumentNode;
@@ -131,15 +133,25 @@ public class ListenerValidator implements AnalysisTask<SyntaxNodeAnalysisContext
         }
     }
 
-    // The type of the expression decides, so that a port read from a record field, such as `config.port`, is
-    // accepted as a port.
+    // A variable is checked by its declared type, and a field access, such as `config.port`, by the field's type,
+    // since its symbol is the variable that holds the record. Other expressions are not checked.
     private void validateListenerArgType(SyntaxNodeAnalysisContext context, ExpressionNode expression,
                                          Location location) {
-        Optional<TypeSymbol> argumentType = context.semanticModel().typeOf(expression);
-        if (argumentType.isEmpty() || argumentType.get().typeKind() == TypeDescKind.COMPILATION_ERROR) {
-            return;
+        TypeSymbol argumentType;
+        if (expression.kind() == SyntaxKind.FIELD_ACCESS) {
+            Optional<TypeSymbol> fieldType = context.semanticModel().typeOf(expression);
+            if (fieldType.isEmpty()) {
+                return;
+            }
+            argumentType = fieldType.get();
+        } else {
+            Optional<Symbol> symbol = context.semanticModel().symbol(expression);
+            if (symbol.isEmpty() || symbol.get().kind() != SymbolKind.VARIABLE) {
+                return;
+            }
+            argumentType = ((VariableSymbol) symbol.get()).typeDescriptor();
         }
-        if (!argumentType.get().subtypeOf(context.semanticModel().types().INT)) {
+        if (argumentType.typeKind() != TypeDescKind.INT) {
             updateContext(context, CompilationDiagnostic.INVALID_LISTENER_INIT, location);
         }
     }
