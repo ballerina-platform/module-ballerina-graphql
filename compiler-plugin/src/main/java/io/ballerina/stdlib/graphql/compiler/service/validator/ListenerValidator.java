@@ -19,10 +19,10 @@
 package io.ballerina.stdlib.graphql.compiler.service.validator;
 
 import io.ballerina.compiler.api.symbols.Symbol;
-import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
-import io.ballerina.compiler.api.symbols.VariableSymbol;
+import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.syntax.tree.ExplicitNewExpressionNode;
+import io.ballerina.compiler.syntax.tree.ExpressionNode;
 import io.ballerina.compiler.syntax.tree.FunctionArgumentNode;
 import io.ballerina.compiler.syntax.tree.ImplicitNewExpressionNode;
 import io.ballerina.compiler.syntax.tree.ListenerDeclarationNode;
@@ -34,6 +34,8 @@ import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.stdlib.graphql.compiler.diagnostics.CompilationDiagnostic;
 import io.ballerina.tools.diagnostics.Location;
+
+import java.util.Optional;
 
 import static io.ballerina.stdlib.graphql.compiler.Utils.isGraphqlListener;
 import static io.ballerina.stdlib.graphql.compiler.service.validator.ValidatorUtils.updateContext;
@@ -111,11 +113,7 @@ public class ListenerValidator implements AnalysisTask<SyntaxNodeAnalysisContext
         FunctionArgumentNode firstArg = arguments.get(0);
         if (firstArg.kind() == SyntaxKind.POSITIONAL_ARG) {
             PositionalArgumentNode positionalArgumentNode = (PositionalArgumentNode) firstArg;
-            if (context.semanticModel().symbol(positionalArgumentNode.expression()).isEmpty()) {
-                return;
-            }
-            Symbol firstArgSymbol = context.semanticModel().symbol(positionalArgumentNode.expression()).get();
-            validateListenerArgSymbol(context, firstArgSymbol, positionalArgumentNode.location());
+            validateListenerArgType(context, positionalArgumentNode.expression(), positionalArgumentNode.location());
         } else if (firstArg.kind() == SyntaxKind.NAMED_ARG) {
             validateListenerNamedArguments(context, arguments);
         }
@@ -128,22 +126,21 @@ public class ListenerValidator implements AnalysisTask<SyntaxNodeAnalysisContext
             NamedArgumentNode namedArgument = (NamedArgumentNode) argument;
             String argumentName = namedArgument.argumentName().name().text();
             if (argumentName.equals(LISTEN_TO)) {
-                if (context.semanticModel().symbol(namedArgument.expression()).isEmpty()) {
-                    return;
-                }
-                Symbol argumentNodeSymbol = context.semanticModel().symbol(namedArgument.expression()).get();
-                validateListenerArgSymbol(context, argumentNodeSymbol, namedArgument.location());
+                validateListenerArgType(context, namedArgument.expression(), namedArgument.location());
             }
         }
     }
 
-    private void validateListenerArgSymbol(SyntaxNodeAnalysisContext context, Symbol argumentNodeSymbol,
-                                           Location location) {
-        if (argumentNodeSymbol.kind() == SymbolKind.VARIABLE) {
-            VariableSymbol variableSymbol = (VariableSymbol) argumentNodeSymbol;
-            if (variableSymbol.typeDescriptor().typeKind() != TypeDescKind.INT) {
-                updateContext(context, CompilationDiagnostic.INVALID_LISTENER_INIT, location);
-            }
+    // The type of the expression decides, so that a port read from a record field, such as `config.port`, is
+    // accepted as a port.
+    private void validateListenerArgType(SyntaxNodeAnalysisContext context, ExpressionNode expression,
+                                         Location location) {
+        Optional<TypeSymbol> argumentType = context.semanticModel().typeOf(expression);
+        if (argumentType.isEmpty() || argumentType.get().typeKind() == TypeDescKind.COMPILATION_ERROR) {
+            return;
+        }
+        if (!argumentType.get().subtypeOf(context.semanticModel().types().INT)) {
+            updateContext(context, CompilationDiagnostic.INVALID_LISTENER_INIT, location);
         }
     }
 }
