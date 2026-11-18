@@ -227,6 +227,10 @@ public final class ArgumentHandler {
             return this.getUnionTypeArgument(argName, argValue, (UnionType) parameterType, isVariableValue);
         } else if (parameterType.getTag() == TypeTags.TYPE_REFERENCED_TYPE_TAG) {
             return this.getArgumentValue(argName, argValue, TypeUtils.getReferredType(parameterType), isVariableValue);
+        } else if (argValue instanceof Long && (parameterType.getTag() == TypeTags.FLOAT_TAG
+                || parameterType.getTag() == TypeTags.DECIMAL_TAG)) {
+            // An integral JSON variable value for a `Float` or `Decimal` input is parsed as an `int`
+            return ValueUtils.convert(argValue, parameterType);
         } else {
             return argValue;
         }

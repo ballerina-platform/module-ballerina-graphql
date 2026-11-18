@@ -139,3 +139,20 @@ function dataProviderDecimalType3() returns string[][] {
         ["decimal_with_negative_infinity"]
     ];
 }
+
+@test:Config {
+    groups: ["inputs", "input_coerce", "decimal"]
+}
+isolated function testIntVariablesInInputObjectDecimalAndFloatFields() returns error? {
+    string document = "query($amount: Decimal!, $tolerance: Decimal, $ratio: Float) " +
+        "{ measurement(measurement: {amount: $amount, tolerance: $tolerance, ratio: $ratio}) }";
+    json variables = {amount: 5, tolerance: 1, ratio: 2};
+    string url = "http://localhost:9091/inputs";
+    json actualPayload = check common:getJsonPayloadFromService(url, document, variables);
+    json expectedPayload = {
+        data: {
+            measurement: "{\"amount\":5.0,\"tolerance\":1.0,\"ratio\":2.0}"
+        }
+    };
+    common:assertJsonValuesWithOrder(actualPayload, expectedPayload);
+}

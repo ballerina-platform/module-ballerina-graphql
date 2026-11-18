@@ -176,6 +176,10 @@ service /inputs on basicListener {
         }
         return subTotal;
     }
+
+    isolated resource function get measurement(Measurement measurement) returns string {
+        return measurement.toString();
+    }
 }
 
 service /input_objects on basicListener {
