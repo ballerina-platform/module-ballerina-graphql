@@ -208,6 +208,12 @@ public type Item record {
     decimal price;
 };
 
+type Measurement record {|
+    decimal amount;
+    decimal? tolerance = ();
+    float? ratio = ();
+|};
+
 # Represents a shape
 #
 # + name - Name of the shape
