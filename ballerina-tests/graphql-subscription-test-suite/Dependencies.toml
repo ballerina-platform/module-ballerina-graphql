@@ -79,7 +79,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "graphql"
-version = "1.20.0"
+version = "1.19.2"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "auth"},
@@ -112,7 +112,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql_subscription_test_suite"
-version = "1.20.0"
+version = "1.19.2"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "graphql"},
@@ -135,7 +135,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "graphql_test_common"
-version = "1.20.0"
+version = "1.19.2"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "file"},
