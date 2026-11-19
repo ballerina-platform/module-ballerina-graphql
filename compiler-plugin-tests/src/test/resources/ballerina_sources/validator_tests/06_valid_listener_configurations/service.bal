@@ -49,6 +49,8 @@ type ServerConfig record {|
 configurable ServerConfig serverConfig = {};
 listener graphql:Listener listener11 = new(serverConfig.port, serverConfig.listenerConfig);
 listener graphql:Listener listener12 = new(listenTo = serverConfig.port, configuration = serverConfig.listenerConfig);
+listener graphql:Listener listener13 = new((serverConfig.port), serverConfig.listenerConfig);
+listener graphql:Listener listener14 = new(listenTo = (serverConfig.port), configuration = serverConfig.listenerConfig);
 
 service graphql:Service on new graphql:Listener(4000) {
     resource function get name() returns string {

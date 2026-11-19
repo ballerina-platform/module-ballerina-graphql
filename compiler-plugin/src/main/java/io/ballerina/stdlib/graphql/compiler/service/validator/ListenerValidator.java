@@ -23,6 +23,7 @@ import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.VariableSymbol;
+import io.ballerina.compiler.syntax.tree.BracedExpressionNode;
 import io.ballerina.compiler.syntax.tree.ExplicitNewExpressionNode;
 import io.ballerina.compiler.syntax.tree.ExpressionNode;
 import io.ballerina.compiler.syntax.tree.FunctionArgumentNode;
@@ -134,9 +135,14 @@ public class ListenerValidator implements AnalysisTask<SyntaxNodeAnalysisContext
     }
 
     // A variable is checked by its declared type, and a field access, such as `config.port`, by the field's type,
-    // since its symbol is the variable that holds the record. Other expressions are not checked.
-    private void validateListenerArgType(SyntaxNodeAnalysisContext context, ExpressionNode expression,
+    // since its symbol is the variable that holds the record. Parentheses are ignored, and other expressions are not
+    // checked.
+    private void validateListenerArgType(SyntaxNodeAnalysisContext context, ExpressionNode argument,
                                          Location location) {
+        ExpressionNode expression = argument;
+        while (expression.kind() == SyntaxKind.BRACED_EXPRESSION) {
+            expression = ((BracedExpressionNode) expression).expression();
+        }
         TypeSymbol argumentType;
         if (expression.kind() == SyntaxKind.FIELD_ACCESS) {
             Optional<TypeSymbol> fieldType = context.semanticModel().typeOf(expression);
