@@ -25,6 +25,7 @@ listener graphql:Listener listener1 = new(httpListener1, timeout = 1000, server 
 listener graphql:Listener listener2 = check new(httpListener2, timeout = 1000, server = "0.0.0.0");
 listener graphql:Listener listener3 = new graphql:Listener(httpListener3, timeout = 1000, server = "0.0.0.0");
 listener graphql:Listener listener4 = check new graphql:Listener(httpListener1, timeout = 1000, server = "0.0.0.0");
+listener graphql:Listener listener5 = new(listeners.http, timeout = 1000, server = "0.0.0.0");
 
 service graphql:Service on listener1 {
     resource function get name() returns string {
@@ -49,3 +50,9 @@ service graphql:Service on listener4 {
         return "John";
     }
 }
+
+type Listeners record {|
+    http:Listener http;
+|};
+
+final Listeners listeners = {http: httpListener1};
