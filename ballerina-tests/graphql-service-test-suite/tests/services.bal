@@ -176,6 +176,16 @@ service /inputs on basicListener {
         }
         return subTotal;
     }
+
+    isolated resource function get measurement(Measurement measurement) returns string {
+        return measurement.toString();
+    }
+
+    isolated resource function get nullableMeasurement(decimal? amount, float? ratio) returns string {
+        decimal? amountValue = amount;
+        float? ratioValue = ratio;
+        return {amount: amountValue, ratio: ratioValue}.toString();
+    }
 }
 
 service /input_objects on basicListener {
