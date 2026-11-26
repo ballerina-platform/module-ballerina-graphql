@@ -1549,3 +1549,24 @@ service /error_extensions on basicListener {
         return error graphql:ServiceError(message, message = message, extensions = {code: "CONFLICT", title});
     }
 }
+
+public type SubfieldsDepartment record {|
+    int id;
+    string name;
+|};
+
+public type SubfieldsPerson record {|
+    string names;
+    string name;
+    SubfieldsDepartment department;
+|};
+
+service /subfields on basicListener {
+    isolated resource function get person(graphql:Field 'field) returns SubfieldsPerson {
+        return {
+            names: string:'join(", ", ...'field.getSubfieldNames()),
+            name: "Sherlock Holmes",
+            department: {id: 1, name: "Detective"}
+        };
+    }
+}

@@ -1,0 +1,11 @@
+{
+  person {
+    names
+    name
+    ...PersonFields
+  }
+}
+
+fragment PersonFields on SubfieldsPerson {
+  name
+}
