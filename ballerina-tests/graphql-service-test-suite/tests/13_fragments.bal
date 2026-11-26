@@ -32,6 +32,7 @@ function dataProviderFragments() returns string[][] {
     string url1 = "http://localhost:9091/records";
     string url2 = "http://localhost:9092/service_types";
     string url3 = "http://localhost:9092/service_objects";
+    string url4 = "http://localhost:9091/subfields";
 
     return [
         [url1, "fragment_on_invalid_type"],
@@ -47,6 +48,9 @@ function dataProviderFragments() returns string[][] {
         [url1, "invalid_spread_inline_fragments"],
         [url3, "fragments_inside_fragments_when_returning_services"],
         [url3, "nested_fragments_querying_service_objects_with_multiple_fields"],
-        [url3, "fragments_returning_null_for_non_null_types"]
+        [url3, "fragments_returning_null_for_non_null_types"],
+        [url4, "subfield_names_with_fragment_and_sibling_selection"],
+        [url4, "subfield_names_with_duplicate_field_in_fragment"],
+        [url4, "subfield_names_with_aliases_and_fragment"]
     ];
 }

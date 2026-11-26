@@ -1,0 +1,14 @@
+{
+  person {
+    names
+    a: department {
+      id
+    }
+    b: department {
+      name
+    }
+    ... on SubfieldsPerson {
+      name
+    }
+  }
+}

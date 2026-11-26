@@ -1,0 +1,11 @@
+{
+  "data": {
+    "person": {
+      "names": "names, department, name",
+      "department": {
+        "id": 1
+      },
+      "name": "Sherlock Holmes"
+    }
+  }
+}

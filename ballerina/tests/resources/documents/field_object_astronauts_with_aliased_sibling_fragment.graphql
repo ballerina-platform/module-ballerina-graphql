@@ -1,0 +1,16 @@
+query {
+  astronauts {
+    a: missions {
+      id
+    }
+    b: missions {
+      designation
+    }
+    ... on Astronaut {
+      name
+    }
+    ... on Astronaut {
+      name
+    }
+  }
+}
