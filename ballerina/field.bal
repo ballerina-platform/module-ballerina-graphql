@@ -178,7 +178,8 @@ public class Field {
                     }
                 }
             } else {
-                result.push(...self.getFieldObjects(selection, 'type));
+                Field[] fragmentFields = self.getFieldObjects(selection, 'type);
+                result.push(...fragmentFields);
             }
         }
         return result;
@@ -190,7 +191,8 @@ public class Field {
             if selection is parser:FieldNode {
                 result.push(selection.getName());
             } else {
-                result.push(...self.getFieldNames(selection));
+                string[] fragmentFieldNames = self.getFieldNames(selection);
+                result.push(...fragmentFieldNames);
             }
         }
         return result;

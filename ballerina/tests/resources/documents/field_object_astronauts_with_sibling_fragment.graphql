@@ -3,10 +3,8 @@ query {
     missions {
       id
     }
-    ...AstronautFields
+    ... on Astronaut {
+      name
+    }
   }
-}
-
-fragment AstronautFields on Astronaut {
-  name
 }

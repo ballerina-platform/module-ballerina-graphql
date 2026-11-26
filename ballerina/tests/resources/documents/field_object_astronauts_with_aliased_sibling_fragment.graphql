@@ -6,13 +6,11 @@ query {
     b: missions {
       designation
     }
-    ...AstronautFields
+    ... on Astronaut {
+      name
+    }
     ... on Astronaut {
       name
     }
   }
-}
-
-fragment AstronautFields on Astronaut {
-  name
 }

@@ -117,7 +117,10 @@ function testGetSubfieldsWithFragmentAndSiblingSelections() returns error? {
     test:assertEquals('field.getSubfieldNames(), ["missions", "name"]);
     Field[]? subfields = 'field.getSubfields();
     test:assertFalse(subfields is ());
-    string[] names = (<Field[]>subfields).'map(subfield => subfield.getName());
+    string[] names = [];
+    foreach Field subfield in <Field[]>subfields {
+        names.push(subfield.getName());
+    }
     test:assertEquals(names, ["missions", "name"]);
 }
 
