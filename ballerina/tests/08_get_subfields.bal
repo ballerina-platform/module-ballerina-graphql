@@ -105,3 +105,33 @@ function fieldObjectProvider3() returns [string, __Type][] {
         ["field_object_mission_with_fragment", Mission]
     ];
 }
+
+@test:Config {
+    groups: ["field", "getSubfields"]
+}
+function testGetSubfieldsWithFragmentAndSiblingSelections() returns error? {
+    parser:FieldNode[] fields = check getFieldNodesFromDocumentFile("field_object_astronauts_with_sibling_fragment");
+    test:assertEquals(fields.length(), 1);
+    Field 'field = getField(fields[0], AstronautNonNullList, AstronautQuery, []);
+
+    test:assertEquals('field.getSubfieldNames(), ["missions", "name"]);
+    Field[]? subfields = 'field.getSubfields();
+    test:assertFalse(subfields is ());
+    string[] names = (<Field[]>subfields).'map(subfield => subfield.getName());
+    test:assertEquals(names, ["missions", "name"]);
+}
+
+@test:Config {
+    groups: ["field", "getSubfields"]
+}
+function testGetSubfieldsWithAliasesFragmentAndInlineFragment() returns error? {
+    parser:FieldNode[] fields =
+        check getFieldNodesFromDocumentFile("field_object_astronauts_with_aliased_sibling_fragment");
+    test:assertEquals(fields.length(), 1);
+    Field 'field = getField(fields[0], AstronautNonNullList, AstronautQuery, []);
+
+    test:assertEquals('field.getSubfieldNames(), ["missions", "missions", "name", "name"]);
+    Field[]? subfields = 'field.getSubfields();
+    test:assertFalse(subfields is ());
+    test:assertEquals((<Field[]>subfields).length(), 4);
+}

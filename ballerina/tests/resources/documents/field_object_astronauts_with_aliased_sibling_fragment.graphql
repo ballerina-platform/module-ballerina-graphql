@@ -1,0 +1,18 @@
+query {
+  astronauts {
+    a: missions {
+      id
+    }
+    b: missions {
+      designation
+    }
+    ...AstronautFields
+    ... on Astronaut {
+      name
+    }
+  }
+}
+
+fragment AstronautFields on Astronaut {
+  name
+}

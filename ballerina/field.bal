@@ -178,10 +178,7 @@ public class Field {
                     }
                 }
             } else {
-                foreach parser:SelectionNode fragmentSelectionNode in selectionNode.getSelections() {
-                    Field[] fields = self.getFieldObjects(fragmentSelectionNode, 'type);
-                    result.push(...fields);
-                }
+                result.push(...self.getFieldObjects(selection, 'type));
             }
         }
         return result;
@@ -193,9 +190,7 @@ public class Field {
             if selection is parser:FieldNode {
                 result.push(selection.getName());
             } else {
-                foreach parser:SelectionNode fragmentSelectionNode in selectionNode.getSelections() {
-                    result.push(...self.getFieldNames(fragmentSelectionNode));
-                }
+                result.push(...self.getFieldNames(selection));
             }
         }
         return result;
