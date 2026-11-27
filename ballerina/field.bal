@@ -160,68 +160,55 @@ public class Field {
         string[] currentCachePath = self.cachePath.'map((item) => item is int ? "@" : item);
         string[] unwrappedPath = getUnwrappedPath('type);
 
+        parser:FieldNode[] nodes = [];
+        map<int> aliasIndexes = {};
+        self.collectFieldNodes(selectionNode, nodes, aliasIndexes);
+
         Field[] result = [];
-        map<()> visitedAliases = {};
-        self.collectFieldObjects(selectionNode, parentType, typeFields, currentPath, currentCachePath, unwrappedPath,
-                result, visitedAliases);
+        foreach parser:FieldNode selection in nodes {
+            foreach __Field 'field in typeFields {
+                if 'field.name == selection.getName() {
+                    result.push(new Field(selection, 'field.'type, parentType, (), [
+                            ...currentPath,
+                            ...unwrappedPath,
+                            'field.name
+                        ], self.operationType.clone(), self.resourcePath.clone(),
+                        cacheConfig = self.cacheConfig, parentArgHashes = self.parentArgHashes,
+                        cachePath = [...currentCachePath, ...unwrappedPath, 'field.name].cloneReadOnly()
+                    ));
+                    break;
+                }
+            }
+        }
         return result;
     }
 
-    // Collects the fields selected at the level of the given selection node, including the fields of the fragments
-    // (named, inline and nested) selected at that level. A field selected more than once (same response key) is
-    // collected only once.
-    isolated function collectFieldObjects(parser:SelectionNode selectionNode, __Type parentType,
-            __Field[] typeFields, string[] currentPath, string[] currentCachePath, string[] unwrappedPath,
-            Field[] result, map<()> visitedAliases) {
+    // Collects the field nodes selected at the level of the given selection node, including the fields of the
+    // fragments (named, inline and nested) selected at that level. A field selected more than once (same response
+    // key) is collected once, with the selections of all its occurrences merged.
+    isolated function collectFieldNodes(parser:SelectionNode selectionNode, parser:FieldNode[] result,
+            map<int> aliasIndexes) {
         foreach parser:SelectionNode selection in selectionNode.getSelections() {
             if selection is parser:FieldNode {
-                if visitedAliases.hasKey(selection.getAlias()) {
-                    continue;
-                }
-                foreach __Field 'field in typeFields {
-                    if 'field.name == selection.getName() {
-                        visitedAliases[selection.getAlias()] = ();
-                        result.push(new Field(selection, 'field.'type, parentType, (), [
-                                ...currentPath,
-                                ...unwrappedPath,
-                                'field.name
-                            ], self.operationType.clone(), self.resourcePath.clone(),
-                            cacheConfig = self.cacheConfig, parentArgHashes = self.parentArgHashes,
-                            cachePath = [...currentCachePath, ...unwrappedPath, 'field.name].cloneReadOnly()
-                        ));
-                        break;
-                    }
+                int? index = aliasIndexes[selection.getAlias()];
+                if index is int {
+                    parser:SelectionNode[] selections = [...result[index].getSelections(), ...selection.getSelections()];
+                    result[index] = result[index].modifyWithSelections(selections);
+                } else {
+                    aliasIndexes[selection.getAlias()] = result.length();
+                    result.push(selection);
                 }
             } else {
-                self.collectFieldObjects(selection, parentType, typeFields, currentPath, currentCachePath,
-                        unwrappedPath, result, visitedAliases);
+                self.collectFieldNodes(selection, result, aliasIndexes);
             }
         }
     }
 
     isolated function getFieldNames(parser:SelectionNode selectionNode) returns string[] {
-        string[] result = [];
-        map<()> visitedAliases = {};
-        self.collectFieldNames(selectionNode, result, visitedAliases);
-        return result;
-    }
-
-    // Collects the names of the fields selected at the level of the given selection node, including the fields of
-    // the fragments (named, inline and nested) selected at that level. A field selected more than once (same
-    // response key) is collected only once.
-    isolated function collectFieldNames(parser:SelectionNode selectionNode, string[] result,
-            map<()> visitedAliases) {
-        foreach parser:SelectionNode selection in selectionNode.getSelections() {
-            if selection is parser:FieldNode {
-                if visitedAliases.hasKey(selection.getAlias()) {
-                    continue;
-                }
-                visitedAliases[selection.getAlias()] = ();
-                result.push(selection.getName());
-            } else {
-                self.collectFieldNames(selection, result, visitedAliases);
-            }
-        }
+        parser:FieldNode[] nodes = [];
+        map<int> aliasIndexes = {};
+        self.collectFieldNodes(selectionNode, nodes, aliasIndexes);
+        return nodes.'map(node => node.getName());
     }
 
     isolated function getFieldInterceptors() returns readonly & Interceptor[] {

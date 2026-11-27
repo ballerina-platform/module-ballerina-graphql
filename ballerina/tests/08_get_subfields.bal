@@ -160,3 +160,16 @@ function testGetSubfieldsWithDuplicateFieldInFragment() returns error? {
     test:assertFalse(subfields is ());
     test:assertEquals((<Field[]>subfields).length(), 2);
 }
+
+@test:Config {
+    groups: ["field", "getSubfields"]
+}
+function testGetSubfieldsOfAFieldRepeatedInFragments() returns error? {
+    parser:FieldNode[] fields =
+        check getFieldNodesFromDocumentFile("field_object_astronauts_with_duplicate_field_in_fragment");
+    Field 'field = getField(fields[0], AstronautNonNullList, AstronautQuery, []);
+    Field[] subfields = <Field[]>'field.getSubfields();
+    Field missions = subfields[1];
+    test:assertEquals(missions.getName(), "missions");
+    test:assertEquals(missions.getSubfieldNames(), ["id", "designation"]);
+}
