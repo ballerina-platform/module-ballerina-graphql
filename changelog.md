@@ -9,7 +9,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 - [[#9913] Fix `Field.getSubfields()` and `Field.getSubfieldNames()` Returning Fields of Sibling Selections When a Fragment Is Present](https://github.com/ballerina-platform/ballerina-library/issues/9913)
-- [Merge the Selections of a Field Selected More Than Once in `Field.getSubfields()` and `Field.getSubfieldNames()`](https://github.com/ballerina-platform/module-ballerina-graphql/pull/2616#issuecomment-7190138469)
 
 ## [1.19.2] - 2026-11-19
 
