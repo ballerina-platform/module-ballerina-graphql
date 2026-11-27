@@ -183,9 +183,6 @@ public class Field {
         return result;
     }
 
-    // Collects the field nodes selected at the level of the given selection node, including the fields of the
-    // fragments (named, inline and nested) selected at that level. A field selected more than once (same response
-    // key) is collected once, with the selections of all its occurrences merged.
     isolated function collectFieldNodes(parser:SelectionNode selectionNode, parser:FieldNode[] result,
             map<int> aliasIndexes) {
         foreach parser:SelectionNode selection in selectionNode.getSelections() {
