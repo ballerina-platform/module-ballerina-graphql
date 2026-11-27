@@ -133,8 +133,6 @@ function testGetSubfieldsWithAliasesFragmentAndInlineFragment() returns error? {
     test:assertEquals(fields.length(), 1);
     Field 'field = getField(fields[0], AstronautNonNullList, AstronautQuery, []);
 
-    // The same field requested with different aliases is returned once per alias, while the duplicates of the same
-    // field (same alias) coming from the inline fragments are removed.
     test:assertEquals('field.getSubfieldNames(), ["missions", "missions", "name"]);
     Field[]? subfields = 'field.getSubfields();
     test:assertFalse(subfields is ());
@@ -154,9 +152,21 @@ function testGetSubfieldsWithDuplicateFieldInFragment() returns error? {
     test:assertEquals(fields.length(), 1);
     Field 'field = getField(fields[0], AstronautNonNullList, AstronautQuery, []);
 
-    // `name` is selected both directly and inside a fragment, `missions` is selected inside two fragments.
     test:assertEquals('field.getSubfieldNames(), ["name", "missions"]);
     Field[]? subfields = 'field.getSubfields();
     test:assertFalse(subfields is ());
     test:assertEquals((<Field[]>subfields).length(), 2);
+}
+
+@test:Config {
+    groups: ["field", "getSubfields"]
+}
+function testGetSubfieldsOfAFieldRepeatedInFragments() returns error? {
+    parser:FieldNode[] fields =
+        check getFieldNodesFromDocumentFile("field_object_astronauts_with_duplicate_field_in_fragment");
+    Field 'field = getField(fields[0], AstronautNonNullList, AstronautQuery, []);
+    Field[] subfields = <Field[]>'field.getSubfields();
+    Field missions = subfields[1];
+    test:assertEquals(missions.getName(), "missions");
+    test:assertEquals(missions.getSubfieldNames(), ["id", "designation"]);
 }
