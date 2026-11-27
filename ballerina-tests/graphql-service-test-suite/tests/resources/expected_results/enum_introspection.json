@@ -53,30 +53,30 @@
         {
           "name": "Weekday",
           "enumValues": [
-            { "name": "SATURDAY" },
-            { "name": "FRIDAY" },
-            { "name": "THURSDAY" },
-            { "name": "WEDNESDAY" },
-            { "name": "TUESDAY" },
+            { "name": "SUNDAY" },
             { "name": "MONDAY" },
-            { "name": "SUNDAY" }
+            { "name": "TUESDAY" },
+            { "name": "WEDNESDAY" },
+            { "name": "THURSDAY" },
+            { "name": "FRIDAY" },
+            { "name": "SATURDAY" }
           ]
         },
         {
           "name": "Month",
           "enumValues": [
-            { "name": "DECEMBER" },
-            { "name": "NOVEMBER" },
-            { "name": "OCTOBER" },
-            { "name": "SEPTEMBER" },
-            { "name": "AUGUST" },
-            { "name": "JULY" },
-            { "name": "JUNE" },
-            { "name": "MAY" },
-            { "name": "APRIL" },
-            { "name": "MARCH" },
+            { "name": "JANUARY" },
             { "name": "FEBRUARY" },
-            { "name": "JANUARY" }
+            { "name": "MARCH" },
+            { "name": "APRIL" },
+            { "name": "MAY" },
+            { "name": "JUNE" },
+            { "name": "JULY" },
+            { "name": "AUGUST" },
+            { "name": "SEPTEMBER" },
+            { "name": "OCTOBER" },
+            { "name": "NOVEMBER" },
+            { "name": "DECEMBER" }
           ]
         },
         { "name": "Project", "enumValues": null },

@@ -83,6 +83,7 @@ import io.ballerina.stdlib.graphql.compiler.service.InterfaceEntityFinder;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -616,7 +617,11 @@ public class SchemaGenerator {
         String description = getDescription(enumSymbol);
         Position position = getTypePosition(enumSymbol.getLocation(), enumSymbol, this.project);
         Type enumType = addType(name, TypeKind.ENUM, description, position);
-        for (ConstantSymbol enumMember : enumSymbol.members()) {
+        List<ConstantSymbol> members = new ArrayList<>(enumSymbol.members());
+        members.sort(Comparator.comparingInt(
+                (ConstantSymbol member) -> member.getLocation().get().lineRange().startLine().line())
+                .thenComparingInt(member -> member.getLocation().get().lineRange().startLine().offset()));
+        for (ConstantSymbol enumMember : members) {
             addEnumValueToType(enumType, enumMember);
         }
         return enumType;

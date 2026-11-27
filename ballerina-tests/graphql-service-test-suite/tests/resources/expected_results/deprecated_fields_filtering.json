@@ -99,8 +99,9 @@
     },
     "__type": {
       "enumValues": [
+        { "name": "STRINGS", "isDeprecated": false, "deprecationReason": null },
         {
-          "name": "PERCUSSION",
+          "name": "WOODWIND",
           "isDeprecated": false,
           "deprecationReason": null
         },
@@ -110,11 +111,10 @@
           "deprecationReason": null
         },
         {
-          "name": "WOODWIND",
+          "name": "PERCUSSION",
           "isDeprecated": false,
           "deprecationReason": null
-        },
-        { "name": "STRINGS", "isDeprecated": false, "deprecationReason": null }
+        }
       ]
     }
   }

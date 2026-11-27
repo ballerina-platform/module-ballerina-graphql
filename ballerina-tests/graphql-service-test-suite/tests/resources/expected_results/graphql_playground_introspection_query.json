@@ -16,7 +16,7 @@
           "interfaces": null,
           "enumValues": [
             {
-              "name": "HOLD",
+              "name": "OPEN",
               "description": null,
               "isDeprecated": false,
               "deprecationReason": null
@@ -28,7 +28,7 @@
               "deprecationReason": null
             },
             {
-              "name": "OPEN",
+              "name": "HOLD",
               "description": null,
               "isDeprecated": false,
               "deprecationReason": null
