@@ -180,8 +180,14 @@
     },
     "__type": {
       "enumValues": [
+        { "name": "STRINGS", "isDeprecated": false, "deprecationReason": null },
         {
-          "name": "PERCUSSION",
+          "name": "WOODWIND",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "KEYBOARD",
           "isDeprecated": false,
           "deprecationReason": null
         },
@@ -191,16 +197,10 @@
           "deprecationReason": "Not used in this band"
         },
         {
-          "name": "KEYBOARD",
+          "name": "PERCUSSION",
           "isDeprecated": false,
           "deprecationReason": null
-        },
-        {
-          "name": "WOODWIND",
-          "isDeprecated": false,
-          "deprecationReason": null
-        },
-        { "name": "STRINGS", "isDeprecated": false, "deprecationReason": null }
+        }
       ]
     }
   }
